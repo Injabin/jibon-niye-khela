@@ -69,13 +69,13 @@ export interface MusicTrack {
 }
 
 export const MUSIC_MANIFEST: Record<MusicStageId, MusicTrack> = {
-  infant: { id: 'infant', label: 'Infancy', mood: 'gentle lullaby pads', file: null },
-  child: { id: 'child', label: 'Childhood', mood: 'bright, playful', file: null },
-  teen: { id: 'teen', label: 'Teen years', mood: 'energetic, restless', file: null },
-  'young-adult': { id: 'young-adult', label: 'Young adulthood', mood: 'hopeful, forward-moving', file: null },
-  adult: { id: 'adult', label: 'Adulthood', mood: 'steady, warm', file: null },
-  'middle-aged': { id: 'middle-aged', label: 'Middle age', mood: 'settled, reflective', file: null },
-  senior: { id: 'senior', label: 'Senior years', mood: 'calm, nostalgic', file: null },
+  infant: { id: 'infant', label: 'Infancy', mood: 'gentle lullaby pads', file: '/audio/heavenly.ogg' },
+  child: { id: 'child', label: 'Childhood', mood: 'bright, playful', file: '/audio/jump.ogg' },
+  teen: { id: 'teen', label: 'Teen years', mood: 'energetic, restless', file: '/audio/fastsong.ogg' },
+  'young-adult': { id: 'young-adult', label: 'Young adulthood', mood: 'hopeful, forward-moving', file: '/audio/lofi.ogg' },
+  adult: { id: 'adult', label: 'Adulthood', mood: 'steady, warm', file: '/audio/lofi.ogg' },
+  'middle-aged': { id: 'middle-aged', label: 'Middle age', mood: 'settled, reflective', file: '/audio/ambient.ogg' },
+  senior: { id: 'senior', label: 'Senior years', mood: 'calm, nostalgic', file: '/audio/ambient.ogg' },
 };
 
 /**

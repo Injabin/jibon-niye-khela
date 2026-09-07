@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { soundManager } from '@/lib/audio/SoundManager';
-import type { SfxEvent } from '@/lib/audio/manifest';
+import type { MusicStageId, SfxEvent } from '@/lib/audio/manifest';
 import { lifeStageForAge } from '@/lib/engine/life';
 import type { Character, LifeEventDef } from '@/lib/engine/types';
 import { hapticForSfx } from '@/lib/haptics';
@@ -83,12 +83,14 @@ export function GameHub() {
     if (!character) {
       prevSnapshot.current = null;
       deathPlayed.current = false;
+      soundManager.stopMusic();
       return;
     }
 
     const prev = prevSnapshot.current;
     if (!prev) {
       prevSnapshot.current = snapshotOf(character);
+      soundManager.startMusic(snapshotOf(character).stage as MusicStageId);
       return;
     }
 
@@ -103,7 +105,10 @@ export function GameHub() {
     if (!prev.alive) return;
 
     const next = snapshotOf(character);
-    if (next.stage !== prev.stage) playCue('life_stage_change');
+    if (next.stage !== prev.stage) {
+      playCue('life_stage_change');
+      soundManager.startMusic(next.stage as MusicStageId);
+    }
 
     if (next.health < prev.health) playCue('stat_down');
     else if (next.health > prev.health) playCue('stat_up');
