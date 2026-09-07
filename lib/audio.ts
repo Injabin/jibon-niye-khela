@@ -1,19 +1,60 @@
-import { Howl } from 'howler';
+// A completely self-contained, zero-asset audio synthesizer using the Web Audio API.
+// This prevents 404 errors in the console because it generates the sound mathematically
+// in the browser, rather than trying to download .mp3 files!
 
-// In a real production app, you would place these mp3 files in the /public folder.
-// Howler will handle them gracefully if they 404 in development, or we can catch it.
-
-const sounds = {
-  click: typeof window !== 'undefined' ? new Howl({ src: ['/click.mp3'], volume: 0.5 }) : null,
-  ageUp: typeof window !== 'undefined' ? new Howl({ src: ['/age_up.mp3'], volume: 0.7 }) : null,
-  death: typeof window !== 'undefined' ? new Howl({ src: ['/death.mp3'], volume: 0.8 }) : null,
-};
-
-export function playSound(name: keyof typeof sounds) {
-  if (sounds[name] && sounds[name]?.state() === 'loaded') {
-    sounds[name]?.play();
-  } else if (sounds[name]) {
-    // Attempt to play anyway if it's loading, Howler queues it natively
-    sounds[name]?.play();
+export function playSound(type: 'click' | 'ageUp' | 'death') {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    
+    // Create an audio context
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    if (type === 'click') {
+      // A short, high-pitched "tick" sound for buttons
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.05);
+      
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.05);
+      
+    } else if (type === 'ageUp') {
+      // A happy, rising "ding-ding" chord for aging up
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, ctx.currentTime); // A4
+      osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1); // C#5
+      
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
+      
+    } else if (type === 'death') {
+      // A descending, sad low tone for dying
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 1.5);
+      
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 1.5);
+    }
+  } catch (e) {
+    // Fail silently if the browser blocks audio (e.g. before user interaction)
+    console.warn('Audio playback prevented by browser.');
   }
 }
