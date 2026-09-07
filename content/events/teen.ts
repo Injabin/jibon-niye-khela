@@ -236,6 +236,7 @@ export const TEEN_EVENTS: readonly LifeEventDef[] = [
     weight: 45,
     tone: 'good',
     category: 'teen',
+    moment: 'money',
     tags: ['work', 'money'],
     requiredFlags: ['parttime_accept'],
     choices: [

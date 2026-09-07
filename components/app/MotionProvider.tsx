@@ -1,15 +1,9 @@
 'use client';
 
 import { MotionConfig } from 'framer-motion';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { soundManager } from '@/lib/audio/SoundManager';
-import { settingsStore } from '@/lib/store/settingsStore';
-
-const SYSTEM_REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
-
-function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia(SYSTEM_REDUCED_QUERY).matches;
-}
+import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
 
 declare global {
   interface Window {
@@ -21,25 +15,13 @@ declare global {
  * Global presentation provider (init.md M3 #1/#4, AGENT.md §8).
  *
  * Resolves the effective reduced-motion preference (Settings toggle with a
- * "follow system" default) and pins it to Framer's MotionConfig so every
- * animation respects it, plus a dataset flag that turns off CSS animations
- * too. Also exposes a tiny, read-only audio state hook used by the Gate 3
- * no-autoplay Playwright check.
+ * "follow system" default), pins it to Framer's MotionConfig so every
+ * animation respects it, and exposes a dataset flag that turns off CSS
+ * animations too. Also surfaces a tiny, read-only audio state hook used by
+ * the Gate 3 no-autoplay Playwright check.
  */
 export function MotionProvider({ children }: { children: ReactNode }) {
-  const reducedMotionMode = settingsStore((s) => s.reducedMotion);
-  const [systemReduced, setSystemReduced] = useState(prefersReducedMotion);
-
-  useEffect(() => {
-    settingsStore.getState().hydrate();
-    const media = window.matchMedia(SYSTEM_REDUCED_QUERY);
-    const onChange = (event: MediaQueryListEvent) => setSystemReduced(event.matches);
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, []);
-
-  const effectiveReduced =
-    reducedMotionMode === 'reduced' || (reducedMotionMode === 'system' && systemReduced);
+  const effectiveReduced = useEffectiveReducedMotion();
 
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = effectiveReduced ? 'true' : 'false';

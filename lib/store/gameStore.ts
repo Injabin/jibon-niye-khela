@@ -3,7 +3,7 @@ import { ageUp, checkForDeath } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
 import { RNG } from '@/lib/engine/rng';
-import type { Character, LifeEventDef } from '@/lib/engine/types';
+import type { Character, LifeEventDef, MilestoneKind, Tone } from '@/lib/engine/types';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
 import {
@@ -34,6 +34,16 @@ export interface GameStoreState {
   message: string | null;
   error: string | null;
   isHydrated: boolean;
+  /** Tone of the player's most recent choice — drives the avatar expression overlay. */
+  lastOutcomeTone: Tone | null;
+  /**
+   * Transient moment-sting trigger (M4): set by the actions that resolve a
+   * choice or roll a year, consumed as the `kind` prop of <MomentSting>.
+   * Deliberately NOT persisted — it is presentation state, not game state.
+   */
+  pendingSting: MilestoneKind | null;
+  /** Monotonic trigger id bumped on every sting so repeated kinds replay. */
+  stingToken: number;
 }
 
 export interface GameStoreActions {
@@ -65,6 +75,9 @@ const initialState: GameStoreState = {
   message: null,
   error: null,
   isHydrated: false,
+  lastOutcomeTone: null,
+  pendingSting: null,
+  stingToken: 0,
 };
 
 function toSaveState(s: GameStoreState, character: Character): SaveState {
@@ -98,6 +111,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
           savedAt: save.savedAt,
           message: null,
           error: null,
+          pendingSting: null,
+          stingToken: 0,
         });
       }
       set({ isHydrated: true });
@@ -112,6 +127,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
         rngState: rng.getState(),
         pendingEvents: [],
         currentEventIndex: 0,
+        lastOutcomeTone: null,
+        pendingSting: null,
+        stingToken: 0,
         message: 'A new life begins…',
         error: null,
       });
@@ -133,6 +151,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
         rngState: rng.getState(),
         pendingEvents: [...result.firedEvents],
         currentEventIndex: 0,
+        lastOutcomeTone: null,
+        pendingSting: result.character.alive ? null : 'tombstone',
+        stingToken: result.character.alive ? s.stingToken : s.stingToken + 1,
         message: null,
         error: null,
       });
@@ -148,6 +169,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const event = s.pendingEvents[s.currentEventIndex];
       if (!event) return false;
 
+      const choice = event.choices.find((c) => c.id === choiceId) ?? null;
+
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       resolveEventChoice(character, event, choiceId);
@@ -155,12 +178,16 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       const nextIndex = s.currentEventIndex + 1;
       const done = nextIndex >= s.pendingEvents.length;
+      const sting = character.alive ? (event.moment ?? null) : 'tombstone';
 
       set({
         character,
         rngState: rng.getState(),
         pendingEvents: done ? [] : s.pendingEvents,
         currentEventIndex: done ? 0 : nextIndex,
+        lastOutcomeTone: choice?.tone ?? null,
+        pendingSting: sting,
+        stingToken: sting ? s.stingToken + 1 : s.stingToken,
         error: null,
       });
       persist();
@@ -183,6 +210,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
           pendingEvents: save.pendingEvents ?? [],
           currentEventIndex: save.currentEventIndex ?? 0,
           savedAt: save.savedAt,
+          lastOutcomeTone: null,
+          pendingSting: null,
+          stingToken: 0,
           message: 'Save imported.',
           error: null,
         });

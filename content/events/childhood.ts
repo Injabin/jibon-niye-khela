@@ -9,6 +9,7 @@ export const CHILDHOOD_EVENTS: readonly LifeEventDef[] = [
     weight: 90,
     tone: 'good',
     category: 'childhood',
+    moment: 'confetti',
     tags: ['milestone'],
     choices: [
       {
@@ -145,6 +146,7 @@ export const CHILDHOOD_EVENTS: readonly LifeEventDef[] = [
     weight: 95,
     tone: 'good',
     category: 'childhood',
+    moment: 'sparkles',
     tags: ['milestone'],
     choices: [
       {

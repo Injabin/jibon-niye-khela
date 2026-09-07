@@ -2,6 +2,24 @@ export type Gender = 'male' | 'female';
 
 export type Tone = 'good' | 'bad' | 'neutral' | 'funny';
 
+/**
+ * Milestone "moment" beats (DESIGN.md §7): a short, reusable Lottie sting
+ * triggered by event kind — not authored per unique event. The visual/audio
+ * treatment for each kind lives in the UI layer; this enum is the shared
+ * contract so content can tag events without knowing rendering details.
+ */
+export type MilestoneKind =
+  | 'confetti'
+  | 'money'
+  | 'diploma'
+  | 'wedding'
+  | 'handcuffs'
+  | 'tombstone'
+  | 'birth'
+  | 'sparkles'
+  | 'heart'
+  | 'house';
+
 import type { RNG } from './rng';
 
 export interface Stats {
@@ -147,6 +165,8 @@ export interface LifeEventDef {
   weight: number;
   tone: Tone;
   category: 'childhood' | 'teen' | 'young-adult' | 'adult' | 'senior' | 'universal';
+  /** Optional milestone sting fired when this event resolves (DESIGN.md §7). */
+  moment?: MilestoneKind;
   choices: EventChoice[];
   requiredFlags?: string[];
   antiFlags?: string[];

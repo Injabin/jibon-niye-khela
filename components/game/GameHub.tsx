@@ -10,6 +10,7 @@ import { hapticForSfx } from '@/lib/haptics';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
+import { MomentSting } from '@/components/motion/MomentSting';
 import { CharacterSummary } from './CharacterSummary';
 import { EventCard } from './EventCard';
 import { LifeSummary } from './LifeSummary';
@@ -53,6 +54,8 @@ export function GameHub() {
   const isHydrated = useGameStore((s) => s.isHydrated);
   const message = useGameStore((s) => s.message);
   const error = useGameStore((s) => s.error);
+  const pendingSting = useGameStore((s) => s.pendingSting);
+  const stingToken = useGameStore((s) => s.stingToken);
 
   const hydrate = useGameStore((s) => s.hydrate);
   const newGame = useGameStore((s) => s.newGame);
@@ -152,7 +155,10 @@ export function GameHub() {
 
   const onChoose = (event: LifeEventDef, choiceId: string) => {
     const applied = resolveCurrentChoice(choiceId);
-    if (applied) playCue(toneCue[event.tone]);
+    if (!applied) return;
+    // A milestone moment carries its own stronger sting cue; plain events use
+    // the per-tone feedback cue (DESIGN.md §6.5).
+    if (!event.moment) playCue(toneCue[event.tone]);
   };
 
   const onAgeUp = () => {
@@ -293,6 +299,8 @@ export function GameHub() {
       </div>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <MomentSting key={stingToken} kind={pendingSting} token={stingToken} />
     </div>
   );
 }
