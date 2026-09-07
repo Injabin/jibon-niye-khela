@@ -1,11 +1,50 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { soundManager } from '@/lib/audio/SoundManager';
+import type { SfxEvent } from '@/lib/audio/manifest';
+import { lifeStageForAge } from '@/lib/engine/life';
+import type { Character, LifeEventDef } from '@/lib/engine/types';
+import { hapticForSfx } from '@/lib/haptics';
 import { useGameStore } from '@/lib/store/gameStore';
+import { motion as motionTokens } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
 import { CharacterSummary } from './CharacterSummary';
 import { EventCard } from './EventCard';
 import { LifeSummary } from './LifeSummary';
+import { SettingsPanel } from './SettingsPanel';
+
+interface Snapshot {
+  alive: boolean;
+  age: number;
+  stage: string;
+  health: number;
+  happiness: number;
+  smarts: number;
+  looks: number;
+  money: number;
+}
+
+function snapshotOf(character: Character): Snapshot {
+  return {
+    alive: character.alive,
+    age: character.age,
+    stage: lifeStageForAge(character.age),
+    health: character.stats.health,
+    happiness: character.stats.happiness,
+    smarts: character.stats.smarts,
+    looks: character.stats.looks,
+    money: character.money,
+  };
+}
+
+const toneCue: Record<LifeEventDef['tone'], SfxEvent> = {
+  good: 'good_event',
+  bad: 'bad_event',
+  neutral: 'neutral_event',
+  funny: 'neutral_event',
+};
 
 export function GameHub() {
   const character = useGameStore((s) => s.character);
@@ -23,11 +62,63 @@ export function GameHub() {
   const importFromRaw = useGameStore((s) => s.importFromRaw);
   const resetGame = useGameStore((s) => s.resetGame);
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevSnapshot = useRef<Snapshot | null>(null);
+  const deathPlayed = useRef(false);
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  function playCue(event: SfxEvent) {
+    if (!soundManager.soundEnabled) return;
+    soundManager.play(event);
+    hapticForSfx(event);
+  }
+
+  // DESIGN.md §6.5 — sound as feedback: every meaningful state change has a
+  // distinct cue (life-stage transition, each stat/money move, death).
+  useEffect(() => {
+    if (!character) {
+      prevSnapshot.current = null;
+      deathPlayed.current = false;
+      return;
+    }
+
+    const prev = prevSnapshot.current;
+    if (!prev) {
+      prevSnapshot.current = snapshotOf(character);
+      return;
+    }
+
+    if (prev.alive && !character.alive) {
+      if (!deathPlayed.current) {
+        deathPlayed.current = true;
+        playCue('death');
+      }
+      prevSnapshot.current = snapshotOf(character);
+      return;
+    }
+    if (!prev.alive) return;
+
+    const next = snapshotOf(character);
+    if (next.stage !== prev.stage) playCue('life_stage_change');
+
+    if (next.health < prev.health) playCue('stat_down');
+    else if (next.health > prev.health) playCue('stat_up');
+    if (next.happiness < prev.happiness) playCue('stat_down');
+    else if (next.happiness > prev.happiness) playCue('stat_up');
+    if (next.smarts < prev.smarts) playCue('stat_down');
+    else if (next.smarts > prev.smarts) playCue('stat_up');
+    if (next.looks < prev.looks) playCue('stat_down');
+    else if (next.looks > prev.looks) playCue('stat_up');
+
+    if (next.money < prev.money) playCue('money_down');
+    else if (next.money > prev.money) playCue('money_up');
+
+    prevSnapshot.current = next;
+  }, [character]);
 
   if (!isHydrated) {
     return <p className="py-12 text-center text-text-muted">Loading your life…</p>;
@@ -54,8 +145,22 @@ export function GameHub() {
     reader.readAsText(file);
   };
 
+  const onChoose = (event: LifeEventDef, choiceId: string) => {
+    const applied = resolveCurrentChoice(choiceId);
+    if (applied) playCue(toneCue[event.tone]);
+  };
+
+  const onAgeUp = () => {
+    const applied = ageUp();
+    if (applied) {
+      soundManager.play('age_up');
+      hapticForSfx('age_up');
+    }
+  };
+
   const noCharacter = !character;
   const dead = character && !character.alive && pendingEvents.length === 0;
+  const currentEvent = pendingEvents.length > 0 ? pendingEvents[currentEventIndex] : null;
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
@@ -74,7 +179,12 @@ export function GameHub() {
       )}
 
       {noCharacter && (
-        <section className="rounded-lg border border-border bg-surface p-6 text-center shadow-sm">
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+          className="rounded-lg border border-border bg-surface p-6 text-center shadow-sm"
+        >
           <h1 className="text-2xl font-bold tracking-tight text-text">A new life awaits</h1>
           <p className="mx-auto mt-2 max-w-sm text-sm text-text-muted">
             Be born, grow up, make choices, and see how the story ends — one year at a time.
@@ -86,31 +196,29 @@ export function GameHub() {
           >
             Start life
           </Button>
-        </section>
+        </motion.section>
       )}
 
       {character && character.alive && (
         <>
           <CharacterSummary character={character} />
 
-          {pendingEvents.length > 0 && (
-            <div className="mt-4">
-              <EventCard
-                event={pendingEvents[currentEventIndex]}
-                onChoose={(choiceId) => resolveCurrentChoice(choiceId)}
-              />
-            </div>
-          )}
+          <AnimatePresence initial={false}>
+            {currentEvent && (
+              <div className="mt-4" key={currentEvent.id}>
+                <EventCard event={currentEvent} onChoose={(choiceId) => onChoose(currentEvent, choiceId)} />
+              </div>
+            )}
+          </AnimatePresence>
 
           {character.alive && pendingEvents.length === 0 && (
-            <button
-              type="button"
-              onClick={ageUp}
+            <Button
+              onClick={onAgeUp}
               data-testid="age-up"
-              className="mt-4 w-full rounded-md bg-primary px-4 py-4 text-base font-semibold text-white transition-colors hover:opacity-90"
+              className="mt-4 w-full px-4 py-4 text-base"
             >
               Age up
-            </button>
+            </Button>
           )}
 
           {character.history.length > 1 && (
@@ -155,6 +263,13 @@ export function GameHub() {
         <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
           Import save
         </Button>
+        <Button
+          variant="secondary"
+          onClick={() => setSettingsOpen(true)}
+          data-testid="open-settings"
+        >
+          Settings
+        </Button>
         <Button variant="danger" className="ml-auto" onClick={resetGame} disabled={noCharacter}>
           Reset
         </Button>
@@ -171,6 +286,8 @@ export function GameHub() {
           }}
         />
       </div>
+
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

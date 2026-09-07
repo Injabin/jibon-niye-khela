@@ -1,9 +1,16 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import type { Character } from '@/lib/engine/types';
+import { motion as motionTokens } from '@/lib/theme';
 import { StatBar } from './StatBar';
 
 export function LifeSummary({ character }: { character: Character }) {
   return (
-    <section
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
       className="rounded-lg border border-border bg-surface p-5 shadow-md"
       data-testid="life-summary"
     >
@@ -25,6 +32,6 @@ export function LifeSummary({ character }: { character: Character }) {
       <p className="mt-5 text-sm text-text-muted">
         A full life summary with your story timeline arrives in a later milestone.
       </p>
-    </section>
+    </motion.section>
   );
 }
