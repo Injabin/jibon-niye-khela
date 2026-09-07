@@ -10,7 +10,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     headless: true,
-    trace: 'retain-on-failure',
+    // Gate 3 needs recorded motion evidence even for passing runs.
+    trace: 'on',
   },
   webServer: {
     command: 'npm run dev',

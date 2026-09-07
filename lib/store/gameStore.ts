@@ -201,3 +201,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     },
   };
 });
+
+if (typeof window !== 'undefined') {
+  (window as unknown as { __JNK_GAME_STORE__?: unknown }).__JNK_GAME_STORE__ = useGameStore;
+}

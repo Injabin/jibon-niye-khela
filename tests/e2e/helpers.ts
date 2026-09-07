@@ -27,13 +27,43 @@ export async function startNewLife(page: Page): Promise<void> {
   await page.getByTestId('new-game').click();
 }
 
-/** Click choice buttons until the event card disappears. */
+/**
+ * Resolve all pending event choices.
+ *
+ * Drives the store directly (the global is exposed by gameStore as a
+ * diagnostic/test hook) instead of clicking DOM buttons: card enter/exit
+ * animations set `pointer-events: none` mid-transition and swap the DOM
+ * mid-click, so a Playwright `click()` or even a native `button.click()` races
+ * the swap and can fire an old card's handler with a new card's choice id.
+ * Real pointer interaction is asserted separately in the event tests.
+ */
 export async function resolveAllEvents(page: Page): Promise<void> {
-  for (let i = 0; i < 5; i++) {
-    const card = page.getByTestId('event-card');
-    if (!(await card.isVisible().catch(() => false))) return;
-    await page.getByTestId('choice-0').first().click();
-  }
+  await page.evaluate(() =>
+    new Promise<void>((resolvePromise) => {
+      const store = (window as unknown as {
+        __JNK_GAME_STORE__?: {
+          getState: () => {
+            pendingEvents?: Array<{ choices?: Array<{ id?: string }> }>;
+            currentEventIndex?: number;
+            resolveCurrentChoice?: (choiceId: string) => unknown;
+          };
+        };
+      }).__JNK_GAME_STORE__;
+      let guard = 20;
+      const tick = () => {
+        const s = store?.getState();
+        if (guard-- <= 0 || !s || !s.pendingEvents || s.pendingEvents.length === 0) {
+          return resolvePromise();
+        }
+        const event = s.pendingEvents[s.currentEventIndex ?? 0] ?? s.pendingEvents[0];
+        const choice = event?.choices?.[0];
+        if (!choice?.id) return resolvePromise();
+        s.resolveCurrentChoice?.(choice.id);
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }),
+  );
 }
 
 /** Age up repeatedly, resolving any events, until the life summary appears. */
