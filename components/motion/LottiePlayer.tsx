@@ -6,12 +6,18 @@
  *
  * NOTE: this repo pins `lottie-react@3`, whose API differs from v2: pass the
  * parsed animation as `src`, and listen for "complete" via `subscriptions`.
+ *
+ * Performance budget (init.md M4 #5, AGENT.md §7): at most one expression and
+ * one sting play at a time by construction — `ExpressionOverlay` and
+ * `MomentSting` each render a single instance and auto-hide, and the asset
+ * JSONs are lean. Any on-screen animation is paused when the tab goes hidden
+ * (below) so it never keeps burning CPU/battery off-screen.
  */
 
 'use client';
 
-import { Lottie } from 'lottie-react';
-import { useEffect, useState } from 'react';
+import { Lottie, type LottieHandle } from 'lottie-react';
+import { useEffect, useRef, useState } from 'react';
 
 const animationCache = new Map<string, object>();
 
@@ -29,6 +35,21 @@ export function LottiePlayer({ src, className, ariaLabel, loop = false, onComple
   // instance); only a cache miss needs the fetch effect.
   const [data, setData] = useState<object | null>(() => animationCache.get(src) ?? null);
   const [failed, setFailed] = useState(false);
+  const lottieRef = useRef<LottieHandle>(null);
+
+  // Pause-when-off-screen (init.md M4 #5): animations only ever play inside
+  // fixed/absolute overlays, so the only real off-screen case is a hidden tab.
+  // `document.hidden` is read-only, so we drive the handle imperatively.
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      const player = lottieRef.current;
+      if (!player) return;
+      if (document.hidden) player.pause();
+      else player.play();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -65,6 +86,7 @@ export function LottiePlayer({ src, className, ariaLabel, loop = false, onComple
       src={animation}
       autoplay
       loop={loop}
+      lottieRef={lottieRef}
       rendererSettings={{ preserveAspectRatio: 'xMidYMid meet' }}
       subscriptions={onComplete ? { complete: onComplete } : undefined}
       className={className}

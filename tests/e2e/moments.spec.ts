@@ -59,6 +59,11 @@ test.describe('moment stings (Gate 4)', () => {
 
     await expect(page.getByTestId('moment-sting')).toHaveAttribute('data-kind', 'confetti');
 
+    // Gate 4: the good-tone outcome drives the sparkle expression overlay at
+    // runtime (tone → ExpressionId mapping, DESIGN.md §7).
+    await expect(page.getByTestId('avatar-expression')).toHaveAttribute('data-expression', 'sparkle');
+    await expect(page.getByTestId('avatar-expression')).toHaveAttribute('data-motion', 'lottie');
+
     // Never blocks the game: a click targeting the overlay's center must land
     // on the game UI beneath it, not on the sting (pointer-events: none).
     const hit = await page.evaluate(() => {

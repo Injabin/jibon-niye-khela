@@ -2,8 +2,10 @@ import { create } from 'zustand';
 import { ageUp, checkForDeath } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
+import { BOND_MAX, BOND_PER_VISIT, generateFamilyTree } from '@/lib/engine/family';
+import type { FamilyTree, FamilyRole } from '@/lib/engine/family';
 import { RNG } from '@/lib/engine/rng';
-import type { Character, LifeEventDef, MilestoneKind, Tone } from '@/lib/engine/types';
+import type { Character, LifeEventDef, MilestoneKind, Relation, Tone } from '@/lib/engine/types';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
 import {
@@ -23,6 +25,16 @@ function makeRng(seed: number, state: number): RNG {
 function randomSeed(): number {
   return Math.floor(Math.random() * 2 ** 31);
 }
+
+/** Maps household roles onto the character's relationship kinds for consistency. */
+const ROLE_TO_RELATION: Partial<Record<FamilyRole, Relation>> = {
+  mother: 'mother',
+  father: 'father',
+  grandparent: 'grandparent',
+  sibling: 'sibling',
+  spouse: 'spouse',
+  child: 'child',
+};
 
 export interface GameStoreState {
   character: Character | null;
@@ -44,6 +56,8 @@ export interface GameStoreState {
   pendingSting: MilestoneKind | null;
   /** Monotonic trigger id bumped on every sting so repeated kinds replay. */
   stingToken: number;
+  /** Persisted household tree (schema v2); null only before a life begins. */
+  familyTree: FamilyTree | null;
 }
 
 export interface GameStoreActions {
@@ -55,6 +69,12 @@ export interface GameStoreActions {
   ageUp(): boolean;
   /** Resolve the current pending event with the player's choice. */
   resolveCurrentChoice(choiceId: string): boolean;
+  /**
+   * Raise a family member's bond by spending time (once per game year, capped
+   * at 100). Returns false when the tree is missing, the member is the
+   * character, the year's visit is used, or their bond is maxed.
+   */
+  spendTimeWith(memberId: string): boolean;
   /** Export the current game as a formatted JSON string; null when no character exists. */
   exportToJson(): string | null;
   /** Import a raw save file. Returned boolean is success; sets `error`/`message` accordingly. */
@@ -78,10 +98,11 @@ const initialState: GameStoreState = {
   lastOutcomeTone: null,
   pendingSting: null,
   stingToken: 0,
+  familyTree: null,
 };
 
 function toSaveState(s: GameStoreState, character: Character): SaveState {
-  return defaultSaveState(s.seed, s.rngState, character, s.pendingEvents, s.currentEventIndex);
+  return defaultSaveState(s.seed, s.rngState, character, s.pendingEvents, s.currentEventIndex, s.familyTree);
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -89,7 +110,14 @@ export const useGameStore = create<GameStore>()((set, get) => {
     const s = get();
     if (!s.character) return;
     const savedAt = new Date().toISOString();
-    const state = defaultSaveState(s.seed, s.rngState, s.character, s.pendingEvents, s.currentEventIndex);
+    const state = defaultSaveState(
+      s.seed,
+      s.rngState,
+      s.character,
+      s.pendingEvents,
+      s.currentEventIndex,
+      s.familyTree,
+    );
     state.savedAt = savedAt;
     storeSave(localStorageStorage, state);
     set({ savedAt });
@@ -113,6 +141,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           error: null,
           pendingSting: null,
           stingToken: 0,
+          familyTree: save.familyTree ?? null,
         });
       }
       set({ isHydrated: true });
@@ -121,6 +150,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     newGame(seedOverride) {
       const seed = seedOverride ?? randomSeed();
       const { character, rng } = createCharacter(seed);
+      const familyTree = generateFamilyTree(character, seed);
       set({
         character,
         seed,
@@ -130,6 +160,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         lastOutcomeTone: null,
         pendingSting: null,
         stingToken: 0,
+        familyTree,
         message: 'A new life begins…',
         error: null,
       });
@@ -194,6 +225,37 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return true;
     },
 
+    spendTimeWith(memberId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      const tree = s.familyTree;
+      if (!tree) return false;
+      const member = tree.members.find((m) => m.id === memberId);
+      if (!member) return false;
+      if (member.role === 'self') return false;
+      const characterAge = s.character.age;
+      if (member.lastSpentAge === characterAge) return false;
+      if (member.bond >= BOND_MAX) return false;
+
+      const nextBond = Math.min(BOND_MAX, member.bond + BOND_PER_VISIT);
+      const members = tree.members.map((m) =>
+        m.id === memberId ? { ...m, bond: nextBond, lastSpentAge: characterAge } : m,
+      );
+      set({ familyTree: { ...tree, members } });
+
+      // Keep the character's relationships array in sync with the same bond.
+      const relation = ROLE_TO_RELATION[member.role];
+      if (relation) {
+        const character = structuredClone(s.character);
+        const rel = character.relationships.find((r) => r.relation === relation && r.name === member.name);
+        if (rel) rel.meter = nextBond;
+        set({ character });
+      }
+
+      persist();
+      return true;
+    },
+
     exportToJson() {
       const s = get();
       if (!s.character) return null;
@@ -213,6 +275,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           lastOutcomeTone: null,
           pendingSting: null,
           stingToken: 0,
+          familyTree: save.familyTree ?? null,
           message: 'Save imported.',
           error: null,
         });

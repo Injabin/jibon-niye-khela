@@ -11,6 +11,12 @@ test.describe('full loop smoke test (Gate 2)', () => {
     for (let i = 0; i < 400; i++) {
       if (await page.getByTestId('life-summary').isVisible().catch(() => false)) break;
 
+      // The store refuses to age up while a choice is pending, so clear any
+      // leftover event first — otherwise the age-up click below waits forever
+      // on a button that cannot appear until that event is resolved (a stall
+      // the parallel lottie tests can trigger by delaying an event-card paint).
+      await resolveAllEvents(page);
+
       await page.getByTestId('age-up').click();
       if (await page.getByTestId('event-card').isVisible().catch(() => false)) {
         eventSeen = true;

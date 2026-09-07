@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { soundManager } from '@/lib/audio/SoundManager';
@@ -15,6 +16,13 @@ import { CharacterSummary } from './CharacterSummary';
 import { EventCard } from './EventCard';
 import { LifeSummary } from './LifeSummary';
 import { SettingsPanel } from './SettingsPanel';
+
+// Lazy-loaded with the rest of the graph chunk so the family tree (with Framer
+// Motion) never touches the initial payload (TESTING.md Gate 4 budget).
+const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
+  ssr: false,
+  loading: () => null,
+});
 
 interface Snapshot {
   alive: boolean;
@@ -66,6 +74,7 @@ export function GameHub() {
   const resetGame = useGameStore((s) => s.resetGame);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -214,6 +223,15 @@ export function GameHub() {
         <>
           <CharacterSummary character={character} />
 
+          <Button
+            variant="secondary"
+            onClick={() => setFamilyTreeOpen(true)}
+            data-testid="open-family-tree"
+            className="mt-3 w-full px-4 py-2 text-sm"
+          >
+            Family tree
+          </Button>
+
           <AnimatePresence initial={false}>
             {currentEvent && (
               <div className="mt-4" key={currentEvent.id}>
@@ -299,6 +317,10 @@ export function GameHub() {
       </div>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {familyTreeOpen && (
+        <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />
+      )}
 
       <MomentSting key={stingToken} kind={pendingSting} token={stingToken} />
     </div>

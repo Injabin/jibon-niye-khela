@@ -126,6 +126,16 @@ Required checks:
 
 **Fail conditions that block moving to Milestone 5:** heavy libs loaded on initial page load; wrong-tone expressions firing; reduced-motion toggle doesn't affect avatar/moments; no evidence of pause-when-off-screen handling.
 
+### Gate 4 evidence (recorded 2026-09-08 after the committed M4 pass)
+
+Automated gates pass at this state — `npm run typecheck`, scoped eslint, and `npm run build` all exit 0; Vitest **119/119** across 16 files; Playwright **18/18** (incl. `moments.spec.ts`, `family-tree.spec.ts`). Per-item evidence:
+
+- **Lazy-load (bundle output):** lottie-web is the sole occupant of the async chunk `.next/static/chunks/3rrlue7ueeey-.js` (**318 293 B**), which is absent from the initial page load (main chunks ≈ 229 KB and 178 KB do not reference `loadAnimation`). The family-tree graph is its own lazy chunk `2v6tz61ip7b-x.js` (30 747 B) via `next/dynamic` in `components/game/GameHub.tsx`, mounted only while open. All Lottie JSONs are runtime-fetched from `/public/animations` (`lib/motion/moments.ts`), never bundled. Live proof: chunk matching above + `tests/e2e/moments.spec.ts` playing real stings/expressions in the browser.
+- **Expression mapping (tone → Lottie overlay):** `EXPRESSION_BY_TONE` (`lib/engine/moments.ts`) = good → `sparkle`, bad → `tear`, neutral → `think`, funny → `giggle`, covered by unit tests in `tests/engine/moments.test.ts` and asserted at runtime in `tests/e2e/moments.spec.ts` (`avatar-expression[data-expression="sparkle"][data-motion="lottie"]` after a good-tone outcome).
+- **Stinger coverage (10/8–10):** `MOMENT_STING` (`lib/motion/moments.ts`) wires every milestone kind to its file + accent + SFX: `confetti`→sting-confetti, `money`→sting-money, `diploma`→sting-diploma, `wedding`→sting-wedding, `handcuffs`→sting-handcuffs, `tombstone`→sting-tombstone, `birth`→sting-birth, `sparkles`→sting-sparkles, `heart`→sting-heart, `house`→sting-house. Asset existence/validity/leanness verified in `tests/animations/lottie.test.ts` (full 14-file set, valid Lottie v5, each < 24 KB).
+- **Reduced-motion fallback (avatar/Lottie + graph):** with OS or Settings reduction on, `ExpressionOverlay`, `MomentSting`, and the family tree render `data-motion="static"` and skip Lottie/Framer float entirely — asserted in `tests/e2e/moments.spec.ts` and `tests/e2e/family-tree.spec.ts`. Distinct from the Gate 3 Framer Motion transition check.
+- **Perf budget / pause-when-off-screen:** `components/motion/LottiePlayer.tsx` holds a `lottieRef` (`LottieHandle`) and pauses the instance on `document.hidden` (visibilitychange → `handle.pause()`, resumed on show). Single-instance caps hold by construction — at most one stinger plus one expression mount at any time (GameHub keys `MomentSting`; Avatar keys `ExpressionOverlay`), stings auto-hide at 2400 ms (`MomentSting.tsx`) and expressions at 2600 ms (`ExpressionOverlay.tsx`). The lottie-react WCAG 2.2.2 dev-only console notice is acknowledged: short runtime + auto-hide + the reduced-motion toggle are the pause affordances.
+
 ---
 
 ## Gate 5 — after Milestone 5 (Content expansion)
