@@ -13,6 +13,13 @@ export interface LifeEventLogEntry {
   tone: Tone;
 }
 
+export interface Job {
+  id: string;
+  title: string;
+  salary: number;
+  requiredSmarts: number;
+}
+
 export interface Character {
   id: string;
   name: string;
@@ -26,6 +33,8 @@ export interface Character {
   causeOfDeath?: string;
   traits: string[];
   history: LifeEventLogEntry[];
+  job: Job | null;
+  assets: string[];
 }
 
 export interface StatEffects {

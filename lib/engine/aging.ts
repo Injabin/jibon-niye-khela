@@ -1,5 +1,6 @@
 import { Character, LifeEventDef } from './types';
 import { applyYearlyDecay, applyStatEffects } from './stats';
+import { applyYearlyIncome } from './economy';
 import { RNG } from './rng';
 import { drawYearlyEvents } from './events/registry';
 
@@ -13,8 +14,9 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
 
   character.age += 1;
 
-  // Apply yearly decay
+  // Apply yearly decay and economy
   applyYearlyDecay(character, rng);
+  applyYearlyIncome(character, rng);
 
   // Check for death via health
   if (character.stats.health <= 0) {

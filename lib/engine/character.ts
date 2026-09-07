@@ -27,6 +27,8 @@ export function createCharacter(seed: number): { character: Character, rng: RNG 
     age: 0,
     alive: true,
     traits: [],
+    job: null,
+    assets: [],
     history: [{
       age: 0,
       text: `You were born a ${gender}. Your name is ${name} ${surname}.`,

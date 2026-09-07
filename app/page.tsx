@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useGameStore, initializeSave, exportSaveString, importSaveString } from '@/lib/store/gameStore';
 import { StatBar } from '@/components/game/StatBar';
 import { EventCard } from '@/components/game/EventCard';
+import { ActivitiesPanel } from '@/components/game/ActivitiesPanel';
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -11,6 +12,8 @@ export default function Home() {
   const startGame = useGameStore(s => s.startGame);
   const ageUp = useGameStore(s => s.ageUp);
   const resolveEvent = useGameStore(s => s.resolveEvent);
+  const performActivity = useGameStore(s => s.performActivity);
+  const takeJob = useGameStore(s => s.takeJob);
 
   useEffect(() => {
     const hasSave = initializeSave();
@@ -80,10 +83,13 @@ export default function Home() {
           {pendingEvents.length > 0 ? (
             <EventCard event={pendingEvents[0]} onResolve={(choiceId) => resolveEvent(pendingEvents[0].id, choiceId)} />
           ) : character.alive ? (
-            <div className="flex justify-center">
-               <button onClick={ageUp} className="bg-blue-600 text-white px-10 py-4 rounded-full text-xl font-bold shadow-lg active:bg-blue-700 hover:bg-blue-500 transition-colors">
-                 Age Up +
-               </button>
+            <div>
+              <div className="flex justify-center mb-4">
+                 <button onClick={ageUp} className="bg-blue-600 text-white px-10 py-4 rounded-full text-xl font-bold shadow-lg active:bg-blue-700 hover:bg-blue-500 transition-colors">
+                   Age Up +
+                 </button>
+              </div>
+              <ActivitiesPanel character={character} onPerformActivity={performActivity} onTakeJob={takeJob} />
             </div>
           ) : (
             <div className="bg-white p-6 shadow rounded-md text-center">

@@ -4,7 +4,9 @@ import { createCharacter } from '../engine/character';
 import { ageUp, resolveEventChoice } from '../engine/aging';
 import { RNG } from '../engine/rng';
 import { eventRegistry } from '../engine/events/registry';
-import { migrateSave, SaveStateV1, CURRENT_SCHEMA_VERSION } from '../save/schema';
+import { migrateSave, SaveStateV2, CURRENT_SCHEMA_VERSION } from '../save/schema';
+import { ActivityDef } from '../engine/activities';
+import { Job } from '../engine/types';
 
 interface GameState {
   character: Character | null;
@@ -14,8 +16,10 @@ interface GameState {
   startGame: () => void;
   ageUp: () => void;
   resolveEvent: (eventId: string, choiceId: string) => void;
-  loadFromSave: (save: SaveStateV1) => void;
-  getSnapshot: () => SaveStateV1 | null;
+  performActivity: (activity: ActivityDef) => void;
+  takeJob: (job: Job | null) => void;
+  loadFromSave: (save: SaveStateV2) => void;
+  getSnapshot: () => SaveStateV2 | null;
 }
 
 const SAVE_KEY = 'jibon_niye_khela_save';
@@ -68,6 +72,49 @@ export const useGameStore = create<GameState>((set, get) => ({
     autoSave(get().getSnapshot());
   },
 
+  performActivity: (activity) => {
+    const { character, rngState } = get();
+    if (!character) return;
+    const charDraft = JSON.parse(JSON.stringify(character));
+    const rng = new RNG(rngState);
+    
+    const outcome = activity.perform(charDraft, rng);
+    
+    charDraft.history.push({
+      age: charDraft.age,
+      text: outcome,
+      tone: 'neutral'
+    });
+    
+    set({ character: charDraft, rngState: rng.getState() });
+    autoSave(get().getSnapshot());
+  },
+
+  takeJob: (job) => {
+    const { character } = get();
+    if (!character) return;
+    const charDraft = JSON.parse(JSON.stringify(character));
+    
+    if (job) {
+      charDraft.job = job;
+      charDraft.history.push({
+        age: charDraft.age,
+        text: `You started a new job as a ${job.title}.`,
+        tone: 'good'
+      });
+    } else if (charDraft.job) {
+      charDraft.history.push({
+        age: charDraft.age,
+        text: `You quit your job as a ${charDraft.job.title}.`,
+        tone: 'neutral'
+      });
+      charDraft.job = null;
+    }
+    
+    set({ character: charDraft });
+    autoSave(get().getSnapshot());
+  },
+
   loadFromSave: (save) => {
     set({ 
       character: save.character, 
@@ -90,7 +137,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   }
 }));
 
-function autoSave(snapshot: SaveStateV1 | null) {
+function autoSave(snapshot: SaveStateV2 | null) {
   if (snapshot) {
     localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
   }
