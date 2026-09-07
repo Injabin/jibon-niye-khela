@@ -141,6 +141,16 @@ body {
   }
 }
 
+/* Same hard override when the player forces "Reduced" in Settings. */
+[data-reduced-motion='true'] *,
+[data-reduced-motion='true'] *::before,
+[data-reduced-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 /* Custom scrollbar treatment for scrollable panels */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
