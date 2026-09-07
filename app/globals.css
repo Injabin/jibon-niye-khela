@@ -8,6 +8,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: #10b981;
+  --color-secondary: #3b82f6;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
