@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ageUp, checkForDeath, simulateLife, UPPER_AGE_BOUND } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
+import { lifeStageForAge } from '@/lib/engine/life';
 
 const LIVES_TO_SIMULATE = 200;
 
@@ -52,6 +53,39 @@ describe('human-shaped life distribution', () => {
     const median = ages[Math.floor(ages.length / 2)];
     expect(median).toBeGreaterThan(40);
     expect(median).toBeLessThan(95);
+  });
+});
+
+describe('life-stage classification (Gate 3 music/tone cueing)', () => {
+  it('maps the lifespan to the expected arcs at boundary ages', () => {
+    expect(lifeStageForAge(0)).toBe('infant');
+    expect(lifeStageForAge(3)).toBe('infant');
+    expect(lifeStageForAge(4)).toBe('child');
+    expect(lifeStageForAge(12)).toBe('child');
+    expect(lifeStageForAge(13)).toBe('teen');
+    expect(lifeStageForAge(17)).toBe('teen');
+    expect(lifeStageForAge(18)).toBe('young-adult');
+    expect(lifeStageForAge(25)).toBe('young-adult');
+    expect(lifeStageForAge(26)).toBe('adult');
+    expect(lifeStageForAge(40)).toBe('adult');
+    expect(lifeStageForAge(41)).toBe('middle-aged');
+    expect(lifeStageForAge(65)).toBe('middle-aged');
+    expect(lifeStageForAge(66)).toBe('senior');
+    expect(lifeStageForAge(99)).toBe('senior');
+  });
+
+  it('produces a monotonic arc across a full simulated life', () => {
+    const order = ['infant', 'child', 'teen', 'young-adult', 'adult', 'middle-aged', 'senior'];
+    const character = simulateLife(2024);
+    const stages: string[] = [];
+    for (let age = 0; age <= character.age; age++) {
+      const stage = lifeStageForAge(age);
+      if (stages.length === 0 || stages[stages.length - 1] !== stage) stages.push(stage);
+    }
+    const positions = stages.map((s) => order.indexOf(s));
+    for (let i = 1; i < positions.length; i++) {
+      expect(positions[i], `stage regression at index ${i}`).toBeGreaterThanOrEqual(positions[i - 1]);
+    }
   });
 });
 
