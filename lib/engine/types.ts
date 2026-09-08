@@ -72,6 +72,8 @@ export interface EducationState {
   gpa: number;
   major: string;
   graduated: boolean;
+  /** Age at which post-secondary study began; drives the graduation countdown. */
+  enrolledAge?: number;
 }
 
 export interface CareerState {
