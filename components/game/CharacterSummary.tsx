@@ -9,7 +9,7 @@ export function CharacterSummary({ character }: { character: Character }) {
       className="rounded-lg border border-border bg-surface p-5 shadow-sm"
       data-testid="character-summary"
     >
-      <div className="mb-4 flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4">
         <Avatar character={character} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -25,14 +25,14 @@ export function CharacterSummary({ character }: { character: Character }) {
               Coins: {character.money}
             </p>
           </div>
-
-          <div className="mt-4 flex flex-col gap-2">
-            <StatBar label="Health" value={character.stats.health} />
-            <StatBar label="Happiness" value={character.stats.happiness} />
-            <StatBar label="Smarts" value={character.stats.smarts} />
-            <StatBar label="Looks" value={character.stats.looks} />
-          </div>
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2">
+        <StatBar label="Health" value={character.stats.health} />
+        <StatBar label="Happiness" value={character.stats.happiness} />
+        <StatBar label="Smarts" value={character.stats.smarts} />
+        <StatBar label="Looks" value={character.stats.looks} />
       </div>
 
       <p className="mt-4 text-sm text-text-muted">
