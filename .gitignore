@@ -38,6 +38,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# lighthouse reports (regenerable via `npm run lighthouse`)
+/.lighthouse/
+
 # vercel
 .vercel
 

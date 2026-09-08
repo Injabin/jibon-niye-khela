@@ -156,8 +156,6 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
           <svg
             viewBox={`0 0 ${SCENE_W} ${SCENE_H}`}
             className="h-full w-full"
-            role="img"
-            aria-label="Family relationship graph"
             data-testid="tree-graph"
           >
             <g transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>

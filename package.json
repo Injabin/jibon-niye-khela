@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "icons": "node scripts/generate-pwa-icons.mjs",
-    "sweep:legal": "node scripts/legal-sweep.mjs"
+    "sweep:legal": "node scripts/legal-sweep.mjs",
+    "lighthouse": "node scripts/lighthouse-check.mjs"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",
@@ -28,6 +29,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/react": "16.3.3",
@@ -41,6 +43,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "jsdom": "30.0.1",
+    "lighthouse": "13.4.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "5.0.0"

@@ -18,21 +18,22 @@
   --color-border: #e5e7eb;
 
   /* Core role colors */
-  --color-primary: #0ea5e9;
+  --color-primary: #0369a1;
+  --color-on-primary: #ffffff;
   --color-secondary: #6366f1;
-  --color-accent: #f59e0b;
+  --color-accent: #b45309;
 
   /* Status / semantic */
-  --color-success: #10b981;
-  --color-danger: #ef4444;
-  --color-warning: #f59e0b;
-  --color-info: #3b82f6;
+  --color-success: #047857;
+  --color-danger: #dc2626;
+  --color-warning: #92400e;
+  --color-info: #1d4ed8;
 
   /* Event tone colors (DESIGN.md §6.1) */
-  --color-tone-good: #10b981;
-  --color-tone-bad: #ef4444;
-  --color-tone-neutral: #6b7280;
-  --color-tone-funny: #a855f7;
+  --color-tone-good: #065f46;
+  --color-tone-bad: #dc2626;
+  --color-tone-neutral: #4b5563;
+  --color-tone-funny: #7e22ce;
 
   /* Spacing scale */
   --space-xs: 0.25rem;
@@ -65,6 +66,7 @@
     --color-border: #1f2a44;
 
     --color-primary: #38bdf8;
+    --color-on-primary: #082f49;
     --color-secondary: #818cf8;
     --color-accent: #fbbf24;
 
@@ -88,6 +90,7 @@
   --color-text-muted: var(--color-text-muted);
   --color-border: var(--color-border);
   --color-primary: var(--color-primary);
+  --color-on-primary: var(--color-on-primary);
   --color-secondary: var(--color-secondary);
   --color-accent: var(--color-accent);
   --color-success: var(--color-success);
