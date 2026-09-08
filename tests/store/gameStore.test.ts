@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { useGameStore } from '@/lib/store/gameStore';
 import { localStorageStorage, loadSave } from '@/lib/save/storage';
+import type { LifeEventDef } from '@/lib/engine/types';
 
 interface Node {
   [key: string]: unknown;
@@ -135,6 +136,50 @@ describe('choices genuinely change outcomes (Gate 2 manual -> automated)', () =>
     const ageBefore = useGameStore.getState().character!.age;
     expect(useGameStore.getState().ageUp()).toBe(false);
     expect(useGameStore.getState().character!.age).toBe(ageBefore);
+  });
+
+  it('a fatal choice clears the rest of the year so the death summary can render (regression)', () => {
+    useGameStore.setState({ isHydrated: true });
+    useGameStore.getState().newGame(1);
+
+    const fatalEvent: LifeEventDef = {
+      id: 'reg_fatal',
+      text: 'The heart gives out',
+      minAge: 0,
+      maxAge: 130,
+      weight: 1,
+      tone: 'bad',
+      category: 'universal',
+      choices: [
+        {
+          id: 'reg_fatal_accept',
+          text: 'Keep on living',
+          outcomeText: 'It was too much.',
+          tone: 'bad',
+          effects: { health: -999 },
+        },
+      ],
+    };
+    // Two events fire that year: the fatal one and a survivor whose turn would
+    // come after the character is already dead.
+    useGameStore.setState({
+      pendingEvents: [fatalEvent, { ...fatalEvent, id: 'reg_fatal_2' }],
+      currentEventIndex: 0,
+    });
+
+    useGameStore.getState().resolveCurrentChoice('reg_fatal_accept');
+
+    const state = useGameStore.getState();
+    expect(state.character!.alive).toBe(false);
+    // Without the fix these linger, blocking the (dead && pendingEvents.length
+    // === 0) branch that renders <LifeSummary> in GameHub — a soft-lock.
+    expect(state.pendingEvents).toEqual([]);
+    expect(state.currentEventIndex).toBe(0);
+    expect(state.pendingSting).toBe('tombstone');
+    const history = state.character!.history;
+    expect(history[history.length - 1].text).toContain('health complications');
+    // A dead character can never age up again.
+    expect(useGameStore.getState().ageUp()).toBe(false);
   });
 });
 

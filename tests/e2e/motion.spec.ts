@@ -134,7 +134,13 @@ test.describe('full-motion visual evidence (Gate 3)', () => {
     const exportPath = `downloads-motion-${Date.now()}.json`;
     await download.saveAs(exportPath);
     const saved = JSON.parse(await readFile(exportPath, 'utf8'));
-    saved.character.stats.health = Math.min(100, Math.round(saved.character.stats.health) + 12);
+    // Nudge a stat to a value that is *guaranteed* different from the current
+    // one (clamping can wreck the +12 trick when health is already near max,
+    // leaving no width change to animate).
+    const currentHealth = saved.character.stats.health;
+    saved.character.stats.health =
+      currentHealth >= 80 ? Math.max(0, currentHealth - 40) : Math.min(100, currentHealth + 40);
+    expect(saved.character.stats.health).not.toBe(currentHealth);
 
     // Framer animates fills by writing per-frame inline widths (no WAAPI/CSS
     // transition), so prove motion by the time-course: multiple distinct widths

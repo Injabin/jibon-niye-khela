@@ -209,13 +209,19 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       const nextIndex = s.currentEventIndex + 1;
       const done = nextIndex >= s.pendingEvents.length;
+      // A choice can be fatal (checkForDeath above). If it is, the rest of the
+      // year's events are moot and must not linger: pendingEvents blocks the
+      // block that resolves choices for dark characters, so any remaining
+      // events would freeze the game off the life-summary rendering (dead = 
+      // !alive && pendingEvents.length === 0 in GameHub) with no way out.
+      const died = !character.alive;
       const sting = character.alive ? (event.moment ?? null) : 'tombstone';
 
       set({
         character,
         rngState: rng.getState(),
-        pendingEvents: done ? [] : s.pendingEvents,
-        currentEventIndex: done ? 0 : nextIndex,
+        pendingEvents: done || died ? [] : s.pendingEvents,
+        currentEventIndex: done || died ? 0 : nextIndex,
         lastOutcomeTone: choice?.tone ?? null,
         pendingSting: sting,
         stingToken: sting ? s.stingToken + 1 : s.stingToken,

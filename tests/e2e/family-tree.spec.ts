@@ -36,7 +36,11 @@ test.describe('family tree (Gate 4)', () => {
     await startNewLife(page);
     await openTree(page);
 
-    await page.getByTestId('tree-node-mother').click();
+    await expect(page.getByTestId('tree-node-mother')).toBeVisible();
+    // M4's living tree floats its nodes on a repeat-Infinity animation, so the
+    // default actionability "element is not stable" check can stall under load.
+    // Force the pointer action — the node's rendered presence is asserted above.
+    await page.getByTestId('tree-node-mother').click({ force: true });
     await expect(page.getByTestId('tree-panel')).toBeVisible();
     await expect(page.getByTestId('tree-relation')).toContainText('Mother');
 
@@ -57,7 +61,10 @@ test.describe('family tree (Gate 4)', () => {
     await startNewLife(page);
     await openTree(page);
 
-    await page.getByTestId('tree-node-mother').click();
+    await expect(page.getByTestId('tree-node-mother')).toBeVisible();
+    // M4's living tree floats its nodes on a repeat-Infinity animation, so the
+    // default actionability "element is not stable" check can stall under load.
+    await page.getByTestId('tree-node-mother').click({ force: true });
     const before = Number(await page.getByTestId('tree-bond-value').textContent());
     await page.getByTestId('tree-spend-time').click();
     await expect(page.getByTestId('tree-bond-value')).toHaveText(String(before + 8));
@@ -65,7 +72,10 @@ test.describe('family tree (Gate 4)', () => {
     await page.reload();
     await expect(page.getByTestId('open-family-tree')).toBeVisible();
     await openTree(page);
-    await page.getByTestId('tree-node-mother').click();
+    await expect(page.getByTestId('tree-node-mother')).toBeVisible();
+    // See the once-per-year test: nodes float continuously under full motion,
+    // so the stability check is bypassed after confirming presence.
+    await page.getByTestId('tree-node-mother').click({ force: true });
     await expect(page.getByTestId('tree-bond-value')).toHaveText(String(before + 8));
   });
 

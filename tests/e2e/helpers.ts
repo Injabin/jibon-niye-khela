@@ -70,6 +70,14 @@ export async function resolveAllEvents(page: Page): Promise<void> {
 export async function playUntilDeath(page: Page, maxYears = 400): Promise<void> {
   for (let i = 0; i < maxYears; i++) {
     if (await page.getByTestId('life-summary').isVisible().catch(() => false)) return;
+    // Drain any pending events *before* clicking age-up: the store refuses to
+    // age up while a choice is pending, so clicking first can stall forever
+    // whenever a year starts with leftover events (G5 content makes 0–3/year
+    // the norm). resolveAllEvents is idempotent, so this is safe to always call.
+    await resolveAllEvents(page);
+    // A resolved choice can be fatal — the summary may have just rendered, in
+    // which case age-up is gone and we must stop rather than wait on it.
+    if (await page.getByTestId('life-summary').isVisible().catch(() => false)) return;
     await page.getByTestId('age-up').click();
     await resolveAllEvents(page);
   }
