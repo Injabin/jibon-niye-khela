@@ -14,9 +14,12 @@ export default defineConfig({
     trace: 'on',
   },
   webServer: {
-    command: 'npm run dev',
+    // Production build: the offline/PWA check (M6 #3) must exercise the
+    // real served app, not dev-mode HMR.
+    command: 'npm run build && npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     timeout: 180_000,
+    stdout: 'ignore',
   },
 });
