@@ -10,7 +10,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "icons": "node scripts/generate-pwa-icons.mjs",
+    "sweep:legal": "node scripts/legal-sweep.mjs"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",
