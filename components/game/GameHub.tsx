@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { soundManager } from '@/lib/audio/SoundManager';
 import type { MusicStageId, SfxEvent } from '@/lib/audio/manifest';
 import { lifeStageForAge } from '@/lib/engine/life';
+import { eligibleHeirs } from '@/lib/engine/legacy';
 import type { Character, LifeEventDef } from '@/lib/engine/types';
 import { hapticForSfx } from '@/lib/haptics';
 import { useGameStore } from '@/lib/store/gameStore';
@@ -15,6 +16,7 @@ import { MomentSting } from '@/components/motion/MomentSting';
 import { ActiveMenu } from './ActiveMenu';
 import { CharacterSummary } from './CharacterSummary';
 import { EventCard } from './EventCard';
+import { HeirOffer } from './HeirOffer';
 import { LifeSummary } from './LifeSummary';
 import { SettingsPanel } from './SettingsPanel';
 
@@ -58,6 +60,7 @@ const toneCue: Record<LifeEventDef['tone'], SfxEvent> = {
 
 export function GameHub() {
   const character = useGameStore((s) => s.character);
+  const familyTree = useGameStore((s) => s.familyTree);
   const pendingEvents = useGameStore((s) => s.pendingEvents);
   const currentEventIndex = useGameStore((s) => s.currentEventIndex);
   const isHydrated = useGameStore((s) => s.isHydrated);
@@ -73,6 +76,7 @@ export function GameHub() {
   const exportToJson = useGameStore((s) => s.exportToJson);
   const importFromRaw = useGameStore((s) => s.importFromRaw);
   const resetGame = useGameStore((s) => s.resetGame);
+  const continueAsHeir = useGameStore((s) => s.continueAsHeir);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
@@ -183,6 +187,7 @@ export function GameHub() {
   const noCharacter = !character;
   const dead = character && !character.alive && pendingEvents.length === 0;
   const currentEvent = pendingEvents.length > 0 ? pendingEvents[currentEventIndex] : null;
+  const heirs = dead ? eligibleHeirs(character, familyTree) : [];
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
@@ -285,6 +290,7 @@ export function GameHub() {
       {dead && (
         <>
           <LifeSummary character={character} />
+          <HeirOffer heirs={heirs} onContinue={continueAsHeir} />
           <div className="mt-4 flex flex-wrap gap-2">
             <Button onClick={() => newGame()} data-testid="new-life">
               Start a new life

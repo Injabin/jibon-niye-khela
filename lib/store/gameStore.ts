@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { ageUp, checkForDeath } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
-import { BOND_MAX, BOND_PER_VISIT, generateFamilyTree } from '@/lib/engine/family';
+import { BOND_MAX, BOND_PER_VISIT, ageFamilyMembers, birthChild, generateFamilyTree } from '@/lib/engine/family';
 import type { FamilyTree, FamilyRole } from '@/lib/engine/family';
+import { buildHeirFamilyTree, createHeirCharacter, eligibleHeirs, nextLifeSeed } from '@/lib/engine/legacy';
 import { buyAsset, sellAsset } from '@/lib/engine/events/categories/assets';
 import { applyForJob, quitJob } from '@/lib/engine/events/categories/career';
 import { commitCrime } from '@/lib/engine/events/categories/crime';
@@ -106,6 +107,13 @@ export interface GameStoreActions {
   importFromRaw(raw: string): boolean;
   /** Wipe storage and all in-memory state. */
   resetGame(): void;
+  /**
+   * Legacy mode (init.md M5 #4): continue as a child who has come of age after
+   * this life ended. Returns false when the life is not over, the family tree
+   * is missing, or the heir is not an eligible child. On success the character
+   * and family tree are replaced and the archive flows through persist().
+   */
+  continueAsHeir(heirId: string): boolean;
 }
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -230,6 +238,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
         achievementsStore.getState().recordLife(result.character);
       }
 
+      const familyTree =
+        s.familyTree && result.character.alive
+          ? ageFamilyMembers(s.familyTree, result.character.age)
+          : s.familyTree;
+
       set({
         character: result.character,
         rngState: rng.getState(),
@@ -240,6 +253,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         stingToken: result.character.alive ? s.stingToken : s.stingToken + 1,
         message: null,
         error: null,
+        familyTree,
       });
       persist();
       return true;
@@ -259,6 +273,17 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       resolveEventChoice(character, event, choiceId);
       checkForDeath(character, rng);
+
+      // A content event granted "has_child" (M5 #4): the new child joins the
+      // household tree right here, so a birth is recorded even though events
+      // only carry a flag. Runs on the same RNG stream as the resolve.
+      let familyTree = s.familyTree;
+      if (character.alive && familyTree) {
+        const hadChildBefore = s.character.flags.includes('has_child');
+        if (!hadChildBefore && character.flags.includes('has_child')) {
+          familyTree = birthChild(familyTree, character, rng);
+        }
+      }
 
       const nextIndex = s.currentEventIndex + 1;
       const done = nextIndex >= s.pendingEvents.length;
@@ -282,6 +307,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         pendingSting: sting,
         stingToken: sting ? s.stingToken + 1 : s.stingToken,
         error: null,
+        familyTree,
       });
       persist();
       return true;
@@ -397,6 +423,38 @@ export const useGameStore = create<GameStore>()((set, get) => {
         set({ error: message });
         return false;
       }
+    },
+
+    continueAsHeir(heirId) {
+      const s = get();
+      if (!s.character || s.character.alive) return false;
+      const tree = s.familyTree;
+      if (!tree) return false;
+      const heirs = eligibleHeirs(s.character, tree);
+      const heir = heirs.find((h) => h.id === heirId);
+      if (!heir) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const parent = s.character;
+      const heirCharacter = createHeirCharacter(parent, heir, heirs.length, rng);
+      const familyTree = buildHeirFamilyTree(tree, heirCharacter);
+      const heirSeed = nextLifeSeed(rng);
+
+      set({
+        character: heirCharacter,
+        seed: heirSeed,
+        rngState: heirSeed >>> 0,
+        pendingEvents: [],
+        currentEventIndex: 0,
+        lastOutcomeTone: null,
+        pendingSting: null,
+        stingToken: s.stingToken + 1,
+        familyTree,
+        message: `You carry on as ${heirCharacter.name} ${heirCharacter.surname}, ${heir.age} years young.`,
+        error: null,
+      });
+      persist();
+      return true;
     },
 
     resetGame() {

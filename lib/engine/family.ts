@@ -176,7 +176,60 @@ export function layoutFamilyTree(tree: FamilyTree): Map<string, { x: number; y: 
   if (maternal) positions.set(maternal.id, { x: 180, y: 150 });
   if (paternal) positions.set(paternal.id, { x: 620, y: 150 });
 
+  // Children, siblings and spouses don't have dedicated slots — give them a
+  // bottom row so the tree always renders every member (M5 #4 legacy heirs
+  // land here as siblings after the handover).
+  const overflow = tree.members.filter((m) => !positions.has(m.id));
+  if (overflow.length > 0) {
+    const span = Math.min(overflow.length, 7);
+    const step = 560 / (span + 1);
+    overflow.forEach((member, index) => {
+      const xi = index < span ? index : span - 1;
+      positions.set(member.id, { x: 60 + step * (xi + 1), y: 510 });
+    });
+  }
+
   return positions;
+}
+
+/**
+ * A child is born into the household (M5 #4): a new `child` member, shown on
+ * the tree's bottom row, linked to the character as its parent. Deterministic
+ * from the supplied names/RNG so birth never desyncs the save.
+ */
+export function birthChild(tree: FamilyTree, character: Character, rng: RNG): FamilyTree {
+  const used = new Set(tree.members.map((m) => m.name));
+  const gender: Gender = rng.chance(0.5) ? 'male' : 'female';
+  const child: FamilyMember = {
+    id: generateId(rng),
+    name: fullName(gender, character.surname, rng, used),
+    gender,
+    role: 'child',
+    age: 0,
+    alive: true,
+    bond: 60,
+    metAge: character.age,
+    lastSpentAge: -1,
+  };
+  return {
+    selfId: tree.selfId,
+    members: [...tree.members, child],
+    edges: [...tree.edges, { from: tree.selfId, to: child.id, label: 'parent' }],
+  };
+}
+
+/**
+ * Advance the household one year: the character's own member mirrors their
+ * true age, and every other living member ages by exactly one year. Pure and
+ * deterministic (no death rolls) — deaths are driven by the character.
+ */
+export function ageFamilyMembers(tree: FamilyTree, characterAge: number): FamilyTree {
+  const members = tree.members.map((member) => {
+    if (member.role === 'self') return { ...member, age: characterAge };
+    if (!member.alive) return member;
+    return { ...member, age: member.age + 1 };
+  });
+  return { ...tree, members };
 }
 
 /** Human label for a member in the panel (e.g. "Mother", "Grandmother"). */
