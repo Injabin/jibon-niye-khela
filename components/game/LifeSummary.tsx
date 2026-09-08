@@ -4,25 +4,21 @@ import { motion } from 'framer-motion';
 import { useCallback, useMemo } from 'react';
 import type { Character, Tone } from '@/lib/engine/types';
 import { motion as motionTokens, colors } from '@/lib/theme';
+import { STAT_META, type StatKey } from '@/lib/theme/concepts';
+import { formatMoney } from '@/lib/ui/money';
 import { evaluateRibbons, RIBBONS } from '@/lib/engine/achievements';
 import { renderSummaryPostcard } from '@/lib/summary/renderSummaryImage';
 import { StatBar } from './StatBar';
 import { LifeChart } from './LifeChart';
 
-const TONE_DOT: Record<Tone, string> = {
-  good: colors.tone.good,
-  bad: colors.tone.bad,
-  neutral: colors.tone.neutral,
-  funny: colors.tone.funny,
-};
+const TONE_DOT: Record<Tone, string> = colors.tone;
 
-function formatCoins(value: number): string {
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
-  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return String(Math.round(value));
-}
+const TONE_ICON: Record<Tone, string> = {
+  good: '✦',
+  bad: '✗',
+  neutral: '·',
+  funny: '☺',
+};
 
 /**
  * Life Summary screen (init.md M5 #3, DESIGN.md §6.4): the finished life —
@@ -36,7 +32,7 @@ export function LifeSummary({ character }: { character: Character }) {
     () => ribbons.map((id) => RIBBONS.find((r) => r.id === id)).filter((r): r is (typeof RIBBONS)[number] => Boolean(r)),
     [ribbons],
   );
-  const emojiByTone: Record<Tone, string> = { good: '✦', bad: '✗', neutral: '·', funny: '☺' };
+  const statKeys: StatKey[] = ['health', 'happiness', 'smarts', 'looks'];
 
   const timeline = useMemo(() => {
     const entries = [...character.history].sort((a, b) => a.age - b.age);
@@ -71,13 +67,17 @@ export function LifeSummary({ character }: { character: Character }) {
             Cause of death: <span className="font-medium">{character.causeOfDeath}</span>
           </p>
           <p className="mt-1 text-sm text-text-muted">
-            Final worth: <span className="font-semibold text-accent">$ {formatCoins(character.money)}</span>
+            Final worth:{' '}
+            <span className="font-bold tabular-nums" style={{ color: 'var(--color-wealth-text)' }}>
+              {formatMoney(character.money)}
+            </span>{' '}
+            coins
           </p>
         </div>
         <button
           type="button"
           onClick={handleExport}
-          className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-background transition-colors hover:opacity-90"
+          className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-on-primary transition-colors hover:opacity-90"
           data-testid="export-summary-image"
         >
           Save as image
@@ -85,10 +85,9 @@ export function LifeSummary({ character }: { character: Character }) {
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <StatBar label="Health" value={character.stats.health} />
-        <StatBar label="Happiness" value={character.stats.happiness} />
-        <StatBar label="Smarts" value={character.stats.smarts} />
-        <StatBar label="Looks" value={character.stats.looks} />
+        {statKeys.map((key) => (
+          <StatBar key={key} label={STAT_META[key].label} value={character.stats[key]} statKey={key} />
+        ))}
       </div>
 
       {character.statHistory.length > 0 && (
@@ -137,7 +136,7 @@ export function LifeSummary({ character }: { character: Character }) {
                   {entry.age}
                 </span>
                 <span className="mr-1 text-text-muted" aria-hidden="true">
-                  {emojiByTone[entry.tone]}
+                  {TONE_ICON[entry.tone]}
                 </span>
                 <span className="text-text">{entry.text}</span>
               </li>

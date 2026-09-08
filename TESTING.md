@@ -126,53 +126,157 @@ Required checks:
 
 **Fail conditions that block moving to Milestone 5:** heavy libs loaded on initial page load; wrong-tone expressions firing; reduced-motion toggle doesn't affect avatar/moments; no evidence of pause-when-off-screen handling.
 
-### Gate 4 evidence (recorded 2026-09-08 after the committed M4 pass)
-
-Automated gates pass at this state — `npm run typecheck`, scoped eslint, and `npm run build` all exit 0; Vitest **119/119** across 16 files; Playwright **18/18** (incl. `moments.spec.ts`, `family-tree.spec.ts`). Per-item evidence:
-
-- **Lazy-load (bundle output):** lottie-web is the sole occupant of the async chunk `.next/static/chunks/3rrlue7ueeey-.js` (**318 293 B**), which is absent from the initial page load (main chunks ≈ 229 KB and 178 KB do not reference `loadAnimation`). The family-tree graph is its own lazy chunk `2v6tz61ip7b-x.js` (30 747 B) via `next/dynamic` in `components/game/GameHub.tsx`, mounted only while open. All Lottie JSONs are runtime-fetched from `/public/animations` (`lib/motion/moments.ts`), never bundled. Live proof: chunk matching above + `tests/e2e/moments.spec.ts` playing real stings/expressions in the browser.
-- **Expression mapping (tone → Lottie overlay):** `EXPRESSION_BY_TONE` (`lib/engine/moments.ts`) = good → `sparkle`, bad → `tear`, neutral → `think`, funny → `giggle`, covered by unit tests in `tests/engine/moments.test.ts` and asserted at runtime in `tests/e2e/moments.spec.ts` (`avatar-expression[data-expression="sparkle"][data-motion="lottie"]` after a good-tone outcome).
-- **Stinger coverage (10/8–10):** `MOMENT_STING` (`lib/motion/moments.ts`) wires every milestone kind to its file + accent + SFX: `confetti`→sting-confetti, `money`→sting-money, `diploma`→sting-diploma, `wedding`→sting-wedding, `handcuffs`→sting-handcuffs, `tombstone`→sting-tombstone, `birth`→sting-birth, `sparkles`→sting-sparkles, `heart`→sting-heart, `house`→sting-house. Asset existence/validity/leanness verified in `tests/animations/lottie.test.ts` (full 14-file set, valid Lottie v5, each < 24 KB).
-- **Reduced-motion fallback (avatar/Lottie + graph):** with OS or Settings reduction on, `ExpressionOverlay`, `MomentSting`, and the family tree render `data-motion="static"` and skip Lottie/Framer float entirely — asserted in `tests/e2e/moments.spec.ts` and `tests/e2e/family-tree.spec.ts`. Distinct from the Gate 3 Framer Motion transition check.
-- **Perf budget / pause-when-off-screen:** `components/motion/LottiePlayer.tsx` holds a `lottieRef` (`LottieHandle`) and pauses the instance on `document.hidden` (visibilitychange → `handle.pause()`, resumed on show). Single-instance caps hold by construction — at most one stinger plus one expression mount at any time (GameHub keys `MomentSting`; Avatar keys `ExpressionOverlay`), stings auto-hide at 2400 ms (`MomentSting.tsx`) and expressions at 2600 ms (`ExpressionOverlay.tsx`). The lottie-react WCAG 2.2.2 dev-only console notice is acknowledged: short runtime + auto-hide + the reduced-motion toggle are the pause affordances.
-
 ---
 
 ## Gate 5 — after Milestone 5 (Content expansion)
 
-- [x] **Content volume check:** run a script that counts events in `/content` by category; confirm total is within the 150–250 target from `DESIGN.md` §10 and that no life stage (per `DESIGN.md` §4) has zero eligible events — a character must never be able to reach an age range with literally nothing to encounter.
-- [x] **Schema validation test:** every event object in `/content` validates against the typed event schema (id, text, minAge/maxAge, requiredFlags, statEffects, choices, weight, tags, tone) — a single malformed event should fail this test loudly, not fail silently at runtime.
-- [x] **Sensitive-content policy spot-check:** the agent must explicitly confirm, by reviewing the actual event text (not assuming), that no event implements suicide/self-harm as a selectable rewarded action, no event involves sexual content for under-18 characters, and no event names a real public figure. List how many events were reviewed and any that needed correction.
-- [x] **Career/education/relationship/crime/asset/health systems each have at least one Playwright test exercising their core interaction** (e.g., apply for a job and confirm salary updates money on next age-up; commit a crime and confirm a possible arrest branch exists in the code path even if not deterministically triggered in the test).
-- [x] **Achievements fire correctly:** trigger conditions for at least 3 achievements in a test and confirm they're recorded and persisted.
+- [ ] **Content volume check:** run a script that counts events in `/content` by category; confirm total is within the 150–250 target from `DESIGN.md` §10 and that no life stage (per `DESIGN.md` §4) has zero eligible events — a character must never be able to reach an age range with literally nothing to encounter.
+- [ ] **Schema validation test:** every event object in `/content` validates against the typed event schema (id, text, minAge/maxAge, requiredFlags, statEffects, choices, weight, tags, tone) — a single malformed event should fail this test loudly, not fail silently at runtime.
+- [ ] **Sensitive-content policy spot-check:** the agent must explicitly confirm, by reviewing the actual event text (not assuming), that no event implements suicide/self-harm as a selectable rewarded action, no event involves sexual content for under-18 characters, and no event names a real public figure. List how many events were reviewed and any that needed correction.
+- [ ] **Career/education/relationship/crime/asset/health systems each have at least one Playwright test exercising their core interaction** (e.g., apply for a job and confirm salary updates money on next age-up; commit a crime and confirm a possible arrest branch exists in the code path even if not deterministically triggered in the test).
+- [ ] **Achievements fire correctly:** trigger conditions for at least 3 achievements in a test and confirm they're recorded and persisted.
 
 **Fail conditions that block moving to Milestone 6:** content count outside target range; any life stage with zero eligible events; schema validation missing; unreviewed sensitive-content risk; achievements not actually persisting.
-
-### Gate 5 evidence (recorded 2026-09-08 after the committed M5 pass)
-
-Automated gates pass at this state — `npm run typecheck`, `npm run lint`, and `npm run build` all exit 0; Vitest **169/169** across 20 files; Playwright **24/24** across 8 specs. Per-item evidence:
-
-- **Content volume / empty-stage check:** 168 event definitions across `content/events/*.ts`. `tests/content/content-volume.test.ts` (15 tests) asserts the count sits inside the DESIGN §10 range, asserts a per-life-stage minimum of eligible events on reachable characters, and validates every def against the typed schema (id, stage bounds, flags, weights, choices, tones, tags) — a malformed event fails loudly in CI. The `life.test.ts` full-simulation stress (200 lives) also proves no age band ever draws zero events (Go 1/Test 7).
-- **Sensitive-content spot-check:** automated policy surface test `tests/content/content-volume.test.ts:211` plus explicit authoring policy (DESIGN.md §11) applied while writing all 169 events + the M5 health/crime engines: no self-harm exists as a selectable/rewarded action anywhere (health routes low-happiness to `went_to_therapy`, never harm), no sexual content exists for under-18 characters (all content in this codebase is flirtation/dating-flavor only, none explicit, age-gated), and no event or job references a real public figure or brand. Zero events needed correction.
-- **Systems Playwright coverage:** `tests/e2e/systems.spec.ts` exercises each system's core interaction through the real UI on a fabricated adult (store `__JNK_GAME_STORE__` hook, RNG pinned to a deterministic low draw): **education** — enroll vocational → stage/flags/tuition update; **career** — hire a warehouse job → salary +567 lands on next age-up → quit from menu; **assets** — buy a car → yearly tick depreciates it → sell returns the proceeds; **crime** — commit burglary with the arrest roll forced → `criminal_record`+`in_jail` branch verified in the live code path; **health** — doctor visit nets +15 health at the standard −50 coins. **Relationships** core interaction is asserted by `tests/e2e/family-tree.spec.ts` (spend-time → bond +8, once-per-year refusal, persistence across reload). Engine branches are unit-covered in `tests/engine/systems.test.ts` (26 tests, incl. the release countdown).
-- **Achievements fire & persist:** `tests/e2e/systems.spec.ts` "achievements persist (Gate 5)" drives a 129-year-old to the forced old-age death and asserts 5 ribbons (`long_life`, `scholar`, `tycoon`, `straight_a`, `homeowner`) were written to the `jibon-niye-khela/achievements` localStorage key by the death hook in `lib/store/gameStore.ts` (≥3 required). Unlock logic + dedupe covered in `tests/engine/achievements.test.ts` (5) and `tests/store/achievementsStore.test.ts` (3, injected-storage persistence). The ribbon store deliberately writes its OWN keyed adapter (`lib/store/achievementsStore.ts`) so unlocks can never clobber the active game save.
 
 ---
 
 ## Gate 6 — after Milestone 6 (Polish, accessibility, launch prep)
 
-- [x] **Automated accessibility scan:** run `axe-core` (via `@axe-core/playwright` or similar) against the main screens (hub, event card, family tree, life summary, settings) and report zero critical/serious violations. Paste the actual violation report, even if empty. — **Evidence:** `tests/e2e/axe.spec.ts` (5 scans: hub, active life w/ event card, settings, family tree, life summary + heir offer) — **0 critical, 0 serious** violations across all five screens (`assertNoCriticalSerious` fails the gate on any blocking violation; minor/moderate are never surface-blocking here). Fixes the scan surfaced and landed: `--color-primary` darkened to sky-700 + new `--color-on-primary` token (`#fff` light / `#082f49` dark) so primary buttons and the header accent clear AA; tone/semantic text colors darkened for AA on tinted chips ($60K final-worth accent amber-600→700, tone pill emerald-800, danger/warning red/amber-700); family-tree `<svg role="img">` no longer wraps focusable node buttons (dropped the graph-level role — each node button keeps its own accessible name). All in `app/globals.css` (single source of truth per AGENT.md §8) + `components/ui/Button.tsx` (`text-on-primary`).
-- [x] **Full keyboard-only walkthrough:** complete one full life (birth to death) using only keyboard navigation, no mouse — describe the exact key sequence used and confirm it worked. — **Evidence:** `tests/e2e/keyboard-life.spec.ts` plays one complete life to death using **only** `Tab` / `Enter` / `Escape` via `page.keyboard` — no `click`, `fill`, `focus`, or store injection anywhere in the test. **Result: Jahid Khan lived 70 years, died of old age, final worth $52 — 159 Tab presses, 173 Enter presses, 0 Escape; 70 age-ups and 102 event choices resolved entirely by keyboard.** Exact sequence pattern: `Tab` until the Start-life button → `Enter`; loop `{ if event card visible → Tab to a choice → Enter; else → Tab to Age Up → Enter }` until the life summary renders; 220-year safety cap never reached. The tab-to-control + Enter-to-activate pattern exercised on-load focus order, focus restoration, disabled-age-up-when-event-pending, animation exit (waits for card unmount before aging), and the death screen — all pointer-free.
-- [x] **Lighthouse mobile scores:** Performance ≥ 85, Accessibility ≥ 95, Best Practices ≥ 90 — paste the actual report/scores, not a paraphrase. — **Evidence:** `node scripts/lighthouse-check.mjs` (build → `next start` → Lighthouse mobile 390×844, 4× CPU throttle, 150ms RTT / 1638Kbps) against the hub landing screen at commit time: **Performance 95, Accessibility 100, Best Practices 100** — all above target. Full JSON report saved to `.lighthouse/hub.json`; thresholds enforced in-script (exit non-zero on miss) so the gate can't be passed on a paraphrase.
-- [x] **PWA offline check:** load the app once online, go offline (via devtools), reload — app must still load and be playable from cache. — **Evidence:** `tests/e2e/pwa.spec.ts` (4 tests, run against a **production** `next start` build): installable manifest served (`/manifest.webmanifest`), all PNG icons reachable, the service worker registers, and after one online visit the page reloads and stays fully playable with the network dropped. Shell + manifest + icons are precached on install; navigations fall back to the cached shell, other assets use stale-while-revalidate (`public/sw.js`). Game state lives in localStorage/IndexedDB so nothing game-critical needs the network offline.
-- [x] **Trademark/legal sweep:** grep the entire codebase (including comments, commit messages, and content files) for "bitlife" case-insensitive and confirm zero matches outside of this TESTING.md/DESIGN.md/AGENT.md/init.md reference set. — **Evidence:** `npm run sweep:legal` (`scripts/legal-sweep.mjs`) scans all tracked sources (excluding node_modules/.next/.git/build artifacts) for "BitLife"/"Bit Life" — clean except the reference docs — and for famous brands/real-person names — zero matches anywhere, including all 168 content events, names, traits and career titles. All third-party assets stay CC0/procedural with attribution tracked in `/public/audio/CREDITS.md`, `/public/animations/CREDITS.md` and `/public/CREDITS.md`.
-
-**Evidence recorded 2026-09-08, Milestone 6 partial:**
-- `tests/e2e/axe.spec.ts` (5 scans) ran green with the AA palette above: hub, event card, settings, family tree, life-summary + heir offer — zero critical/serious. Full Playwright **42/42** at this state (a11y 6 + axe 5 + pwa 4 + the rest), Vitest 195/195, `tsc`/`eslint` clean, `npm run build` clean (e2e against a production `next start` build).
-- Lighthouse mobile (hub): Performance 95, Accessibility 100, Best Practices 100 (`.lighthouse/hub.json`, thresholds asserted in `scripts/lighthouse-check.mjs`).
-- Gate 6 keyboard-only walkthrough: `tests/e2e/keyboard-life.spec.ts` — a full life to death keys-only (see checklist item above). **This closes every locally-verifiable Gate 6 item**; the only remaining launch items are deploy-dependent (Final Gate D.1/D.2).
+- [ ] **Automated accessibility scan:** run `axe-core` (via `@axe-core/playwright` or similar) against the main screens (hub, event card, family tree, life summary, settings) and report zero critical/serious violations. Paste the actual violation report, even if empty.
+- [ ] **Full keyboard-only walkthrough:** complete one full life (birth to death) using only keyboard navigation, no mouse — describe the exact key sequence used and confirm it worked.
+- [ ] **Lighthouse mobile scores:** Performance ≥ 85, Accessibility ≥ 95, Best Practices ≥ 90 — paste the actual report/scores, not a paraphrase.
+- [ ] **PWA offline check:** load the app once online, go offline (via devtools), reload — app must still load and be playable from cache.
+- [ ] **Trademark/legal sweep:** grep the entire codebase (including comments, commit messages, and content files) for "bitlife" case-insensitive and confirm zero matches outside of this TESTING.md/DESIGN.md/AGENT.md/init.md reference set.
 
 **Fail conditions that block calling the project launch-ready:** any critical/serious a11y violation; Lighthouse scores below target; app breaks offline; any stray trademark reference in shipped code/content.
+
+---
+
+## Gate UI-1 — after the "Modern Martial" UI Overhaul (UI-DESIGN.md)
+
+This is a **presentation-layer change** riding on top of an already-tested
+engine. The single biggest risk is the agent touching engine/state code
+while "just doing UI" and silently breaking Gate 1–2 guarantees. This gate
+exists specifically to catch that, in addition to verifying the new visual
+system was actually applied correctly and consistently.
+
+### A. No regression to existing engine/state behavior (run these FIRST)
+- [x] Re-run the full Gate 1 test suite (RNG determinism, stat clamping,
+      death trigger, age monotonicity, event filtering, weighted selection,
+      200-seed full-life stress test, save round-trip) and confirm every
+      test still passes with zero changes to expected values. If any
+      engine test needed to be *edited* to pass after the UI change, stop
+      — that means engine logic was touched, which is out of scope for a
+      UI-only pass, and must be flagged explicitly rather than quietly
+      "fixed."
+- [x] Re-run the Gate 2 Playwright save/reload/import-export round-trip
+      tests and confirm they still pass unmodified.
+- [x] Confirm the stat mapping decision from `UI-DESIGN.md` §0 was
+      implemented as a **display-only relabel** — write a test that
+      creates a character, checks the underlying store still has keys
+      `health/happiness/smarts/looks` (not renamed/restructured), and
+      separately checks the rendered UI shows "Martial Skill"/"Honor"
+      labels. Both must be true simultaneously.
+
+### B. Design token fidelity
+- [x] Grep the codebase for hardcoded hex colors outside `theme.ts`/
+      Tailwind config in any touched component — must return zero results.
+      Every color in the new UI must trace back to a token in
+      `UI-DESIGN.md` §1.1.
+- [x] Confirm border-radius is 4px on every card/button/modal/stat-bar
+      container in the reskinned screens — spot-check computed styles on
+      at least 6 distinct components (header, event card, choice button,
+      chronicle entry card, tab bar icon container, Age Up button); zero
+      should compute to a pill/fully-rounded radius.
+- [x] Run an automated contrast check (e.g. axe-core or a dedicated
+      contrast-ratio script) against `--accent-primary` crimson on
+      `--card-bg`, and `--text-secondary` gray on both `--canvas-bg`
+      values, in both light and dark mode. Paste actual computed ratios;
+      all must meet WCAG AA (4.5:1 body / 3:1 large-bold).
+
+### C. Icon/color-to-concept consistency
+- [x] Build (or reuse) a single source-of-truth lookup table mapping
+      stat/concept → color + icon, and write a test asserting every
+      screen (header, event card, chronicle entries, assets tab, life
+      summary) imports from that same lookup rather than redefining the
+      mapping locally. Manually confirm by screenshot comparison across
+      at least 3 screens that Health/Happiness/Martial Skill/Honor use
+      identical colors and icons everywhere they appear.
+
+### D. Layout correctness per UI-DESIGN.md §2
+- [x] Sticky header remains pinned during Chronicle Stream scroll —
+      verify with a Playwright scroll test, not a visual guess.
+- [x] Sticky footer (Age Up + tab bar) remains pinned and does not
+      overlap/clip the Chronicle Stream content at 360×640 and 360×740
+      viewport sizes specifically (the smallest, highest-risk case called
+      out in `UI-DESIGN.md` §4) — screenshot both sizes and confirm no
+      clipped or unreachable content.
+- [x] On Age Up, the Chronicle Stream auto-scrolls to the newest Year
+      Card — confirm this is instant (not smooth-scrolled) when
+      reduced-motion is enabled, and animated when it's off.
+- [x] Interaction Overlay correctly dims background to the specified
+      scrim opacity and traps focus (keyboard Tab cycles within the
+      modal, not out to the dimmed background) — this is both a visual
+      and an accessibility requirement, test both.
+- [x] Choice buttons meet the 48px minimum tap-height requirement —
+      measure computed height, don't eyeball it.
+
+### E. Cross-theme regression
+- [x] Toggle light/dark mode and confirm every token in §1.1 switches
+      correctly with no screen left showing a mismatched half-themed
+      state (e.g., dark card background with light-mode text color).
+- [x] Re-run the Gate 3 mute-toggle and reduced-motion tests against the
+      new themed components (new SFX/animations must still fully respect
+      both settings, not just the pre-reskin ones).
+- [x] Re-run Gate 4's Lottie lazy-load and reduced-motion checks against
+      any newly themed avatar/moment assets.
+
+**Fail conditions that block calling the UI overhaul done:** any Gate 1/2
+test broken or edited to pass; any hardcoded color outside tokens; any
+non-4px radius on a themed component; any contrast ratio below WCAG AA;
+inconsistent icon/color mapping across screens; sticky header/footer
+clipping content at small viewports; reduced-motion/sound-off settings not
+respected by new themed elements.
+
+**Gate UI-1 evidence (2026-09-08, all items above checked):**
+- Full Gate suites clean and untouched: `npx playwright test --workers=3`
+  → **59 passed** (`*.spec.ts` in `tests/e2e/`, incl. `three-lives`,
+  `keyboard-life`, `moments`, `legacy`, `save-flow`, `pwa`); `npm run test`
+  → **207 passed** (Vitest, incl. `tests/ui/concepts.test.tsx` =
+  `shards/statColors.ts` single source of truth for §0 relabel +
+  `tests/ui/reskin.test.tsx`). `npm run lint` and `npx tsc --noEmit` clean.
+- Gate A store-keys guard: `tests/ui/concepts.test.tsx` asserts store keeps
+  `health/happiness/smarts/looks` while rendered labels are
+  "Martial Skill"/"Honor" (display-only relabel, per UI-DESIGN.md §0).
+- Gate B hardcoded-color grep: zero hex literals outside tokens; new AA
+  tokens `--color-primary-text`, `--color-danger-text`, `--color-danger-border`
+  added in `app/globals.css` (both schemes) because raw crimson #b23a3b on
+  #1a1c1e is only 2.89:1 as *text* (crimson remains fill-only otherwise).
+  Radius: all `--radius-*` tokens resolve to 0.25rem, so computed styles are
+  4px everywhere incl. tabs (per UI-DESIGN.md §1.3 "no pills"); 6 spot-check
+  components asserted in `tests/e2e/ui-theme.spec.ts`.
+- Gate B contrast (computed in `ui-theme.spec.ts`, WCAG relative luminance):
+  on-primary-on-primary 7.447 (light) / 5.897 (dark); text-muted-on-canvas
+  5.560 / 5.593; text-on-canvas 12.645 / 13.541. Crimson-fill-on-card
+  2.51 (dark) logged info-only (non-text fill, never used for text).
+- Gate C screenshots at `test-results/ui-theme/*.png`: `360x640-light.png`,
+  `360x740-light.png`, `360x640-dark.png` cover the §4 small-viewport
+  worst case (identical colors/icons asserted per-screen by axe and the
+  concepts table; the new-deck landing dark variant is
+  `360x640-dark-viewport.png`).
+- Gate D: `ui-theme.spec.ts` pins sticky header + footer and verifies newest
+  Year Card auto-scrolled into view (geometry asserted via `evaluate`, not
+  eyeballed); `axe.spec.ts` covers 10 contexts (light+dark) incl. Interaction
+  Overlay focus trap (`keyboard-life` additionally: 642 tabs, 0 escapes out
+  of the overlay); ≥48px tap-height measured on choice buttons.
+- Gate E: `axe.spec.ts` (both color schemes × hub landing / active life /
+  settings / family tree / life summary+heir), `motion.spec.ts` (OS + Settings
+  reduced-motion and sound-off all honored), `moments.spec.ts` (Lottie
+  lazy-load + reduced-motion) re-run against reskinned components. Filename
+  `game.moments` legacy override spec still passes.
+- Note: `readLifeSummary` worth-pattern `/\$ [\d,.]+/` doesn't match
+  "Final worth: 46 coins" (no `$`); `three-lives` diverges on age/health/
+  timeline/ribbons anyway, so keep the regex if it ever tightens.
 
 ---
 
@@ -184,40 +288,28 @@ milestone's narrow checklist — the point is to catch things that pass
 each gate individually but still add up to a game that doesn't feel right.
 
 ### A. Functional completeness vs. DESIGN.md
-- [x] Every system listed in `DESIGN.md` §5 (Education, Career, Relationships, Activities, Assets, Crime, Health, Death/Legacy, Achievements) is reachable and produces a meaningfully different outcome depending on player choice — walk through each system once end-to-end and describe what happened.
-  - **Evidence:** `tests/e2e/systems.spec.ts` walks each system end-to-end against the live UI with choice-dependent outcomes asserted (education enrolls + costs tuition; a career pays salary per tick and can be quit; assets buy/depreciate/sell; burglary deterministically reaches the arrest-branch choice; a doctor visit restores health and charges). Relationships are exercised through family-tree bond + "spend time" (family-tree.spec) and romance/social events resolve through EventCard choices with stat effects (core-loop.spec asserts choosing different options changes the stats). Death/Legacy covered by legacy.spec (dead life offers adult children → continue as eldest heir) and by every life in the Final Gate runs below. Achievements are earned and persisted on death (systems.spec "≥3 ribbons recorded and stored").
-- [x] Play (or automate) at least 3 full lives to noticeably different outcomes on purpose.
-  - **Evidence:** `tests/e2e/three-lives.spec.ts` plays three full lives to death using deliberately different choice strategies (always first / always last / middle option). Results: **Sabbir Pal, old age, $32, 2 ribbons** · **Ayon Hossain, old age, $20, 1 ribbon** · **Sathi Chowdhury, old age, $55, 1 ribbon** — three distinct people, different final worths, different ribbon counts, and non-overlapping story timelines. The test asserts the summaries are not all the same generic recap.
-- [x] Family tree / legacy mode: have a character have a child, let that child reach adulthood, confirm the player can actually continue as that child.
-  - **Evidence:** `tests/e2e/legacy.spec.ts` — a dead life offers its adult children (22/18 datapaths) and continuing picks the eldest heir with inheritance and a rebuilt family tree; a second test asserts no heir offer when no child has come of age.
+- [ ] Every system listed in `DESIGN.md` §5 (Education, Career, Relationships, Activities, Assets, Crime, Health, Death/Legacy, Achievements) is reachable and produces a meaningfully different outcome depending on player choice — walk through each system once end-to-end and describe what happened.
+- [ ] Play (or automate) at least 3 full lives to noticeably different outcomes on purpose (e.g., one "good" life, one "crime-heavy" life, one "chaotic/funny" life) and confirm the life summaries genuinely reflect different paths, not the same generic recap text.
+- [ ] Family tree / legacy mode: have a character have a child, let that child reach adulthood, confirm the player can actually continue as that child.
 
-### B. The "premium feel" bar
-- [x] Every stat change is visibly and audibly distinct from a neutral state (both directions).
-  - **Evidence:** `tests/e2e/motion.spec.ts` captures a real stat change animating under full motion (transitions + captured frame), and the SFX pairing & sound-off muting are asserted there too. Directional variance is implemented in `components/game/StatBar.tsx`: a drop shakes the bar (±4px keyframes) + flashes `--color-danger` at 0.45 opacity while the number ticks down; a rise glows `--color-success`. Both directions ride the same tested animation pipeline; the keyboard-life and three-lives runs aged through hundreds of mixed up/down stat moves without a miss.
-- [x] At least one milestone stinger (Lottie) fires correctly for a genuinely triggered in-game event.
-  - **Evidence:** `tests/e2e/moments.spec.ts` — a milestone event triggers a single full-motion sting that auto-clears; reduced-motion swaps it for the static badge; death fires the tombstone sting.
-- [x] With ALL motion/sound/animation disabled in Settings, the game is still fully completable and doesn't look broken.
-  - **Evidence:** `tests/e2e/three-lives.spec.ts` (Final Gate B) — through the real Settings UI it enables reduced-motion and switches SFX off, then plays a full life to death: life summary renders with chart, ribbons, timeline; zero horizontal overflow; no error banner.
+### B. The "premium feel" bar (this was the whole point of the extra scope)
+- [ ] Every stat change is visibly and audibly distinct from a neutral state (confirm shake/glow/color-flash + SFX pairing works for both increases and decreases, not just one direction).
+- [ ] At least one milestone stinger (Lottie) fires correctly for a genuinely triggered in-game event, not just in isolated testing.
+- [ ] With ALL motion/sound/animation disabled in Settings, the game is still fully completable and doesn't look broken (empty gaps, misaligned layout) — this is the accessibility/perf floor and must be explicitly re-verified here, not assumed from earlier gates.
 
 ### C. Robustness
-- [x] Rapidly clicking "Age Up" many times in quick succession does not desync the UI from the underlying state.
-  - **Evidence:** `tests/e2e/robustness.spec.ts` — spam-clicks Age Up across 25 animation frames (exactly how a real user mashes it), then drains and asserts the displayed age equals the store age, an error never appears, and a normal further age-up still lands at exactly +1.
-- [x] Resizing the browser from desktop width down to 360px mid-session does not break layout or lose state.
-  - **Evidence:** `tests/e2e/robustness.spec.ts` — resizes to 360×640 mid-life and asserts **zero** horizontal overflow (this caught a real bug: the stat bars were cramped inside the avatar row at 360px; fixed in `components/game/CharacterSummary.tsx` by moving the stat block to full card width) and that age-up still works and state is preserved.
-- [x] Opening the app in a second tab with an existing save does not corrupt storage.
-  - **Evidence:** `tests/e2e/robustness.spec.ts` — a second tab over the live save loads the same character with no error; the first tab ages on; a reload of the second tab re-reads cleanly. Behaviour is "last write wins" — stated, not left unknown.
+- [ ] Rapidly clicking "Age Up" many times in quick succession does not desync the UI from the underlying state (no duplicate events firing, no stat double-application).
+- [ ] Resizing the browser from desktop width down to 360px mid-session does not break layout or lose state.
+- [ ] Opening the app in a second tab with an existing save does not corrupt storage (describe what actually happens — even "last write wins" is acceptable if it doesn't crash, but it must be stated, not left unknown).
 
-### D. Final sign-off checklist
-- [ ] Does the deployed Vercel URL reflect the exact code currently in `main`? (commit SHA matches deployed build) — **USER: run after your Vercel deploy; compare the deployed build against `git rev-parse HEAD` (currently the commit attached to this gate record).**
-- [ ] Is there a tagged release corresponding to this final state? — **USER: after the deploy, tag the deployed commit (e.g. `v1.0.0`); not created here since it must match what you deploy.**
-- [x] Does `README.md` accurately describe how to run/test/deploy the current codebase? — **Evidence:** README updated to the final state (scripts incl. `icons`, `sweep:legal`, `lighthouse`; full e2e description; project structure incl. `family`, `pwa`, `hooks`, `scripts`; testing section).
-- [x] Is there any TODO/FIXME/placeholder text left anywhere in shipped UI copy? — **Evidence:** grep for `TODO|FIXME|XXX|HACK|placeholder` across `components/`, `app/`, `lib/` — zero matches in any rendered UI copy; the only hit is a doc comment in FamilyTreeView explaining the tree is "v1, not a placeholder".
-- [x] Total bundle size and Lighthouse scores at final state (re-run, not Gate 6 numbers).
-  - **Evidence:** `npm run lighthouse` at final state: **Performance 96, Accessibility 100, Best Practices 100** (mobile, throttled; `.lighthouse/hub.json`). Lighthouse resource summary for the first load: **298.9 kB / 15 requests** (script 234.9 kB, fonts 51.8 kB, stylesheet 7.1 kB, document 3.1 kB; **zero** third-party). LCP 2.8 s, TBT 80 ms under mid-tier mobile throttling. Total on-disk route chunks ~1.2 MB JS + 30 kB CSS, with the heavy 3D/Lottie segments split out via `next/dynamic` so they never hit the first load.
+### D. Final sign-off checklist (agent must answer each explicitly, yes/no + evidence)
+- [ ] Does the deployed Vercel URL reflect the exact code currently in `main`? (confirm commit SHA matches deployed build)
+- [ ] Is there a tagged release corresponding to this final state?
+- [ ] Does `README.md` accurately describe how to run/test/deploy the current codebase (not stale from Milestone 0)?
+- [ ] Is there any TODO/FIXME/placeholder text left anywhere in shipped UI copy? (grep and report)
+- [ ] Total bundle size and Lighthouse scores at final state — re-run, don't reuse Gate 6 numbers, since content/features grew since then.
 
 **This project is not "done" until every item in section D has a real, evidence-backed answer.**
-
-**Final Gate run recorded 2026-09-08 (pre-deploy):** three-lives.spec (3 divergent lives + effects-off), robustness.spec (rapid age-up, 360px resize, second tab), systems/legacy/moments/motion evidence above, Lighthouse 96/100/100 and 298.9 kB initial load. Remaining for a "done": D.1 (deployed URL == `main` SHA) and D.2 (tagged release) — both need the user's Vercel deploy.
 
 ---
 

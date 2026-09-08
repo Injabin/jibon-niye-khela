@@ -12,6 +12,8 @@ import { expect, test, type Page } from '@playwright/test';
  * achievements) and the family-tree legacy continue is covered by legacy.spec.
  */
 
+test.setTimeout(600_000);
+
 type Strategy = 'first' | 'last' | 'middle';
 
 async function startLife(page: Page): Promise<void> {

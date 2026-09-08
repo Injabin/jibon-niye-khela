@@ -10,8 +10,10 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     headless: true,
-    // Gate 3 needs recorded motion evidence even for passing runs.
-    trace: 'on',
+    // Traces balloon the evaluate-heavy endurance specs (three-lives, systems),
+    // so they are recorded only on failure here; motion.spec.ts opts back in
+    // for the passing-run evidence it needs (Gate 3).
+    trace: 'retain-on-failure',
   },
   webServer: {
     // Production build: the offline/PWA check (M6 #3) must exercise the

@@ -21,6 +21,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'health', label: 'Health' },
 ];
 
+export type { Tab };
+
 const BUYABLE_KINDS: AssetKind[] = ['car', 'home', 'jewelry', 'collectible', 'stock', 'crypto'];
 
 function coins(value: number): string {
@@ -33,9 +35,18 @@ function coins(value: number): string {
  * harness, which keeps every outcome deterministic from the RNG state and
  * shows the result in the hub's message banner.
  */
-export function ActiveMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function ActiveMenu({
+  open,
+  onClose,
+  initialTab = 'school',
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Preselected tab when the sheet is mounted fresh (remount per open). */
+  initialTab?: Tab;
+}) {
   const character = useGameStore((s) => s.character);
-  const [tab, setTab] = useState<Tab>('school');
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   const enrollHigherEducation = useGameStore((s) => s.enrollHigherEducation);
   const applyForJob = useGameStore((s) => s.applyForJob);
@@ -285,7 +296,7 @@ function CrimeTab({
   return (
     <div className="space-y-3">
       {inJail && (
-        <p className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+        <p className="rounded-md border border-danger-border bg-danger/10 px-3 py-2 text-sm text-danger-text">
           You are serving a sentence — no new crimes until release.
         </p>
       )}

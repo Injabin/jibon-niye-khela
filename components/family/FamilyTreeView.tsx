@@ -26,13 +26,13 @@ const SCENE_W = 800;
 const SCENE_H = 560;
 
 const NODE_FILL: Record<FamilyMember['role'], string> = {
-  self: '#7c9cff',
-  mother: '#ef8aa8',
-  father: '#5fb0e8',
-  grandparent: '#a0aab8',
-  sibling: '#f2b84b',
-  spouse: '#4fc3a1',
-  child: '#f2b84b',
+  self: 'var(--color-tree-self)',
+  mother: 'var(--color-tree-mother)',
+  father: 'var(--color-tree-father)',
+  grandparent: 'var(--color-tree-grandparent)',
+  sibling: 'var(--color-tree-sibling)',
+  spouse: 'var(--color-tree-spouse)',
+  child: 'var(--color-tree-child)',
 };
 
 function initials(name: string): string {
@@ -167,8 +167,8 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                 const my = (from.y + to.y) / 2;
                 return (
                   <g key={`${edge.from}-${edge.to}`}>
-                    <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="#8a94a6" strokeWidth={2} />
-                    <text x={mx} y={my - 8} textAnchor="middle" fontSize={11} fill="#8a94a6">
+                    <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="var(--color-tree-edge)" strokeWidth={2} />
+                    <text x={mx} y={my - 8} textAnchor="middle" fontSize={11} fill="var(--color-tree-edge)">
                       {edge.label}
                     </text>
                   </g>
@@ -179,7 +179,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                 const pos = positions.get(member.id);
                 if (!pos) return null;
                 const isSelf = member.role === 'self';
-                const fill = member.alive ? NODE_FILL[member.role] : '#b6bcc6';
+                const fill = member.alive ? NODE_FILL[member.role] : 'var(--color-tree-deceased)';
                 return (
                   <g key={member.id} transform={`translate(${pos.x} ${pos.y})`}>
                     <motion.g
@@ -197,14 +197,14 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                       <circle
                         r={26}
                         fill={fill}
-                        stroke={selectedId === member.id ? '#ffd166' : '#fdfdf8'}
+                        stroke={selectedId === member.id ? 'var(--color-tree-selected)' : 'var(--color-tree-stroke)'}
                         strokeWidth={selectedId === member.id ? 4 : 2}
                         opacity={member.alive ? 1 : 0.75}
                       />
-                      <text y={4} textAnchor="middle" fontSize={13} fontWeight={700} fill="#1c1917">
+                      <text y={4} textAnchor="middle" fontSize={13} fontWeight={700} fill="var(--color-tree-text-on-fill)">
                         {initials(member.name)}
                       </text>
-                      <text y={40} textAnchor="middle" fontSize={12} fill="#3d3a36">
+                      <text y={40} textAnchor="middle" fontSize={12} fill="var(--color-text-muted)">
                         {relationLabel(member)}
                       </text>
                     </motion.g>

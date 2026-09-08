@@ -40,7 +40,7 @@ export function ExpressionOverlay({ expression }: { expression: ExpressionId | n
       data-testid="avatar-expression"
       data-expression={expression}
       data-motion={reducedMotion ? 'static' : 'lottie'}
-      aria-label={`${meta.label} expression`}
+      aria-hidden="true"
     >
       <AnimatePresence>
         {visible &&

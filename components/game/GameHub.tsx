@@ -13,12 +13,15 @@ import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
 import { MomentSting } from '@/components/motion/MomentSting';
-import { ActiveMenu } from './ActiveMenu';
-import { CharacterSummary } from './CharacterSummary';
+import { ActiveMenu, type Tab } from './ActiveMenu';
+import { ChronicleStream } from './ChronicleStream';
+import { ControlDeck } from './ControlDeck';
 import { EventCard } from './EventCard';
 import { HeirOffer } from './HeirOffer';
 import { LifeSummary } from './LifeSummary';
+import { ProfileSheet } from './ProfileSheet';
 import { SettingsPanel } from './SettingsPanel';
+import { StickyHeader } from './StickyHeader';
 
 // Lazy-loaded with the rest of the graph chunk so the family tree (with Framer
 // Motion) never touches the initial payload (TESTING.md Gate 4 budget).
@@ -81,6 +84,8 @@ export function GameHub() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [actionsTab, setActionsTab] = useState<Tab>('school');
+  const [profileOpen, setProfileOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -184,163 +189,119 @@ export function GameHub() {
     }
   };
 
+  const openActions = (initialTab: Tab = 'school') => {
+    setActionsTab(initialTab);
+    setActionsOpen(true);
+  };
+
   const noCharacter = !character;
   const dead = character && !character.alive && pendingEvents.length === 0;
   const currentEvent = pendingEvents.length > 0 ? pendingEvents[currentEventIndex] : null;
   const heirs = dead ? eligibleHeirs(character, familyTree) : [];
+  const canAgeUp = Boolean(character && character.alive && pendingEvents.length === 0);
 
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-8">
+    <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col">
       <h1 className="sr-only">Jibon Niye Khela — a life you play</h1>
-      {message && (
-        <p className="mb-4 rounded-md border border-border bg-surface px-3 py-2 text-sm text-text" data-testid="message">
-          {message}
-        </p>
-      )}
-      {error && (
-        <p
-          className="mb-4 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
-          data-testid="error"
-        >
-          {error}
-        </p>
-      )}
 
-      {noCharacter && (
-        <motion.section
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
-          className="rounded-lg border border-border bg-surface p-6 text-center shadow-sm"
-        >
-          <h2 className="text-2xl font-bold tracking-tight text-text">A new life awaits</h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm text-text-muted">
-            Be born, grow up, make choices, and see how the story ends — one year at a time.
-          </p>
-          <Button
-            onClick={() => newGame()}
-            data-testid="new-game"
-            className="mt-6 px-8 py-3 text-base"
+      {character && <StickyHeader character={character} />}
+
+      <main className="flex-1">
+        <div className="px-4 pt-3">
+          {message && (
+            <p className="mb-3 border border-border bg-surface px-3 py-2 text-sm text-text" data-testid="message">
+              {message}
+            </p>
+          )}
+          {error && (
+            <p
+              className="mb-3 border border-danger-border bg-danger/10 px-3 py-2 text-sm text-danger-text"
+              data-testid="error"
+            >
+              {error}
+            </p>
+          )}
+        </div>
+
+        {noCharacter && (
+          <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+            className="m-4 border border-border bg-surface p-6 text-center"
           >
-            Start life
-          </Button>
-        </motion.section>
-      )}
+            <h2 className="text-2xl font-bold tracking-tight text-text">A new life awaits</h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-text-muted">
+              Be born, grow up, make choices, and see how the story ends — one year at a time.
+            </p>
+            <Button
+              onClick={() => newGame()}
+              data-testid="new-game"
+              className="mt-6 px-8 py-3 text-base"
+            >
+              Start life
+            </Button>
+          </motion.section>
+        )}
 
-      {character && character.alive && (
-        <>
-          <CharacterSummary character={character} />
+        {character && character.alive && <ChronicleStream history={character.history} />}
 
-          <Button
-            variant="secondary"
-            onClick={() => setFamilyTreeOpen(true)}
-            data-testid="open-family-tree"
-            className="mt-3 w-full px-4 py-2 text-sm"
-          >
-            Family tree
-          </Button>
-
-          <Button
-            variant="secondary"
-            onClick={() => setActionsOpen(true)}
-            data-testid="open-actions"
-            className="mt-2 w-full px-4 py-2 text-sm"
-          >
-            Life actions (school · career · assets · crime · health)
-          </Button>
-
-          <AnimatePresence initial={false}>
+        {character && character.alive && (
+          <AnimatePresence>
             {currentEvent && (
-              <div className="mt-4" key={currentEvent.id}>
-                <EventCard event={currentEvent} onChoose={(choiceId) => onChoose(currentEvent, choiceId)} />
-              </div>
+              <EventCard key={currentEvent.id} event={currentEvent} onChoose={(choiceId) => onChoose(currentEvent, choiceId)} />
             )}
           </AnimatePresence>
+        )}
 
-          {character.alive && pendingEvents.length === 0 && (
-            <Button
-              onClick={onAgeUp}
-              data-testid="age-up"
-              className="mt-4 w-full px-4 py-4 text-base"
-            >
-              Age up
-            </Button>
-          )}
-
-          {character.history.length > 1 && (
-            <section className="mt-4 rounded-lg border border-border bg-surface p-5 shadow-sm">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-text-muted">
-                Recent life log
-              </h2>
-              <ul className="custom-scrollbar max-h-56 space-y-2 overflow-y-auto text-sm">
-                {character.history
-                  .slice(-8)
-                  .reverse()
-                  .map((entry, index) => (
-                    <li key={`${entry.age}-${index}`} className="text-text">
-                      <span className="mr-2 font-medium text-text-muted">Age {entry.age}</span>
-                      {entry.text}
-                    </li>
-                  ))}
-              </ul>
-            </section>
-          )}
-        </>
-      )}
-
-      {dead && (
-        <>
-          <LifeSummary character={character} />
-          <HeirOffer heirs={heirs} onContinue={continueAsHeir} />
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button onClick={() => newGame()} data-testid="new-life">
-              Start a new life
-            </Button>
-            <Button variant="secondary" onClick={resetGame}>
-              Forget this life
-            </Button>
+        {dead && (
+          <div className="px-4 py-4">
+            <LifeSummary character={character} />
+            <HeirOffer heirs={heirs} onContinue={continueAsHeir} />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button onClick={() => newGame()} data-testid="new-life">
+                Start a new life
+              </Button>
+              <Button variant="secondary" onClick={resetGame}>
+                Forget this life
+              </Button>
+            </div>
           </div>
-        </>
-      )}
+        )}
+      </main>
 
-      <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <Button variant="secondary" onClick={onExport} data-testid="export-save" disabled={noCharacter}>
-          Export save
-        </Button>
-        <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-          Import save
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => setSettingsOpen(true)}
-          data-testid="open-settings"
-        >
-          Settings
-        </Button>
-        <Button variant="danger" className="ml-auto" onClick={resetGame} disabled={noCharacter}>
-          Reset
-        </Button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,application/json"
-          className="hidden"
-          data-testid="import-save"
-          onChange={(event) => {
-            const file = event.currentTarget.files?.[0];
-            if (file) onImportFile(file);
-            event.currentTarget.value = '';
+      <ControlDeck
+        hasCharacter={Boolean(character)}
+        canAgeUp={canAgeUp}
+        onAgeUp={onAgeUp}
+        onExport={onExport}
+        onImportClick={() => fileInputRef.current?.click()}
+        importInputRef={fileInputRef}
+        onImportFile={onImportFile}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onReset={resetGame}
+        onOpenActions={openActions}
+        onOpenFamilyTree={() => setFamilyTreeOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
+      />
+
+      {character && (
+        <ProfileSheet
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          character={character}
+          onOpenFamilyTree={() => {
+            setProfileOpen(false);
+            setFamilyTreeOpen(true);
           }}
         />
-      </div>
+      )}
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
-      <ActiveMenu open={actionsOpen} onClose={() => setActionsOpen(false)} />
+      <ActiveMenu key={actionsTab} open={actionsOpen} onClose={() => setActionsOpen(false)} initialTab={actionsTab} />
 
-      {familyTreeOpen && (
-        <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />
-      )}
+      {familyTreeOpen && <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />}
 
       <MomentSting key={stingToken} kind={pendingSting} token={stingToken} />
     </div>

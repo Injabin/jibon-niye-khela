@@ -9,6 +9,9 @@ import { readFile, unlink } from 'node:fs/promises';
  *  - full-motion transitions genuinely run (and are captured as evidence)
  */
 
+// Gate 3 evidence is recorded even for passing runs.
+test.use({ trace: 'on' });
+
 async function audioSnapshot(page: import('@playwright/test').Page) {
   return page.evaluate(() => {
     const probe = window.__JNK_AUDIO__;
