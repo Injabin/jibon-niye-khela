@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { settingsStore } from '@/lib/store/settingsStore';
 import { motion as motionTokens } from '@/lib/theme';
+import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
 import { Button } from '@/components/ui/Button';
 
 interface SettingsPanelProps {
@@ -94,6 +95,8 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const setMusicVolume = settingsStore((s) => s.setMusicVolume);
   const setReducedMotionMode = settingsStore((s) => s.setReducedMotionMode);
 
+  const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
+
   return (
     <AnimatePresence>
       {open && (
@@ -108,13 +111,18 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             data-testid="settings-backdrop"
           />
           <motion.aside
+            ref={overlayRef as React.Ref<HTMLElement>}
             className="fixed inset-y-0 right-0 z-50 w-full max-w-xs overflow-y-auto border-l border-border bg-surface p-5 shadow-lg"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
             data-testid="settings-panel"
+            role="dialog"
+            aria-modal="true"
             aria-label="Settings"
+            onKeyDown={trapKeyDown}
+            tabIndex={-1}
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold tracking-tight text-text">Settings</h2>

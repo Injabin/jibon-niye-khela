@@ -8,6 +8,7 @@ import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
+import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
 import type { AssetKind, Character } from '@/lib/engine/types';
 
 type Tab = 'school' | 'career' | 'assets' | 'crime' | 'health';
@@ -44,6 +45,8 @@ export function ActiveMenu({ open, onClose }: { open: boolean; onClose: () => vo
   const sellAsset = useGameStore((s) => s.sellAsset);
   const visitDoctor = useGameStore((s) => s.visitDoctor);
 
+  const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
+
   if (!character) return null;
 
   const education = character.education;
@@ -65,13 +68,18 @@ export function ActiveMenu({ open, onClose }: { open: boolean; onClose: () => vo
             data-testid="active-menu-backdrop"
           />
           <motion.section
+            ref={overlayRef as React.Ref<HTMLElement>}
             className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[80vh] w-full max-w-xl overflow-y-auto rounded-t-xl border border-border bg-surface shadow-lg"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
             data-testid="active-menu"
+            role="dialog"
+            aria-modal="true"
             aria-label="Life actions"
+            onKeyDown={trapKeyDown}
+            tabIndex={-1}
           >
             <div className="sticky top-0 flex items-center justify-between border-b border-border bg-surface px-4 py-3">
               <h2 className="text-lg font-semibold tracking-tight text-text">Life actions</h2>

@@ -191,6 +191,7 @@ export function GameHub() {
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8">
+      <h1 className="sr-only">Jibon Niye Khela — a life you play</h1>
       {message && (
         <p className="mb-4 rounded-md border border-border bg-surface px-3 py-2 text-sm text-text" data-testid="message">
           {message}
@@ -212,7 +213,7 @@ export function GameHub() {
           transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
           className="rounded-lg border border-border bg-surface p-6 text-center shadow-sm"
         >
-          <h1 className="text-2xl font-bold tracking-tight text-text">A new life awaits</h1>
+          <h2 className="text-2xl font-bold tracking-tight text-text">A new life awaits</h2>
           <p className="mx-auto mt-2 max-w-sm text-sm text-text-muted">
             Be born, grow up, make choices, and see how the story ends — one year at a time.
           </p>

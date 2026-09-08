@@ -139,7 +139,6 @@ describe('buildHeirFamilyTree', () => {
     const surname = character.surname;
     const otherChild = withChild(tree, 30, true, `Zara ${surname}`);
     const withHeir = withChild(otherChild, 22, true, `Declan ${surname}`);
-    const [heir] = eligibleHeirs(character, withHeir);
     const chosen = eligibleHeirs(character, withHeir).find((h) => h.age === 22)!;
     const heirCharacter = createHeirCharacter(character, chosen, 2, new RNG(31));
     const heirTree = buildHeirFamilyTree(withHeir, heirCharacter);

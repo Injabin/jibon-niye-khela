@@ -17,6 +17,7 @@ import { BOND_MAX, layoutFamilyTree, relationLabel } from '@/lib/engine/family';
 import type { FamilyMember } from '@/lib/engine/family';
 import { hapticForSfx } from '@/lib/haptics';
 import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
+import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
@@ -52,6 +53,8 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
   const familyTree = useGameStore((s) => s.familyTree);
   const spendTimeWith = useGameStore((s) => s.spendTimeWith);
   const reducedMotion = useEffectiveReducedMotion();
+
+  const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -105,8 +108,16 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
     setSelectedId(member.id);
   };
 
+  const onNodeKeyDown = (event: React.KeyboardEvent, member: FamilyMember) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onNodeClick(member);
+    }
+  };
+
   return (
     <motion.div
+      ref={overlayRef as React.Ref<HTMLDivElement>}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -117,6 +128,8 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
       role="dialog"
       aria-modal="true"
       aria-label="Family tree"
+      onKeyDown={trapKeyDown}
+      tabIndex={-1}
     >
       <div className="relative flex h-full max-h-[640px] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
         <header className="flex items-center justify-between border-b border-border px-5 py-3">
@@ -173,10 +186,13 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                   <g key={member.id} transform={`translate(${pos.x} ${pos.y})`}>
                     <motion.g
                       onClick={() => onNodeClick(member)}
+                      onKeyDown={(event) => onNodeKeyDown(event, member)}
                       style={{ cursor: 'pointer' }}
-                      data-testid={isSelf ? 'tree-node-self' : `tree-node-${member.role}`}
-                      aria-label={member.name}
+                      tabIndex={0}
                       role="button"
+                      aria-label={`${member.name}, ${relationLabel(member)}, ${member.alive ? 'alive' : 'deceased'}`}
+                      className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                      data-testid={isSelf ? 'tree-node-self' : `tree-node-${member.role}`}
                       animate={reducedMotion ? undefined : { y: [0, -4, 0] }}
                       transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: index * 0.35 }}
                     >

@@ -167,6 +167,11 @@ Automated gates pass at this state — `npm run typecheck`, `npm run lint`, and 
 - [ ] **PWA offline check:** load the app once online, go offline (via devtools), reload — app must still load and be playable from cache.
 - [ ] **Trademark/legal sweep:** grep the entire codebase (including comments, commit messages, and content files) for "bitlife" case-insensitive and confirm zero matches outside of this TESTING.md/DESIGN.md/AGENT.md/init.md reference set.
 
+**Evidence recorded 2026-09-08, Milestone 6 partial:**
+- `tests/e2e/accessibility.spec.ts` (6 tests) covers the keyboard-only interaction layer: single document `<h1>`, modal focus-in/trap/wrap and Escape-to-close with focus restoration for Settings, Life Actions and Family tree, keyboard activation of family-tree nodes (Enter/Space), and accessible names on zoom/slider/switch controls (`tests/e2e/accessibility.spec.ts`). Vitest 195/195, Playwright 33/33 at this state.
+- Shared modal keyboard support lives in `lib/hooks/useModalOverlay.ts` (focus in, Tab trap with wrap, Escape, focus return) and is applied to every overlay.
+- `eslint-plugin-jsx-a11y` active in the lint gate. Remaining Gate 6 items (axe scan, full-life keyboard walk-through narrative, Lighthouse, PWA offline, legal sweep) still open.
+
 **Fail conditions that block calling the project launch-ready:** any critical/serious a11y violation; Lighthouse scores below target; app breaks offline; any stray trademark reference in shipped code/content.
 
 ---
