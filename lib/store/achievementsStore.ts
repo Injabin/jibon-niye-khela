@@ -116,5 +116,38 @@ export function createAchievementsStore(
   });
 }
 
+/**
+ * Keyed localStorage adapter for the achievements slot. Deliberately NOT the
+ * shared `localStorageStorage` (whose `STORAGE_KEY` is the game save — writing
+ * ribbons through that would clobber the active save).
+ */
+const achievementsLocalStorage: SaveStorage = {
+  read() {
+    try {
+      return typeof window !== 'undefined' ? window.localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY) : null;
+    } catch {
+      return null;
+    }
+  },
+  write(raw) {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, raw);
+      }
+    } catch {
+      // Storage full or blocked (private mode): unlocks stay in memory only.
+    }
+  },
+  clear() {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(ACHIEVEMENTS_STORAGE_KEY);
+      }
+    } catch {
+      // ignore
+    }
+  },
+};
+
 /** The app-wide singleton achievements store. */
-export const achievementsStore = createAchievementsStore();
+export const achievementsStore = createAchievementsStore({ storage: achievementsLocalStorage });

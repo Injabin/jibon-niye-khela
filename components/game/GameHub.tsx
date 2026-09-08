@@ -12,6 +12,7 @@ import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { Button } from '@/components/ui/Button';
 import { MomentSting } from '@/components/motion/MomentSting';
+import { ActiveMenu } from './ActiveMenu';
 import { CharacterSummary } from './CharacterSummary';
 import { EventCard } from './EventCard';
 import { LifeSummary } from './LifeSummary';
@@ -75,6 +76,7 @@ export function GameHub() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -232,6 +234,15 @@ export function GameHub() {
             Family tree
           </Button>
 
+          <Button
+            variant="secondary"
+            onClick={() => setActionsOpen(true)}
+            data-testid="open-actions"
+            className="mt-2 w-full px-4 py-2 text-sm"
+          >
+            Life actions (school · career · assets · crime · health)
+          </Button>
+
           <AnimatePresence initial={false}>
             {currentEvent && (
               <div className="mt-4" key={currentEvent.id}>
@@ -317,6 +328,8 @@ export function GameHub() {
       </div>
 
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <ActiveMenu open={actionsOpen} onClose={() => setActionsOpen(false)} />
 
       {familyTreeOpen && (
         <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />

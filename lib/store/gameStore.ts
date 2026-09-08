@@ -4,8 +4,14 @@ import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
 import { BOND_MAX, BOND_PER_VISIT, generateFamilyTree } from '@/lib/engine/family';
 import type { FamilyTree, FamilyRole } from '@/lib/engine/family';
+import { buyAsset, sellAsset } from '@/lib/engine/events/categories/assets';
+import { applyForJob, quitJob } from '@/lib/engine/events/categories/career';
+import { commitCrime } from '@/lib/engine/events/categories/crime';
+import { enterHigherEducation } from '@/lib/engine/events/categories/education';
+import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { Character, LifeEventDef, MilestoneKind, Relation, Tone } from '@/lib/engine/types';
+import type { AssetKind, Character, LifeEventDef, MilestoneKind, Relation, Tone } from '@/lib/engine/types';
+import { achievementsStore } from '@/lib/store/achievementsStore';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
 import {
@@ -70,6 +76,25 @@ export interface GameStoreActions {
   /** Resolve the current pending event with the player's choice. */
   resolveCurrentChoice(choiceId: string): boolean;
   /**
+   * Active-menu education action (DESIGN.md §5.1): begin either post-secondary
+   * path after school ends. Returns false when unavailable (dead, pending
+   * event, already studying/graduated, under 18, or an undergraduate with too
+   * low smarts). Sets `message` to the outcome either way.
+   */
+  enrollHigherEducation(path: 'undergraduate' | 'vocational'): boolean;
+  /** Active-menu career action (DESIGN.md §5.2): apply to an eligible job. */
+  applyForJob(jobId: string): boolean;
+  /** Quit the current job, returning to the unemployed state. */
+  quitJob(): boolean;
+  /** Active-menu crime action (DESIGN.md §5.6): attempt a crime. */
+  commitCrime(crimeId: string): boolean;
+  /** Active-menu asset action (DESIGN.md §5.5): buy an asset kind. */
+  buyAsset(kind: AssetKind, options?: { name?: string; price?: number }): boolean;
+  /** Sell one owned asset by id. */
+  sellAsset(assetId: string): boolean;
+  /** Active-menu health action (DESIGN.md §5.4/§5.7): a doctor's visit. */
+  visitDoctor(): boolean;
+  /**
    * Raise a family member's bond by spending time (once per game year, capped
    * at 100). Returns false when the tree is missing, the member is the
    * character, the year's visit is used, or their bond is maxed.
@@ -121,6 +146,30 @@ export const useGameStore = create<GameStore>()((set, get) => {
     state.savedAt = savedAt;
     storeSave(localStorageStorage, state);
     set({ savedAt });
+  }
+
+  /**
+   * Shared harness for the active-menu actions (DESIGN.md §2): guarded to an
+   * alive character with no pending choice (a menu action must not interleave
+   * with a live event card), the engine runs on a structured clone with a
+   * re-seeded RNG so every outcome is deterministic from (seed, rngState).
+   * The outcome text becomes the banner message; rejected actions still
+   * persist so consumed randomness never re-rolls the same failed attempt.
+   */
+  function runIdleAction(
+    op: (character: Character, rng: RNG) => { ok: boolean; text: string },
+  ): boolean {
+    const s = get();
+    if (!s.character || !s.character.alive) return false;
+    if (s.pendingEvents.length > 0) return false;
+
+    const rng = makeRng(s.seed, s.rngState);
+    const character = structuredClone(s.character);
+    const result = op(character, rng);
+
+    set({ character, rngState: rng.getState(), message: result.text, error: null });
+    persist();
+    return result.ok;
   }
 
   return {
@@ -177,6 +226,10 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = ageUp(character, rng);
 
+      if (!result.character.alive) {
+        achievementsStore.getState().recordLife(result.character);
+      }
+
       set({
         character: result.character,
         rngState: rng.getState(),
@@ -215,6 +268,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
       // events would freeze the game off the life-summary rendering (dead = 
       // !alive && pendingEvents.length === 0 in GameHub) with no way out.
       const died = !character.alive;
+      if (died) {
+        achievementsStore.getState().recordLife(character);
+      }
       const sting = character.alive ? (event.moment ?? null) : 'tombstone';
 
       set({
@@ -260,6 +316,55 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       persist();
       return true;
+    },
+
+    enrollHigherEducation(path) {
+      return runIdleAction((character, rng) => {
+        const out = enterHigherEducation(character, rng, path);
+        return { ok: out.accepted, text: out.text };
+      });
+    },
+
+    applyForJob(jobId) {
+      return runIdleAction((character, rng) => {
+        const out = applyForJob(character, rng, jobId);
+        return { ok: out.hired, text: out.text };
+      });
+    },
+
+    quitJob() {
+      return runIdleAction((character) => {
+        const out = quitJob(character);
+        return { ok: out.quit, text: out.text };
+      });
+    },
+
+    commitCrime(crimeId) {
+      return runIdleAction((character, rng) => {
+        const out = commitCrime(character, rng, crimeId);
+        return { ok: true, text: out.text };
+      });
+    },
+
+    buyAsset(kind, options) {
+      return runIdleAction((character, rng) => {
+        const out = buyAsset(character, rng, kind, options);
+        return { ok: out.bought, text: out.text };
+      });
+    },
+
+    sellAsset(assetId) {
+      return runIdleAction((character, rng) => {
+        const out = sellAsset(character, rng, assetId);
+        return { ok: out.sold, text: out.text };
+      });
+    },
+
+    visitDoctor() {
+      return runIdleAction((character) => {
+        const out = visitDoctor(character);
+        return { ok: true, text: out.text };
+      });
     },
 
     exportToJson() {
