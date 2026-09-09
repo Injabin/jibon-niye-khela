@@ -2,7 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useLayoutTier } from '@/lib/hooks/useLayoutTier';
 import { soundManager } from '@/lib/audio/SoundManager';
 import { musicArcForAge, type MusicArcId, type SfxEvent } from '@/lib/audio/manifest';
 import { lifeStageForAge } from '@/lib/engine/life';
@@ -65,24 +66,6 @@ const toneCue: Record<LifeEventDef['tone'], SfxEvent> = {
   funny: 'funny_event',
 };
 
-function subscribeDesktop(callback: () => void) {
-  const mql = window.matchMedia('(min-width: 1024px)');
-  mql.addEventListener('change', callback);
-  return () => mql.removeEventListener('change', callback);
-}
-
-function getDesktopSnapshot() {
-  return window.matchMedia('(min-width: 1024px)').matches;
-}
-
-function getServerSnapshot() {
-  return false;
-}
-
-function useIsDesktop(): boolean {
-  return useSyncExternalStore(subscribeDesktop, getDesktopSnapshot, getServerSnapshot);
-}
-
 export function GameHub() {
   const character = useGameStore((s) => s.character);
   const familyTree = useGameStore((s) => s.familyTree);
@@ -111,7 +94,10 @@ export function GameHub() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
-  const isDesktop = useIsDesktop();
+  const layoutTier = useLayoutTier();
+  const isMobile = layoutTier === 'mobile';
+  const isTablet = layoutTier === 'tablet';
+  const isDesktop = layoutTier === 'desktop';
 
   useEffect(() => {
     hydrate();
@@ -249,19 +235,35 @@ export function GameHub() {
         <div className="absolute -bottom-40 left-1/3 size-[650px] rounded-full bg-sky-500/[0.02] blur-[140px]" />
       </div>
 
-      {/* Top bar on Mobile (< lg) */}
-      {!isDesktop && character && (
+      {/* Top bar on Mobile (< 768px) */}
+      {isMobile && character && (
         <div className="relative z-20">
           <StickyHeader character={character} compact />
         </div>
       )}
 
-      {/* Main Layout: 3-Column 1:2:1 on Desktop, 1-Column on Mobile */}
-      <div className="relative z-10 mx-auto w-full max-w-[1600px] p-3 sm:p-4 lg:p-6">
-        <div className={`grid grid-cols-1 ${isDesktop ? 'lg:grid-cols-12 gap-5 lg:gap-6' : ''} items-start`}>
-          {/* Left Column (Sticky Sidebar): 3 cols (25%) */}
-          {isDesktop && (
-            <div className="lg:col-span-3 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
+      {/* Main Layout:
+          - Mobile (< 768px): 1-Column stack (tight side margins, pb-36)
+          - Tablet (768px–1279px): 2-Column split (LeftSidebar col-span-5 : Chronicle col-span-7)
+          - Desktop (≥ 1280px): 3-Region layout (LeftSidebar col-span-3 : Chronicle col-span-6 : RightRail col-span-3)
+      */}
+      <div className="relative z-10 mx-auto w-full max-w-[1700px] px-3 sm:px-4 md:px-6 xl:px-8 py-3 sm:py-4 lg:py-6">
+        <div
+          className={`grid items-start ${
+            isMobile
+              ? 'grid-cols-1'
+              : isTablet
+                ? 'grid-cols-12 gap-5'
+                : 'grid-cols-12 gap-6'
+          }`}
+        >
+          {/* Left Column (Sticky Sidebar): 5 cols on Tablet, 3 cols on Desktop */}
+          {!isMobile && (
+            <div
+              className={`${
+                isTablet ? 'col-span-5' : 'col-span-3'
+              } sticky top-6 h-[calc(100vh-3rem)]`}
+            >
               <LeftSidebar
                 character={character}
                 canAgeUp={canAgeUp}
@@ -277,10 +279,20 @@ export function GameHub() {
             </div>
           )}
 
-          {/* Center Column (Scrollable Event Timeline): 6 cols (50%) on desktop, full width on mobile */}
+          {/* Center Column (Scrollable Event Timeline):
+              - Mobile: full width, pb-36
+              - Tablet: 7 cols, dedicated internal scroll container
+              - Desktop: 6 cols, dedicated internal scroll container
+          */}
           <main
             id="chronicle-scroll"
-            className={`${isDesktop ? 'lg:col-span-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto pr-0 lg:pr-2' : 'pb-36'} flex flex-col min-h-0 scrollbar-none`}
+            className={`${
+              isMobile
+                ? 'pb-36'
+                : isTablet
+                  ? 'col-span-7 h-[calc(100vh-3rem)] overflow-y-auto pr-2'
+                  : 'col-span-6 h-[calc(100vh-3rem)] overflow-y-auto pr-2'
+            } flex flex-col min-h-0 scrollbar-none`}
           >
             {/* Ambient Alerts / Feedback */}
             {message && (
@@ -333,7 +345,10 @@ export function GameHub() {
 
             {/* Timeline Stream */}
             {character && character.alive && (
-              <TimelineStream history={character.history} scrollContainerId="chronicle-scroll" />
+              <TimelineStream
+                history={character.history}
+                scrollContainerId={isMobile ? undefined : 'chronicle-scroll'}
+              />
             )}
 
             {/* Interactive Dilemma / Event Card */}
@@ -375,9 +390,9 @@ export function GameHub() {
             )}
           </main>
 
-          {/* Right Column (Secondary Stats & Relationships Rail): 3 cols (25%) */}
+          {/* Right Column (Secondary Stats & Relationships Rail): 3 cols on Desktop */}
           {isDesktop && (
-            <div className="lg:col-span-3 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
+            <div className="col-span-3 sticky top-6 h-[calc(100vh-3rem)]">
               <RightRail
                 character={character}
                 onOpenFamilyTree={() => setFamilyTreeOpen(true)}
@@ -387,8 +402,8 @@ export function GameHub() {
         </div>
       </div>
 
-      {/* Mobile Control Deck (< lg) */}
-      {!isDesktop && (
+      {/* Mobile Control Deck (< 768px) */}
+      {isMobile && (
         <ControlDeck
           hasCharacter={Boolean(character)}
           canAgeUp={canAgeUp}

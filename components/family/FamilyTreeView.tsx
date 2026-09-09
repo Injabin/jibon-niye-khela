@@ -230,7 +230,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
         <AnimatePresence>
           {selected && (
             <motion.aside
-              className="absolute bottom-3 right-3 w-64 rounded-lg border border-border bg-surface p-4 shadow-lg"
+              className="absolute bottom-3 right-3 w-64 max-w-[calc(100%-1.5rem)] rounded-lg border border-border bg-surface p-4 shadow-lg"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}

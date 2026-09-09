@@ -102,7 +102,7 @@ export function ActiveMenu({
               </Button>
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5" role="tablist">
+            <div className="flex flex-wrap gap-1.5 border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5" role="tablist">
               {TABS.map((tabDef) => (
                 <button
                   key={tabDef.id}
