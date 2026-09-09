@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLayoutTier } from '@/lib/hooks/useLayoutTier';
 import { soundManager } from '@/lib/audio/SoundManager';
 import { musicArcForAge, type MusicArcId, type SfxEvent } from '@/lib/audio/manifest';
@@ -21,6 +21,8 @@ import { ProfileSheet } from './ProfileSheet';
 import { SettingsPanel } from './SettingsPanel';
 import { StickyHeader } from './StickyHeader';
 import { CustomLifeModal } from './CustomLifeModal';
+import { PauseMenu } from './PauseMenu';
+import { ShortcutsModal } from './ShortcutsModal';
 
 import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
@@ -86,6 +88,8 @@ export function GameHub() {
   const importFromRaw = useGameStore((s) => s.importFromRaw);
   const resetGame = useGameStore((s) => s.resetGame);
   const continueAsHeir = useGameStore((s) => s.continueAsHeir);
+  const isPaused = useGameStore((s) => s.isPaused);
+  const setPaused = useGameStore((s) => s.setPaused);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
@@ -93,6 +97,7 @@ export function GameHub() {
   const [actionsTab, setActionsTab] = useState<Tab>('school');
   const [profileOpen, setProfileOpen] = useState(false);
   const [customLifeOpen, setCustomLifeOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -159,17 +164,6 @@ export function GameHub() {
     prevSnapshot.current = next;
   }, [character]);
 
-  if (!isHydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-        <div className="flex items-center gap-3">
-          <div className="size-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-          <p className="text-sm font-medium">Initializing state…</p>
-        </div>
-      </div>
-    );
-  }
-
   const onExport = () => {
     const json = exportToJson();
     if (!json) return;
@@ -197,13 +191,13 @@ export function GameHub() {
     if (!event.moment) playCue(toneCue[event.tone]);
   };
 
-  const onAgeUp = () => {
+  const onAgeUp = useCallback(() => {
     const applied = ageUp();
     if (applied) {
       soundManager.play('age_up');
       hapticForSfx('age_up');
     }
-  };
+  }, [ageUp]);
 
   const openActions = (initialTab: Tab = 'school') => {
     setActionsTab(initialTab);
@@ -221,10 +215,135 @@ export function GameHub() {
   };
 
   const noCharacter = !character;
-  const dead = character && !character.alive && pendingEvents.length === 0;
+  const dead = Boolean(character && !character.alive && pendingEvents.length === 0);
   const currentEvent = pendingEvents.length > 0 ? pendingEvents[currentEventIndex] : null;
-  const heirs = dead ? eligibleHeirs(character, familyTree) : [];
+  const heirs = dead && character ? eligibleHeirs(character, familyTree) : [];
   const canAgeUp = Boolean(character && character.alive && pendingEvents.length === 0);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // 1. Text input safety: do not fire game shortcuts if typing in any form input
+      const target = document.activeElement as HTMLElement | null;
+      const isInput =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable);
+
+      if (isInput) {
+        // If typing in input, let normal keys (1-4, ?, Space) pass through.
+        return;
+      }
+
+      // 2. Shortcuts modal toggle ('?' or 'Shift+/')
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setShortcutsOpen((prev) => !prev);
+        return;
+      }
+
+      // 3. Escape key handling (strict hierarchy):
+      // - Close topmost open modal first
+      // - If pause menu is open (isPaused), resume game
+      // - If in active game with nothing open, open pause menu
+      if (e.key === 'Escape') {
+        if (shortcutsOpen) {
+          e.preventDefault();
+          setShortcutsOpen(false);
+          return;
+        }
+        if (settingsOpen) {
+          e.preventDefault();
+          setSettingsOpen(false);
+          return;
+        }
+        if (customLifeOpen) {
+          e.preventDefault();
+          setCustomLifeOpen(false);
+          return;
+        }
+        if (actionsOpen) {
+          e.preventDefault();
+          setActionsOpen(false);
+          return;
+        }
+        if (profileOpen) {
+          e.preventDefault();
+          setProfileOpen(false);
+          return;
+        }
+        if (familyTreeOpen) {
+          e.preventDefault();
+          setFamilyTreeOpen(false);
+          return;
+        }
+
+        if (isPaused) {
+          e.preventDefault();
+          setPaused(false);
+          return;
+        }
+
+        if (character && character.alive) {
+          e.preventDefault();
+          setPaused(true);
+          return;
+        }
+      }
+
+      // 4. Space for primary action (Age Up when on dashboard and not in modal/paused/event)
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        const isInteractiveFocused =
+          target &&
+          (target.tagName === 'BUTTON' ||
+            target.tagName === 'A' ||
+            target.getAttribute('role') === 'button');
+
+        // If focus is not on an interactive element, Space triggers primary action
+        if (
+          !isInteractiveFocused &&
+          canAgeUp &&
+          !isPaused &&
+          !shortcutsOpen &&
+          !settingsOpen &&
+          !customLifeOpen &&
+          !actionsOpen &&
+          !profileOpen &&
+          !familyTreeOpen
+        ) {
+          e.preventDefault();
+          onAgeUp();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [
+    shortcutsOpen,
+    settingsOpen,
+    customLifeOpen,
+    actionsOpen,
+    profileOpen,
+    familyTreeOpen,
+    isPaused,
+    character,
+    canAgeUp,
+    setPaused,
+    onAgeUp,
+  ]);
+
+  if (!isHydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
+        <div className="flex items-center gap-3">
+          <div className="size-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+          <p className="text-sm font-medium">Initializing state…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-zinc-950 text-zinc-100 selection:bg-emerald-500/20 selection:text-emerald-200 font-sans">
@@ -274,6 +393,7 @@ export function GameHub() {
                 onOpenActions={openActions}
                 onOpenFamilyTree={() => setFamilyTreeOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
+                onOpenShortcuts={() => setShortcutsOpen(true)}
                 onExport={onExport}
                 onImportClick={() => fileInputRef.current?.click()}
                 onReset={resetGame}
@@ -378,7 +498,7 @@ export function GameHub() {
             )}
 
             {/* Life Summary Screen on Death */}
-            {dead && (
+            {dead && character && (
               <div className="flex flex-col gap-6 py-4">
                 <LifeSummary character={character} />
                 <HeirOffer heirs={heirs} onContinue={onContinueAsHeir} />
@@ -432,6 +552,7 @@ export function GameHub() {
           onExport={onExport}
           onImportClick={() => fileInputRef.current?.click()}
           onOpenSettings={() => setSettingsOpen(true)}
+          onOpenShortcuts={() => setShortcutsOpen(true)}
           onReset={resetGame}
           onOpenActions={openActions}
           onOpenFamilyTree={() => setFamilyTreeOpen(true)}
@@ -476,6 +597,22 @@ export function GameHub() {
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ActiveMenu key={actionsTab} open={actionsOpen} onClose={() => setActionsOpen(false)} initialTab={actionsTab} />
       {familyTreeOpen && <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />}
+      <PauseMenu
+        open={isPaused}
+        onResume={() => setPaused(false)}
+        onOpenSettings={() => {
+          setSettingsOpen(true);
+        }}
+        onOpenShortcuts={() => {
+          setShortcutsOpen(true);
+        }}
+        onExport={onExport}
+        onQuitToLanding={() => {
+          setPaused(false);
+          resetGame();
+        }}
+      />
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <MomentSting key={stingToken} kind={pendingSting} token={stingToken} />
     </div>
   );

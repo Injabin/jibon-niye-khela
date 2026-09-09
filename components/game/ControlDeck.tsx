@@ -1,7 +1,7 @@
 'use client';
 
 import type { Tab } from './ActiveMenu';
-import { Sparkles, User, Swords, Users, Coins, Settings, Download, Upload, RotateCcw } from 'lucide-react';
+import { Sparkles, User, Swords, Users, Coins, Settings, Download, Upload, RotateCcw, Keyboard } from 'lucide-react';
 
 interface ControlDeckProps {
   hasCharacter: boolean;
@@ -10,6 +10,7 @@ interface ControlDeckProps {
   onExport: () => void;
   onImportClick: () => void;
   onOpenSettings: () => void;
+  onOpenShortcuts?: () => void;
   onReset: () => void;
   onOpenActions: (initialTab?: Tab) => void;
   onOpenFamilyTree: () => void;
@@ -23,6 +24,7 @@ export function ControlDeck({
   onExport,
   onImportClick,
   onOpenSettings,
+  onOpenShortcuts,
   onReset,
   onOpenActions,
   onOpenFamilyTree,
@@ -94,15 +96,29 @@ export function ControlDeck({
 
         {/* Secondary utilities bar */}
         <div className="flex items-center justify-between border-t border-white/[0.04] pt-1.5 px-1 text-[11px]">
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            data-testid="open-settings"
-            className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
-          >
-            <Settings className="size-3" />
-            <span>Settings</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              data-testid="open-settings"
+              className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+            >
+              <Settings className="size-3" />
+              <span>Settings</span>
+            </button>
+
+            {onOpenShortcuts && (
+              <button
+                type="button"
+                onClick={onOpenShortcuts}
+                data-testid="deck-open-shortcuts"
+                className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+              >
+                <Keyboard className="size-3" />
+                <span>Shortcuts</span>
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <button

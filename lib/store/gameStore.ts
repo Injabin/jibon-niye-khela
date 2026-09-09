@@ -22,6 +22,7 @@ import {
   type DatingCandidate,
 } from '@/lib/engine/romance';
 import { achievementsStore } from '@/lib/store/achievementsStore';
+import { soundManager } from '@/lib/audio/SoundManager';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
 import {
@@ -74,6 +75,8 @@ export interface GameStoreState {
   stingToken: number;
   /** Persisted household tree (schema v2); null only before a life begins. */
   familyTree: FamilyTree | null;
+  /** Paused game state (Phase 10). */
+  isPaused: boolean;
 }
 
 export interface GameStoreActions {
@@ -132,6 +135,10 @@ export interface GameStoreActions {
   breakupOrDivorce(relationshipId: string): boolean;
   /** Legacy mode (init.md M5 #4): continue as a child who has come of age after */
   continueAsHeir(heirId: string): boolean;
+  /** Set pause state (Phase 10). Ducks ambient music when paused. */
+  setPaused(isPaused: boolean): void;
+  /** Toggle pause state (Phase 10). */
+  togglePause(): void;
 }
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -150,6 +157,7 @@ const initialState: GameStoreState = {
   pendingSting: null,
   stingToken: 0,
   familyTree: null,
+  isPaused: false,
 };
 
 function toSaveState(s: GameStoreState, character: Character): SaveState {
@@ -186,7 +194,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     op: (character: Character, rng: RNG) => { ok: boolean; text: string },
   ): boolean {
     const s = get();
-    if (!s.character || !s.character.alive) return false;
+    if (!s.character || !s.character.alive || s.isPaused) return false;
     if (s.pendingEvents.length > 0) return false;
 
     const rng = makeRng(s.seed, s.rngState);
@@ -223,6 +231,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     },
 
     newGame(seedOverride) {
+      soundManager.duckMusic(false);
       const seed = seedOverride ?? randomSeed();
       const { character, rng } = createCharacter(seed);
       const familyTree = generateFamilyTree(character, seed);
@@ -236,6 +245,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         pendingSting: null,
         stingToken: 0,
         familyTree,
+        isPaused: false,
         message: 'A new life begins…',
         error: null,
       });
@@ -244,6 +254,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     },
 
     newCustomGame(options, seedOverride) {
+      soundManager.duckMusic(false);
       const seed = seedOverride ?? randomSeed();
       const { character, rng } = createCharacter(seed, options);
       const familyTree = generateFamilyTree(character, seed);
@@ -257,6 +268,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         pendingSting: null,
         stingToken: 0,
         familyTree,
+        isPaused: false,
         message: 'A custom life begins…',
         error: null,
       });
@@ -266,7 +278,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     ageUp() {
       const s = get();
-      if (!s.character || !s.character.alive) return false;
+      if (!s.character || !s.character.alive || s.isPaused) return false;
       if (s.pendingEvents.length > 0) return false;
 
       const rng = makeRng(s.seed, s.rngState);
@@ -300,7 +312,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     resolveCurrentChoice(choiceId) {
       const s = get();
-      if (!s.character || !s.character.alive) return false;
+      if (!s.character || !s.character.alive || s.isPaused) return false;
       if (s.pendingEvents.length === 0) return false;
 
       const event = s.pendingEvents[s.currentEventIndex];
@@ -604,8 +616,20 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return true;
     },
 
+    setPaused(isPaused) {
+      set({ isPaused });
+      soundManager.duckMusic(isPaused);
+    },
+
+    togglePause() {
+      const isPaused = !get().isPaused;
+      set({ isPaused });
+      soundManager.duckMusic(isPaused);
+    },
+
     resetGame() {
       localStorageStorage.clear();
+      soundManager.duckMusic(false);
       set({ ...initialState, isHydrated: get().isHydrated });
     },
   };

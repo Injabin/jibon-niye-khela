@@ -179,6 +179,7 @@ export function CustomLifeModal({
                       placeholder="First Name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      data-testid="custom-name-input"
                       className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
@@ -189,6 +190,7 @@ export function CustomLifeModal({
                       placeholder="Surname"
                       value={surname}
                       onChange={(e) => setSurname(e.target.value)}
+                      data-testid="custom-surname-input"
                       className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>

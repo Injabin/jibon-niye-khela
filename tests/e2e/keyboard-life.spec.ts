@@ -63,13 +63,22 @@ test('one full life, keyboard-only, birth to death', async ({ page, browserName 
         continue;
       }
 
-      if (await page.getByTestId('event-card').isVisible().catch(() => false)) {
+      const hasPendingEvent = await page.evaluate(() => {
+        const store = (window as unknown as {
+          __JNK_GAME_STORE__?: {
+            getState: () => { pendingEvents?: unknown[] };
+          };
+        }).__JNK_GAME_STORE__;
+        return (store?.getState()?.pendingEvents?.length ?? 0) > 0;
+      });
+
+      if (hasPendingEvent || (await page.getByTestId('event-card').isVisible().catch(() => false))) {
+        await expect(page.getByTestId('event-card')).toBeVisible({ timeout: 4000 });
         const found = await tabTo((id) => id.startsWith('choice-'));
         expect(found, 'an event choice must be reachable by Tab').toBe(true);
         await activate();
         counts.events += 1;
-        await expect(page.getByTestId('event-card')).toBeHidden({ timeout: 4000 }).catch(() => {});
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(350);
         continue;
       }
 

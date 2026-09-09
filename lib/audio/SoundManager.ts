@@ -241,6 +241,13 @@ export class SoundManager {
     this.runtime.stopMusic();
     this.musicArcId = null;
   }
+
+  /** Ducks ambient music volume when the game is paused, or restores it when resumed. */
+  duckMusic(ducked: boolean): void {
+    if (!this.config.musicEnabled) return;
+    const targetVolume = ducked ? this.config.musicVolume * 0.25 : this.config.musicVolume;
+    this.runtime.setMusicVolume(targetVolume);
+  }
 }
 
 export const soundManager = new SoundManager();

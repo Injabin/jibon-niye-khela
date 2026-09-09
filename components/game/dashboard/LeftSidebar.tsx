@@ -16,6 +16,7 @@ import {
   Upload,
   RotateCcw,
   ChevronRight,
+  Keyboard,
 } from 'lucide-react';
 import type { Tab } from '../ActiveMenu';
 
@@ -27,6 +28,7 @@ interface LeftSidebarProps {
   onOpenActions: (tab?: Tab) => void;
   onOpenFamilyTree: () => void;
   onOpenSettings: () => void;
+  onOpenShortcuts?: () => void;
   onExport: () => void;
   onImportClick: () => void;
   onReset: () => void;
@@ -40,6 +42,7 @@ export function LeftSidebar({
   onOpenActions,
   onOpenFamilyTree,
   onOpenSettings,
+  onOpenShortcuts,
   onExport,
   onImportClick,
   onReset,
@@ -191,6 +194,19 @@ export function LeftSidebar({
         </button>
 
         <div className="flex items-center gap-1">
+          {onOpenShortcuts && (
+            <button
+              type="button"
+              onClick={onOpenShortcuts}
+              data-testid="open-shortcuts"
+              title="Keyboard Shortcuts (?)"
+              aria-label="Keyboard shortcuts"
+              className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+            >
+              <Keyboard className="size-3.5" />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onExport}

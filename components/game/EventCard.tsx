@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { EventChoice, LifeEventDef, StatEffects } from '@/lib/engine/types';
 import { motion as motionTokens } from '@/lib/theme';
 import { TONE_META, EVENT_TAG_ICON, type IconName } from '@/lib/theme/concepts';
@@ -61,7 +61,42 @@ export function EventCard({ event, onChoose }: EventCardProps) {
     0,
   );
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = document.activeElement as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const choiceIndex = parseInt(e.key, 10) - 1;
+        if (choiceIndex >= 0 && choiceIndex < event.choices.length) {
+          e.preventDefault();
+          onChoose(event.choices[choiceIndex].id);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [event.choices, onChoose]);
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (['1', '2', '3', '4'].includes(e.key)) {
+      const choiceIndex = parseInt(e.key, 10) - 1;
+      if (choiceIndex >= 0 && choiceIndex < event.choices.length) {
+        e.preventDefault();
+        onChoose(event.choices[choiceIndex].id);
+        return;
+      }
+    }
+
     if (e.key !== 'Tab') return;
     const panel = overlayRef.current;
     if (!panel) return;
