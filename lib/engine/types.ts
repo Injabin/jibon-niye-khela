@@ -43,7 +43,10 @@ export type Relation =
   | 'child'
   | 'partner'
   | 'friend'
-  | 'pet';
+  | 'pet'
+  | 'crush'
+  | 'dating'
+  | 'ex';
 
 export interface Relationship {
   id: string;
@@ -53,6 +56,8 @@ export interface Relationship {
   alive: boolean;
   meter: number;
   metAge: number;
+  romanceStage?: 'crush' | 'dating' | 'partner' | 'fiancé' | 'spouse' | 'ex';
+  occupation?: string;
 }
 
 export type EducationStage =
@@ -135,6 +140,19 @@ export interface Character {
   criminalRecord: CrimeEntry[];
   history: LifeEventLogEntry[];
   statHistory: StatsHistoryPoint[];
+  /** Recent event ids and the age they fired, used for the 15-age anti-repetition cooldown. */
+  recentEventHistory?: Array<{ id: string; age: number }>;
+}
+
+export type WealthTier = 'poor' | 'middle' | 'wealthy';
+
+export interface CustomCharacterOptions {
+  name?: string;
+  surname?: string;
+  gender?: Gender;
+  birthYear?: number;
+  wealthTier?: WealthTier;
+  startingTraits?: string[];
 }
 
 export interface StatEffects {

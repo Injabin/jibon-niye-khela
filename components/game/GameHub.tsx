@@ -20,12 +20,13 @@ import { LifeSummary } from './LifeSummary';
 import { ProfileSheet } from './ProfileSheet';
 import { SettingsPanel } from './SettingsPanel';
 import { StickyHeader } from './StickyHeader';
+import { CustomLifeModal } from './CustomLifeModal';
 
 import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle, Sliders } from 'lucide-react';
 
 // Lazy-loaded family tree
 const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
@@ -91,6 +92,7 @@ export function GameHub() {
   const [actionsOpen, setActionsOpen] = useState(false);
   const [actionsTab, setActionsTab] = useState<Tab>('school');
   const [profileOpen, setProfileOpen] = useState(false);
+  const [customLifeOpen, setCustomLifeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -331,15 +333,26 @@ export function GameHub() {
                 <p className="mt-2 max-w-sm text-sm text-zinc-400 font-normal leading-relaxed">
                   Make decisions, nurture relationships, build fortunes, and navigate unpredictable twists.
                 </p>
-                <button
-                  type="button"
-                  onClick={startFreshLife}
-                  data-testid="new-game"
-                  className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 shadow-lg shadow-rose-950/40 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-                >
-                  <Sparkles className="size-4" />
-                  <span>Start Journey</span>
-                </button>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={startFreshLife}
+                    data-testid="new-game"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 shadow-lg shadow-rose-950/40 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                  >
+                    <Sparkles className="size-4" />
+                    <span>Start Journey</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomLifeOpen(true)}
+                    data-testid="open-custom-life-btn"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  >
+                    <Sliders className="size-4" />
+                    <span>Custom Life</span>
+                  </button>
+                </div>
               </motion.section>
             )}
 
@@ -377,6 +390,14 @@ export function GameHub() {
                     className="rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-2 border-b-[#7a1c1d] active:border-b-0 active:translate-y-0.5 shadow-md shadow-rose-950/40 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all duration-150"
                   >
                     Start a new life
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomLifeOpen(true)}
+                    data-testid="new-custom-life"
+                    className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-6 py-3 text-xs font-bold uppercase tracking-wider text-emerald-300 transition-all duration-150"
+                  >
+                    Custom Life
                   </button>
                   <button
                     type="button"
@@ -447,6 +468,11 @@ export function GameHub() {
         />
       )}
 
+      <CustomLifeModal
+        open={customLifeOpen}
+        onClose={() => setCustomLifeOpen(false)}
+        onStarted={() => playCue('birth')}
+      />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ActiveMenu key={actionsTab} open={actionsOpen} onClose={() => setActionsOpen(false)} initialTab={actionsTab} />
       {familyTreeOpen && <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />}

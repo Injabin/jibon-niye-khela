@@ -1,7 +1,7 @@
 import { FEMALE_NAMES, MALE_NAMES, SURNAMES } from '@/content/names';
 import { RNG } from './rng';
 import { clamp } from './stats';
-import type { Character, CreateCharacterResult, Gender } from './types';
+import type { Character, CreateCharacterResult, CustomCharacterOptions, Gender } from './types';
 
 export function generateId(rng: RNG): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -20,7 +20,7 @@ function generateFirstName(gender: Gender, rng: RNG): string {
   return gender === 'male' ? rng.pick(MALE_NAMES) : rng.pick(FEMALE_NAMES);
 }
 
-export function createCharacter(seed: number): CreateCharacterResult {
+export function createCharacter(seed: number, options?: CustomCharacterOptions): CreateCharacterResult {
   const rng = new RNG(seed);
   const gender = rollGender(rng);
   const name = generateFirstName(gender, rng);
@@ -100,7 +100,54 @@ export function createCharacter(seed: number): CreateCharacterResult {
         looks: stats.looks,
       },
     ],
+    recentEventHistory: [],
   };
+
+  // Apply custom life overrides if requested
+  if (options) {
+    if (options.gender) character.gender = options.gender;
+    if (options.name) character.name = options.name;
+    if (options.surname) {
+      character.surname = options.surname;
+      // Update parental surnames to match
+      const mother = character.relationships.find((r) => r.relation === 'mother');
+      if (mother) mother.name = `${mother.name.split(' ')[0]} ${options.surname}`;
+      const father = character.relationships.find((r) => r.relation === 'father');
+      if (father) father.name = `${father.name.split(' ')[0]} ${options.surname}`;
+    }
+    if (options.birthYear !== undefined) character.birthYear = options.birthYear;
+
+    character.history[0] = {
+      age: 0,
+      text: `You were born in ${character.birthYear} as ${character.name} ${character.surname}. Relatives compare you to a potato with eyelashes.`,
+      tone: 'funny',
+    };
+
+    if (options.wealthTier === 'poor') {
+      character.money = 10;
+      character.reputation.karma = clamp(character.reputation.karma + 15);
+      character.stats.happiness = clamp(character.stats.happiness - 10);
+      character.stats.health = clamp(character.stats.health - 5);
+    } else if (options.wealthTier === 'wealthy') {
+      character.money = 2500;
+      character.stats.happiness = clamp(character.stats.happiness + 10);
+      character.stats.looks = clamp(character.stats.looks + 5);
+    } else if (options.wealthTier === 'middle') {
+      character.money = 250;
+    }
+
+    if (options.startingTraits && options.startingTraits.length > 0) {
+      character.traits = [...new Set(options.startingTraits.slice(0, 2))];
+    }
+
+    character.statHistory[0] = {
+      age: 0,
+      health: character.stats.health,
+      happiness: character.stats.happiness,
+      smarts: character.stats.smarts,
+      looks: character.stats.looks,
+    };
+  }
 
   return { character, rng };
 }

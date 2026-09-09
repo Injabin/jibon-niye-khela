@@ -11,7 +11,16 @@ import { commitCrime } from '@/lib/engine/events/categories/crime';
 import { enterHigherEducation } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { AssetKind, Character, LifeEventDef, MilestoneKind, Relation, Tone } from '@/lib/engine/types';
+import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, MilestoneKind, Relation, Tone } from '@/lib/engine/types';
+import {
+  generateDatingPool,
+  askOutCandidate,
+  makeOfficialPartner,
+  proposeMarriage,
+  cheatBranch,
+  breakupOrDivorce,
+  type DatingCandidate,
+} from '@/lib/engine/romance';
 import { achievementsStore } from '@/lib/store/achievementsStore';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
@@ -107,12 +116,21 @@ export interface GameStoreActions {
   importFromRaw(raw: string): boolean;
   /** Wipe storage and all in-memory state. */
   resetGame(): void;
-  /**
-   * Legacy mode (init.md M5 #4): continue as a child who has come of age after
-   * this life ended. Returns false when the life is not over, the family tree
-   * is missing, or the heir is not an eligible child. On success the character
-   * and family tree are replaced and the archive flows through persist().
-   */
+  /** Start a new custom life with explicit configuration. */
+  newCustomGame(options: CustomCharacterOptions, seed?: number): number;
+  /** Generate a candidate pool for dating based on character age. */
+  getDatingCandidates(): DatingCandidate[];
+  /** Ask out a dating candidate. */
+  askOut(candidate: DatingCandidate): boolean;
+  /** Make an exclusive official partnership. */
+  makeOfficial(relationshipId: string): boolean;
+  /** Propose marriage to an official partner. */
+  propose(relationshipId: string): boolean;
+  /** Engage in a consequence-driven cheating affair. */
+  cheat(relationshipId: string): boolean;
+  /** Break up or divorce an active romantic partner or spouse. */
+  breakupOrDivorce(relationshipId: string): boolean;
+  /** Legacy mode (init.md M5 #4): continue as a child who has come of age after */
   continueAsHeir(heirId: string): boolean;
 }
 
@@ -219,6 +237,27 @@ export const useGameStore = create<GameStore>()((set, get) => {
         stingToken: 0,
         familyTree,
         message: 'A new life begins…',
+        error: null,
+      });
+      persist();
+      return seed;
+    },
+
+    newCustomGame(options, seedOverride) {
+      const seed = seedOverride ?? randomSeed();
+      const { character, rng } = createCharacter(seed, options);
+      const familyTree = generateFamilyTree(character, seed);
+      set({
+        character,
+        seed,
+        rngState: rng.getState(),
+        pendingEvents: [],
+        currentEventIndex: 0,
+        lastOutcomeTone: null,
+        pendingSting: null,
+        stingToken: 0,
+        familyTree,
+        message: 'A custom life begins…',
         error: null,
       });
       persist();
@@ -391,6 +430,114 @@ export const useGameStore = create<GameStore>()((set, get) => {
         const out = visitDoctor(character);
         return { ok: true, text: out.text };
       });
+    },
+
+    getDatingCandidates() {
+      const s = get();
+      if (!s.character || !s.character.alive) return [];
+      const rng = makeRng(s.seed, s.rngState);
+      return generateDatingPool(s.character, rng);
+    },
+
+    askOut(candidate) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = askOutCandidate(character, candidate, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    makeOfficial(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = makeOfficialPartner(character, relationshipId, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    propose(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
+      const result = proposeMarriage(character, familyTree, relationshipId, rng);
+
+      set({
+        character,
+        familyTree,
+        rngState: rng.getState(),
+        message: result.text,
+        pendingSting: result.ok ? 'wedding' : null,
+        stingToken: result.ok ? s.stingToken + 1 : s.stingToken,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    cheat(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = cheatBranch(character, relationshipId, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    breakupOrDivorce(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
+      const result = breakupOrDivorce(character, familyTree, relationshipId, rng);
+
+      set({
+        character,
+        familyTree,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
     },
 
     exportToJson() {

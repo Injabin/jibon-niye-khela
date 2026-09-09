@@ -15,6 +15,9 @@ import {
   ArrowRight,
   UserCheck,
   AlertTriangle,
+  Flame,
+  HeartHandshake,
+  HeartCrack,
 } from 'lucide-react';
 
 interface RightRailProps {
@@ -26,7 +29,10 @@ const RELATION_ICONS: Partial<Record<Relation, React.ComponentType<{ className?:
   mother: UserCheck,
   father: UserCheck,
   spouse: Heart,
-  partner: Heart,
+  partner: HeartHandshake,
+  dating: Heart,
+  crush: Flame,
+  ex: HeartCrack,
   child: Users,
   sibling: Users,
   friend: Sparkles,
@@ -147,9 +153,16 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
                       <RelIcon className="size-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-medium text-zinc-200">{rel.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="truncate text-xs font-medium text-zinc-200">{rel.name}</p>
+                        {rel.romanceStage !== undefined && (
+                          <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/20">
+                            {rel.relation}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium capitalize">
-                        {rel.relation}
+                        {rel.occupation ? `${rel.occupation} · ` : ''}{rel.relation}
                       </p>
                     </div>
                   </div>

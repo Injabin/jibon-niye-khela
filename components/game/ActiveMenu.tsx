@@ -9,13 +9,16 @@ import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
+import { Flame, UserPlus } from 'lucide-react';
 import type { AssetKind, Character } from '@/lib/engine/types';
+import type { DatingCandidate } from '@/lib/engine/romance';
 
-type Tab = 'school' | 'career' | 'assets' | 'crime' | 'health';
+type Tab = 'school' | 'career' | 'romance' | 'assets' | 'crime' | 'health';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'school', label: 'School' },
   { id: 'career', label: 'Career' },
+  { id: 'romance', label: 'Romance' },
   { id: 'assets', label: 'Assets' },
   { id: 'crime', label: 'Crime' },
   { id: 'health', label: 'Health' },
@@ -55,6 +58,13 @@ export function ActiveMenu({
   const buyAsset = useGameStore((s) => s.buyAsset);
   const sellAsset = useGameStore((s) => s.sellAsset);
   const visitDoctor = useGameStore((s) => s.visitDoctor);
+
+  const getDatingCandidates = useGameStore((s) => s.getDatingCandidates);
+  const askOut = useGameStore((s) => s.askOut);
+  const makeOfficial = useGameStore((s) => s.makeOfficial);
+  const propose = useGameStore((s) => s.propose);
+  const cheat = useGameStore((s) => s.cheat);
+  const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
 
   const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
 
@@ -125,6 +135,17 @@ export function ActiveMenu({
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
               {tab === 'school' && <SchoolTab character={character} studying={studying} onEnroll={enrollHigherEducation} />}
               {tab === 'career' && <CareerTab character={character} board={board} onApply={applyForJob} onQuit={quitJob} />}
+              {tab === 'romance' && (
+                <RomanceTab
+                  character={character}
+                  onAskOut={askOut}
+                  onMakeOfficial={makeOfficial}
+                  onPropose={propose}
+                  onCheat={cheat}
+                  onBreakup={breakupOrDivorce}
+                  onGetCandidates={getDatingCandidates}
+                />
+              )}
               {tab === 'assets' && <AssetsTab character={character} onBuy={buyAsset} onSell={sellAsset} />}
               {tab === 'crime' && <CrimeTab character={character} onCommit={commitCrime} />}
               {tab === 'health' && <HealthTab character={character} onVisit={visitDoctor} />}
@@ -349,6 +370,216 @@ function HealthTab({ character, onVisit }: { character: Character; onVisit: () =
       <Button onClick={onVisit} data-testid="visit-doctor">
         Visit the doctor (health +15, happiness +5, −50 coins)
       </Button>
+    </div>
+  );
+}
+
+function RomanceTab({
+  character,
+  onAskOut,
+  onMakeOfficial,
+  onPropose,
+  onCheat,
+  onBreakup,
+  onGetCandidates,
+}: {
+  character: Character;
+  onAskOut: (candidate: DatingCandidate) => boolean;
+  onMakeOfficial: (relationshipId: string) => boolean;
+  onPropose: (relationshipId: string) => boolean;
+  onCheat: (relationshipId: string) => boolean;
+  onBreakup: (relationshipId: string) => boolean;
+  onGetCandidates: () => DatingCandidate[];
+}) {
+  const [candidates, setCandidates] = useState<DatingCandidate[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  if (character.age < 16) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-white/5 bg-white/[0.02]">
+        <Flame className="size-8 text-rose-400 mb-3 opacity-60" />
+        <h3 className="text-sm font-bold text-white">Youth & Adolescence</h3>
+        <p className="text-xs text-zinc-400 max-w-xs mt-1.5 leading-relaxed">
+          Serious dating and relationships unlock at age 16. Enjoy your friendships, studies, and hobbies for now!
+        </p>
+      </div>
+    );
+  }
+
+  const romanticPartners = character.relationships.filter((r) =>
+    ['crush', 'dating', 'partner', 'spouse'].includes(r.relation)
+  );
+
+  const handleSearch = () => {
+    setCandidates(onGetCandidates());
+    setHasSearched(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* 1. Active Relationships */}
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+          Current Romance & Bonds
+        </h3>
+        {romanticPartners.length === 0 ? (
+          <p className="text-xs text-zinc-500 py-2">
+            You currently have no active romantic partners or crushes.
+          </p>
+        ) : (
+          <div className="space-y-2.5">
+            {romanticPartners.map((partner) => (
+              <div
+                key={partner.id}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-white">{partner.name}</span>
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/25">
+                        {partner.relation}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Age {partner.age} {partner.occupation ? `· ${partner.occupation}` : ''}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 block font-medium">Bond</span>
+                    <span className="text-xs font-bold text-emerald-400 font-mono">{partner.meter}%</span>
+                  </div>
+                </div>
+
+                {/* Romance Stage meter if defined */}
+                {partner.romanceStage !== undefined && (
+                  <div>
+                    <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
+                      <span>Romance Progress</span>
+                      <span className="font-mono">{partner.romanceStage}/100</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-400 transition-all"
+                        style={{ width: `${partner.romanceStage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions based on relationship state */}
+                <div className="flex flex-wrap gap-2 pt-1 border-t border-white/[0.05]">
+                  {partner.relation === 'crush' && (
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        onAskOut({
+                          id: partner.id,
+                          name: partner.name,
+                          gender: 'female',
+                          age: partner.age,
+                          archetype: partner.occupation || 'Local Companion',
+                          isCelebrity: false,
+                          looks: 50,
+                          smarts: 50,
+                        })
+                      }
+                      data-testid={`ask-out-${partner.id}`}
+                    >
+                      Ask Out on Date
+                    </Button>
+                  )}
+                  {partner.relation === 'dating' && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => onMakeOfficial(partner.id)}
+                      data-testid={`make-official-${partner.id}`}
+                    >
+                      Make Official Partner
+                    </Button>
+                  )}
+                  {partner.relation === 'partner' && (
+                    <Button
+                      variant="primary"
+                      onClick={() => onPropose(partner.id)}
+                      data-testid={`propose-${partner.id}`}
+                    >
+                      Propose Marriage
+                    </Button>
+                  )}
+                  {(partner.relation === 'partner' || partner.relation === 'spouse') && (
+                    <button
+                      type="button"
+                      onClick={() => onCheat(partner.id)}
+                      data-testid={`cheat-${partner.id}`}
+                      className="rounded-xl border border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors"
+                    >
+                      Flirt with Danger
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onBreakup(partner.id)}
+                    data-testid={`breakup-${partner.id}`}
+                    className="rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors ml-auto"
+                  >
+                    {partner.relation === 'spouse' ? 'Divorce' : 'Break Up'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 2. Meet Someone / Dating Candidates */}
+      <div className="space-y-3 pt-4 border-t border-white/[0.08]">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Meet Someone New
+            </h3>
+            <p className="text-xs text-zinc-500">Explore procedurally generated dating prospects</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleSearch}
+            data-testid="search-dating-pool-btn"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-300 transition-colors"
+          >
+            <UserPlus className="size-3.5" />
+            <span>Search Pool</span>
+          </button>
+        </div>
+
+        {hasSearched && (
+          <div className="space-y-2">
+            {candidates.map((candidate, idx) => (
+              <div
+                key={`${candidate.name}-${idx}`}
+                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-3 hover:bg-white/[0.04] transition-colors"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">{candidate.name}</span>
+                    <span className="text-[10px] text-zinc-400">Age {candidate.age}</span>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    {candidate.archetype} · Looks: {candidate.looks} · Smarts: {candidate.smarts}
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() => onAskOut(candidate)}
+                  data-testid={`candidate-askout-${idx}`}
+                >
+                  Ask Out
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
