@@ -128,7 +128,7 @@ export function EventCard({ event, onChoose }: EventCardProps) {
             <ToneIcon className="size-3.5" />
             <span>{toneCfg.label}</span>
           </div>
-          <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+          <span className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
             Decision Required
           </span>
         </div>

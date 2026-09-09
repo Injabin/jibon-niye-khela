@@ -44,8 +44,8 @@ const ASSET_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
   if (!character) {
     return (
-      <div className="flex h-full flex-col justify-center items-center rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 text-center text-zinc-500 backdrop-blur-xl">
-        <Users className="size-6 mb-2 text-zinc-600" />
+      <div className="flex h-full flex-col justify-center items-center rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 text-center text-zinc-400 backdrop-blur-xl">
+        <Users className="size-6 mb-2 text-zinc-400" />
         <p className="text-xs font-medium">Relationships & status appear here.</p>
       </div>
     );
@@ -55,12 +55,12 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
 
   return (
     <aside
-      className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 backdrop-blur-xl shadow-xl shadow-black/20 scrollbar-none"
+      className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20 scrollbar-none"
       aria-label="Secondary stats and lineage"
     >
       {/* 1. Reputation & Standing */}
       <div className="flex flex-col gap-2.5 pb-4 border-b border-white/[0.06]">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           Standing & Reputation
         </span>
         <div className="grid grid-cols-2 gap-2">
@@ -69,7 +69,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
               <Sparkles className="size-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Fame</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Fame</p>
               <p className="text-sm font-bold tabular-nums text-white">
                 {character.reputation.fame}
               </p>
@@ -81,7 +81,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
               <ShieldCheck className="size-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">Karma</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Karma</p>
               <p className="text-sm font-bold tabular-nums text-white">
                 {character.reputation.karma}
               </p>
@@ -103,16 +103,16 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
       {/* 2. Traits */}
       {character.traits.length > 0 && (
         <div className="flex flex-col gap-2 pb-4 border-b border-white/[0.06]">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
             Traits & Attributes
           </span>
           <div className="flex flex-wrap gap-1.5">
             {character.traits.map((trait) => (
               <span
                 key={trait}
-                className="inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-zinc-300 hover:border-white/20 transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-zinc-700/80 bg-zinc-800 px-2.5 py-1 text-[11px] font-medium text-zinc-100 hover:border-zinc-500 transition-colors"
               >
-                <Award className="size-3 text-zinc-400" />
+                <Award className="size-3 text-zinc-300" />
                 <span>{trait}</span>
               </span>
             ))}
@@ -123,16 +123,16 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
       {/* 3. Relationships */}
       <div className="flex flex-col gap-2.5 flex-1">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
             Relationships
           </span>
-          <span className="text-[10px] text-zinc-500 tabular-nums">
+          <span className="text-[10px] text-zinc-400 tabular-nums">
             {livingRelationships.length} alive
           </span>
         </div>
 
         {livingRelationships.length === 0 ? (
-          <p className="text-xs text-zinc-500 py-3 text-center">No current contacts.</p>
+          <p className="text-xs text-zinc-400 py-3 text-center">No current contacts.</p>
         ) : (
           <div className="flex flex-col gap-1.5">
             {livingRelationships.slice(0, 5).map((rel) => {
@@ -148,7 +148,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-medium text-zinc-200">{rel.name}</p>
-                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium capitalize">
+                      <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium capitalize">
                         {rel.relation}
                       </p>
                     </div>
@@ -162,7 +162,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
                         style={{ width: `${rel.meter}%` }}
                       />
                     </div>
-                    <span className="text-[9px] tabular-nums font-mono text-zinc-500">
+                    <span className="text-[9px] tabular-nums font-mono text-zinc-400">
                       {rel.meter}%
                     </span>
                   </div>
@@ -178,7 +178,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
           className="group mt-2 flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs font-medium text-zinc-300 hover:border-white/20 hover:bg-white/[0.06] hover:text-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         >
           <span>Explore Family Tree</span>
-          <ArrowRight className="size-3.5 text-zinc-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+          <ArrowRight className="size-3.5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
         </button>
       </div>
 
@@ -186,10 +186,10 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
       {character.assets.length > 0 && (
         <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.06]">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
               Key Holdings
             </span>
-            <span className="text-[10px] text-zinc-500 tabular-nums">
+            <span className="text-[10px] text-zinc-400 tabular-nums">
               {character.assets.length} items
             </span>
           </div>

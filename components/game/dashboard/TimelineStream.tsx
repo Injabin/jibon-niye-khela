@@ -35,7 +35,7 @@ const TONE_STYLES: Record<
   neutral: {
     border: 'border-l-zinc-600/60',
     icon: HelpCircle,
-    iconColor: 'text-zinc-500',
+    iconColor: 'text-zinc-400',
   },
 };
 
@@ -65,11 +65,11 @@ export function TimelineStream({ history, scrollContainerId }: TimelineStreamPro
   if (history.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-20 text-center text-zinc-500"
+        className="flex flex-col items-center justify-center py-20 text-center text-zinc-400"
         data-testid="chronicle-stream"
       >
         <p className="text-sm font-medium">The chronicle of your life begins with your first year.</p>
-        <p className="text-xs text-zinc-600 mt-1">Advance age to begin your journey.</p>
+        <p className="text-xs text-zinc-400 mt-1">Advance age to begin your journey.</p>
       </div>
     );
   }

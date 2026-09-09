@@ -48,11 +48,11 @@ export function LeftSidebar({
     return (
       <div className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-white/[0.025] p-5 backdrop-blur-xl">
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-zinc-500 mb-3">
+          <div className="flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-zinc-400 mb-3">
             <User className="size-6" />
           </div>
           <p className="text-sm font-medium text-zinc-300">No active life</p>
-          <p className="text-xs text-zinc-500 mt-1">Begin a new journey to track stats.</p>
+          <p className="text-xs text-zinc-400 mt-1">Begin a new journey to track stats.</p>
         </div>
       </div>
     );
@@ -60,7 +60,7 @@ export function LeftSidebar({
 
   return (
     <aside
-      className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-white/[0.025] p-5 backdrop-blur-xl shadow-xl shadow-black/20"
+      className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20"
       aria-label="Character and controls"
     >
       <div className="flex flex-col gap-4">
@@ -88,10 +88,10 @@ export function LeftSidebar({
               <span className="text-xs font-semibold tabular-nums text-zinc-200">
                 {character.age} <span className="text-[10px] font-normal text-zinc-400">years old</span>
               </span>
-              <span className="text-zinc-600 text-xs">•</span>
+              <span className="text-zinc-400 text-xs">•</span>
               <div className="flex items-center gap-1" data-testid="money">
-                <Coins className="size-3 text-[#d4af37]" />
-                <span className="text-xs font-bold tabular-nums text-[#d4af37]">
+                <Coins className="size-3 text-amber-400" />
+                <span className="text-xs font-bold tabular-nums text-amber-300">
                   {formatMoney(character.money)}
                 </span>
               </div>
@@ -121,7 +121,7 @@ export function LeftSidebar({
 
         {/* Minimal Vertical Navigation with smooth transition hover states */}
         <nav className="flex flex-col gap-1 border-t border-white/[0.06] pt-3" aria-label="Navigation">
-          <span className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+          <span className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
             Actions & Systems
           </span>
           <button
@@ -134,7 +134,7 @@ export function LeftSidebar({
               <User className="size-4 text-zinc-400" />
               <span>Full Profile</span>
             </div>
-            <ChevronRight className="size-3.5 text-zinc-600" />
+            <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
 
           <button
@@ -147,7 +147,7 @@ export function LeftSidebar({
               <Swords className="size-4 text-zinc-400" />
               <span>Activities & Career</span>
             </div>
-            <ChevronRight className="size-3.5 text-zinc-600" />
+            <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
 
           <button
@@ -160,7 +160,7 @@ export function LeftSidebar({
               <Users className="size-4 text-zinc-400" />
               <span>Lineage & Relations</span>
             </div>
-            <ChevronRight className="size-3.5 text-zinc-600" />
+            <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
 
           <button
@@ -173,7 +173,7 @@ export function LeftSidebar({
               <Coins className="size-4 text-zinc-400" />
               <span>Assets & Finance</span>
             </div>
-            <ChevronRight className="size-3.5 text-zinc-600" />
+            <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
         </nav>
       </div>
@@ -184,7 +184,7 @@ export function LeftSidebar({
           type="button"
           onClick={onOpenSettings}
           data-testid="open-settings"
-          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-text-muted hover:text-text hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         >
           <Settings className="size-3.5" />
           <span>Settings</span>
@@ -197,7 +197,7 @@ export function LeftSidebar({
             data-testid="export-save"
             title="Export Save"
             aria-label="Export save"
-            className="flex size-7 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+            className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
           >
             <Download className="size-3.5" />
           </button>
@@ -207,7 +207,7 @@ export function LeftSidebar({
             onClick={onImportClick}
             title="Import Save"
             aria-label="Import save"
-            className="flex size-7 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+            className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
           >
             <Upload className="size-3.5" />
           </button>
@@ -218,7 +218,7 @@ export function LeftSidebar({
             data-testid="reset"
             title="Reset Game"
             aria-label="Reset game"
-            className="flex size-7 items-center justify-center rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+            className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
           >
             <RotateCcw className="size-3.5" />
           </button>
