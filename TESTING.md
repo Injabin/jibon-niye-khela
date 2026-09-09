@@ -280,6 +280,49 @@ respected by new themed elements.
 
 ---
 
+## Gate 7 — after the "Emotional Audio" expansion (Additional_plus_improved_plan Phase 7)
+
+Mirrored from `Additional_plus_improved_plan.md` Phase 7. The audio layer becomes
+**two** background-music arcs (early 0–17, late 18+) that **crossfade** at the age
+boundary, plus a small curated set of **human-toned** reactive SFX cues. Every
+§6.5 cue keeps working, no new third-party asset is added, and muting stays total.
+
+- [ ] **Exactly two active BGM tracks, crossfaded:** no per-life-stage rotation, no
+  leftover `heavenly.ogg` / `jump.ogg` / `fastsong.ogg` references outside their
+  CREDITS.md historical note; switching arcs at the 18th birthday fades 1.5s
+  (not a hard cut), fires once, in order (early → late).
+- [ ] **Tone-accurate feedback cues fire through the real UI path:** a synthesized
+  `good` outcome plays its own warm cue, a `bad` outcome its dismay cue, a `funny`
+  outcome its quirky sting, and the moment/death cues stay distinct — verified by
+  the `window.__JNK_AUDIO__` probe's `sfxPlays` log (not just by unit spies).
+- [ ] **Birth cue on a brand-new life:** starting a fresh life / continuing as an
+  heir raises a birth cue; **resuming from a saved file stays silent** (no cue on
+  load/hydration).
+- [ ] **Somber death cue fires exactly once** at end of life.
+- [ ] **Mute blanket:** toggling SFX off silences every cue (probe `sfxPlays`
+  shows zero new entries through the real Settings panel), and toggling music off
+  stops playback and clears the active arc (probe `activeArc === null`); a
+  subsequent good outcome and age-up add nothing.
+- [ ] **CREDITS integrity & licensing:** `public/audio/CREDITS.md` lists exactly the
+  two bundled tracks (CC0, authors credited) with a historical note for the three
+  retired files kept on disk, and **each** Phase 7 synthesized cue (`birth`,
+  `good_event`, `bad_event`, `funny_event`, `death`) has its own row stating its
+  in-repo procedural origin and "no third-party rights" license. No BitLife-derived
+  or otherwise unlicensed audio anywhere (grep).
+- [ ] **No regression:** existing §6.5 unit/motion/accessibility suites re-run green;
+  engine determinism and save/Gate 1–2 guarantees untouched.
+
+**Fail conditions that block moving to Phase 8:** any leftover manifest reference
+to a retired stage track, any un-remediated `MUSIC_MANIFEST.*.child`-style call, a
+hard cut where a crossfade is specified, a tone cue that plays the wrong (or no)
+cue, a mute toggle that leaks any play, or a CREDITS row missing its real
+source/license.
+
+**Gate 7 evidence (fill in after the phase runs; section is green only when every
+line above has a real artifact):**
+
+---
+
 ## Final Gate — "Did we actually build what we wanted?" (Full Launch QA)
 
 Run this only once Gates 0–6 have all individually passed. This is a
