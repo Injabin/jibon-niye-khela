@@ -176,9 +176,17 @@ not polish-later:
    this is the "premium" beat the whole loop is paced around.
 5. **Sound as feedback, not decoration.** Every button press, stat change,
    good/bad event, and life-stage transition has a distinct short SFX;
-   an adaptive background music layer shifts mood (chill for childhood,
-   tense for crime arcs, triumphant for career wins) rather than looping
-   one track forever.
+   the background music is **exactly two mood tracks** (Additional_plus_
+   improved_plan Phase 7) — `early_life` (ages 0–17, lighter/warmer) and
+   `late_life` (18+, more mature/weightier) — which **crossfade** at the age
+   boundary instead of hard-cutting, replacing the earlier per-life-stage
+   rotation. Beyond the functional ticks (buttons, stat/money moves, age
+   up), outcome reactions are a small curated set of **human-toned cues**:
+   a birth vocalization on a new life, a warm affirmation on clearly good
+   outcomes, a dismay cue on clearly bad ones, a distinct quirky sting for
+   funny outcomes, and a somber, never-comedic death cue. These are mapped
+   from the event `tone` field (`good | bad | neutral | funny`, DESIGN.md
+   §10) so the right reaction fires automatically.
 6. **Haptics on mobile** (`navigator.vibrate`) mirroring the SFX for key
    negative/positive beats, where supported.
 
