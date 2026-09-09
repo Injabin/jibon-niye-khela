@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SoundManager } from '@/lib/audio/SoundManager';
 import type { AudioRuntime, SoundConfig } from '@/lib/audio/SoundManager';
-import { MUSIC_MANIFEST, SFX_MANIFEST, type SfxEvent } from '@/lib/audio/manifest';
+import { CROSSFADE_SECONDS, MUSIC_MANIFEST, SFX_MANIFEST, type SfxEvent } from '@/lib/audio/manifest';
 import { createInMemoryStorage } from '@/lib/save/storage';
 import { createSettingsStore } from '@/lib/store/settingsStore';
 
@@ -24,8 +24,8 @@ function spyRuntime(): Recorder {
     playFile(src, volume) {
       calls.push(`file:${src}@${volume}`);
     },
-    startMusic() {
-      calls.push('music:start');
+    startMusic(src, volume, fadeSeconds) {
+      calls.push(`music:start:${src}@${volume}:fade${fadeSeconds}`);
     },
     stopMusic() {
       calls.push('music:stop');
@@ -46,12 +46,12 @@ function config(c: Partial<SoundConfig>): SoundConfig {
 
 /** Point a manifest track at a real file for the duration of a test. */
 function withMusicFile(block: () => void): void {
-  const original = MUSIC_MANIFEST.child.file;
-  MUSIC_MANIFEST.child.file = '/audio/test-track.ogg';
+  const original = MUSIC_MANIFEST.early.file;
+  MUSIC_MANIFEST.early.file = '/audio/test-track.ogg';
   try {
     block();
   } finally {
-    MUSIC_MANIFEST.child.file = original;
+    MUSIC_MANIFEST.early.file = original;
   }
 }
 
@@ -99,24 +99,66 @@ describe('SoundManager (Gate 3)', () => {
     manager.configure(config({ musicEnabled: true }));
 
     withMusicFile(() => {
-      manager.startMusic('child');
-      expect(recorder.calls).toContain('music:start');
+      manager.startMusic('early');
+      expect(recorder.calls.some((call) => call.startsWith('music:start'))).toBe(true);
 
       manager.configure(config({ musicEnabled: false }));
       expect(recorder.calls).toContain('music:stop');
     });
   });
 
-  it('does not restart the same music stage twice', () => {
+  it('does not restart the same music arc twice', () => {
     const recorder = spyRuntime();
     const manager = new SoundManager(recorder.runtime);
     manager.configure(config({}));
 
     withMusicFile(() => {
-      manager.startMusic('child');
-      manager.startMusic('child');
-      expect(recorder.calls.filter((call) => call === 'music:start')).toHaveLength(1);
+      manager.startMusic('early');
+      manager.startMusic('early');
+      expect(recorder.calls.filter((call) => call.startsWith('music:start'))).toHaveLength(1);
     });
+  });
+
+  it('logs music-plays so the Gate 7 probe can spy on the early→late switch', () => {
+    const recorder = spyRuntime();
+    const manager = new SoundManager(recorder.runtime);
+    manager.configure(config({}));
+
+    manager.startMusic('early');
+    manager.startMusic('late');
+
+    expect(manager.getDebugState()).toMatchObject({
+      activeArc: 'late',
+      musicPlays: [MUSIC_MANIFEST.early.file, MUSIC_MANIFEST.late.file],
+    });
+  });
+});
+
+describe('SoundManager (Gate 7 crossfade)', () => {
+  it('crossfades into a new arc with the manifest fade instead of a hard cut', () => {
+    const recorder = spyRuntime();
+    const manager = new SoundManager(recorder.runtime);
+    manager.configure(config({}));
+
+    manager.startMusic('early');
+    manager.startMusic('late');
+    manager.stopMusic();
+
+    expect(recorder.calls).toEqual([
+      `music:start:${MUSIC_MANIFEST.early.file}@0.5:fade${CROSSFADE_SECONDS}`,
+      `music:start:${MUSIC_MANIFEST.late.file}@0.5:fade${CROSSFADE_SECONDS}`,
+      'music:stop',
+    ]);
+  });
+
+  it('tracks the active arc and caps the debug-playback logs', () => {
+    const recorder = spyRuntime();
+    const manager = new SoundManager(recorder.runtime);
+    manager.configure(config({}));
+
+    for (let i = 0; i < 80; i += 1) manager.play('stat_up');
+    expect(manager.getDebugState().sfxPlays).toHaveLength(64);
+    expect(manager.getDebugState().sfxPlays[0]).toBe('stat_up');
   });
 });
 
@@ -175,7 +217,7 @@ describe('settings → SoundManager integration (Gate 3 mute toggle)', () => {
   });
 });
 
-describe('manifest completeness (Gate 3)', () => {
+describe('manifest completeness (Gate 3 + Gate 7)', () => {
   it('covers every semantic SFX event the game can raise', () => {
     const events: SfxEvent[] = [
       'button_press',
@@ -186,9 +228,11 @@ describe('manifest completeness (Gate 3)', () => {
       'good_event',
       'bad_event',
       'neutral_event',
+      'funny_event',
       'age_up',
       'life_stage_change',
       'death',
+      'birth',
     ];
     for (const event of events) {
       const def = SFX_MANIFEST[event];
