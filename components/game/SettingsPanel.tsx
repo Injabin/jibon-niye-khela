@@ -140,7 +140,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             />
             <SwitchRow
               label="Music"
-              hint="Ambient mood tracks per life stage"
+              hint="2 mood tracks that shift as your character ages"
               checked={musicEnabled}
               onChange={setMusicEnabled}
               testId="settings-music-toggle"

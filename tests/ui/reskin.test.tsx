@@ -27,7 +27,7 @@ describe('Modern Martial reskin — stat keys and display labels', () => {
   test('StickyHeader renders the reskinned labels yet keeps engine-key progressbar names', () => {
     const { character } = createCharacter(7);
     character.money = 1234;
-    const { container } = render(<StickyHeader character={character} />);
+    const { container } = render(<StickyHeader character={character} compact={false} />);
 
     expect(container.textContent).toContain('Martial Skill');
     expect(container.textContent).toContain('Honor');

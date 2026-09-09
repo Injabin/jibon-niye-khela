@@ -1,0 +1,229 @@
+'use client';
+
+import { rankForLife } from '@/lib/ui/rank';
+import { formatMoney } from '@/lib/ui/money';
+import type { Character } from '@/lib/engine/types';
+import { Avatar } from '@/components/avatar/Avatar';
+import { StatBar } from './StatBar';
+import {
+  Sparkles,
+  User,
+  Swords,
+  Users,
+  Coins,
+  Settings,
+  Download,
+  Upload,
+  RotateCcw,
+  ChevronRight,
+} from 'lucide-react';
+import type { Tab } from '../ActiveMenu';
+
+interface LeftSidebarProps {
+  character: Character | null;
+  canAgeUp: boolean;
+  onAgeUp: () => void;
+  onOpenProfile: () => void;
+  onOpenActions: (tab?: Tab) => void;
+  onOpenFamilyTree: () => void;
+  onOpenSettings: () => void;
+  onExport: () => void;
+  onImportClick: () => void;
+  onReset: () => void;
+}
+
+export function LeftSidebar({
+  character,
+  canAgeUp,
+  onAgeUp,
+  onOpenProfile,
+  onOpenActions,
+  onOpenFamilyTree,
+  onOpenSettings,
+  onExport,
+  onImportClick,
+  onReset,
+}: LeftSidebarProps) {
+  if (!character) {
+    return (
+      <div className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-white/[0.025] p-5 backdrop-blur-xl">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-zinc-500 mb-3">
+            <User className="size-6" />
+          </div>
+          <p className="text-sm font-medium text-zinc-300">No active life</p>
+          <p className="text-xs text-zinc-500 mt-1">Begin a new journey to track stats.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <aside
+      className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-white/[0.025] p-5 backdrop-blur-xl shadow-xl shadow-black/20"
+      aria-label="Character and controls"
+    >
+      <div className="flex flex-col gap-4">
+        {/* Profile Card with Full Prominent Avatar Display */}
+        <div
+          className="flex flex-col items-center p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+          data-testid="character-summary"
+        >
+          {/* Avatar Hero Frame — Centered, uncropped, fully visible */}
+          <div
+            className="h-28 w-28 flex items-center justify-center overflow-visible"
+            data-testid="avatar"
+          >
+            <Avatar character={character} className="h-full w-full object-contain" />
+          </div>
+
+          <div className="text-center mt-2 w-full">
+            <h2 className="truncate text-base font-bold text-white tracking-tight">
+              {character.name} {character.surname}
+            </h2>
+            <p className="text-[11px] font-medium text-zinc-400 truncate">
+              {rankForLife(character)}
+            </p>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <span className="text-xs font-semibold tabular-nums text-zinc-200">
+                {character.age} <span className="text-[10px] font-normal text-zinc-400">years old</span>
+              </span>
+              <span className="text-zinc-600 text-xs">•</span>
+              <div className="flex items-center gap-1" data-testid="money">
+                <Coins className="size-3 text-[#d4af37]" />
+                <span className="text-xs font-bold tabular-nums text-[#d4af37]">
+                  {formatMoney(character.money)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Rounded-Full Stat Progress Bars */}
+        <div className="flex flex-col gap-2.5 py-0.5">
+          <StatBar label="Health" value={character.stats.health} statKey="health" />
+          <StatBar label="Happiness" value={character.stats.happiness} statKey="happiness" />
+          <StatBar label="Martial Skill" value={character.stats.smarts} statKey="smarts" />
+          <StatBar label="Honor" value={character.stats.looks} statKey="looks" />
+        </div>
+
+        {/* Tactile 3D Candy Button — Restored Classic Crimson Palette */}
+        <button
+          type="button"
+          onClick={onAgeUp}
+          disabled={!canAgeUp}
+          data-testid="age-up"
+          className="group relative flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 shadow-lg shadow-rose-950/40 px-4 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+        >
+          <Sparkles className="size-4" />
+          <span>Age (+1 Year)</span>
+        </button>
+
+        {/* Minimal Vertical Navigation with smooth transition hover states */}
+        <nav className="flex flex-col gap-1 border-t border-white/[0.06] pt-3" aria-label="Navigation">
+          <span className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+            Actions & Systems
+          </span>
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            data-testid="deck-tab-profile"
+            className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <div className="flex items-center gap-2.5">
+              <User className="size-4 text-zinc-400" />
+              <span>Full Profile</span>
+            </div>
+            <ChevronRight className="size-3.5 text-zinc-600" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onOpenActions('school')}
+            data-testid="open-actions"
+            className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <div className="flex items-center gap-2.5">
+              <Swords className="size-4 text-zinc-400" />
+              <span>Activities & Career</span>
+            </div>
+            <ChevronRight className="size-3.5 text-zinc-600" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenFamilyTree}
+            data-testid="open-family-tree"
+            className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <div className="flex items-center gap-2.5">
+              <Users className="size-4 text-zinc-400" />
+              <span>Lineage & Relations</span>
+            </div>
+            <ChevronRight className="size-3.5 text-zinc-600" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onOpenActions('assets')}
+            data-testid="deck-tab-assets"
+            className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <div className="flex items-center gap-2.5">
+              <Coins className="size-4 text-zinc-400" />
+              <span>Assets & Finance</span>
+            </div>
+            <ChevronRight className="size-3.5 text-zinc-600" />
+          </button>
+        </nav>
+      </div>
+
+      {/* Utilities & Settings Footer */}
+      <div className="flex items-center justify-between border-t border-white/[0.06] pt-3 mt-3 text-xs">
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          data-testid="open-settings"
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+        >
+          <Settings className="size-3.5" />
+          <span>Settings</span>
+        </button>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onExport}
+            data-testid="export-save"
+            title="Export Save"
+            aria-label="Export save"
+            className="flex size-7 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <Download className="size-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onImportClick}
+            title="Import Save"
+            aria-label="Import save"
+            className="flex size-7 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <Upload className="size-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onReset}
+            data-testid="reset"
+            title="Reset Game"
+            aria-label="Reset game"
+            className="flex size-7 items-center justify-center rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+          >
+            <RotateCcw className="size-3.5" />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}

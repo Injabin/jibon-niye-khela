@@ -68,23 +68,23 @@ export function ActiveMenu({
   return (
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div
-            className="fixed inset-0 z-40 bg-black/40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: motionTokens.micro }}
-            onClick={onClose}
-            data-testid="active-menu-backdrop"
-          />
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-md"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: motionTokens.micro }}
+          onClick={onClose}
+          data-testid="active-menu-backdrop"
+        >
           <motion.section
             ref={overlayRef as React.Ref<HTMLElement>}
-            className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[80vh] w-full max-w-xl overflow-y-auto rounded-t-xl border border-border bg-surface shadow-lg"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
+            className="relative flex h-full max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/95 shadow-2xl shadow-black/80 backdrop-blur-2xl"
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+            onClick={(e) => e.stopPropagation()}
             data-testid="active-menu"
             role="dialog"
             aria-modal="true"
@@ -92,14 +92,17 @@ export function ActiveMenu({
             onKeyDown={trapKeyDown}
             tabIndex={-1}
           >
-            <div className="sticky top-0 flex items-center justify-between border-b border-border bg-surface px-4 py-3">
-              <h2 className="text-lg font-semibold tracking-tight text-text">Life actions</h2>
+            <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3.5">
+              <div>
+                <h2 className="text-base font-bold tracking-tight text-white">Activities & Pathways</h2>
+                <p className="text-xs text-zinc-400">Pursue education, jobs, assets, and life choices</p>
+              </div>
               <Button variant="secondary" onClick={onClose} data-testid="close-actions">
                 Close
               </Button>
             </div>
 
-            <div className="flex gap-1 overflow-x-auto border-b border-border px-3 py-2" role="tablist">
+            <div className="flex gap-1.5 overflow-x-auto border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5" role="tablist">
               {TABS.map((tabDef) => (
                 <button
                   key={tabDef.id}
@@ -119,7 +122,7 @@ export function ActiveMenu({
               ))}
             </div>
 
-            <div className="px-4 py-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
               {tab === 'school' && <SchoolTab character={character} studying={studying} onEnroll={enrollHigherEducation} />}
               {tab === 'career' && <CareerTab character={character} board={board} onApply={applyForJob} onQuit={quitJob} />}
               {tab === 'assets' && <AssetsTab character={character} onBuy={buyAsset} onSell={sellAsset} />}
@@ -127,7 +130,7 @@ export function ActiveMenu({
               {tab === 'health' && <HealthTab character={character} onVisit={visitDoctor} />}
             </div>
           </motion.section>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   );

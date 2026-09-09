@@ -23,7 +23,13 @@ const HEAD_BASE_R = 30;
  * (`lastOutcomeTone`, DESIGN.md §6 point 1); `ExpressionOverlay` is keyed so
  * its animation restarts for each new outcome.
  */
-export function Avatar({ character }: { character: Character }) {
+export function Avatar({
+  character,
+  className = 'h-44 w-36',
+}: {
+  character: Character;
+  className?: string;
+}) {
   const lastOutcomeTone = useGameStore((s) => s.lastOutcomeTone);
 
   const stage = lifeStageForAge(character.age);
@@ -60,7 +66,7 @@ export function Avatar({ character }: { character: Character }) {
 
   return (
     <div
-      className="relative h-44 w-36 shrink-0"
+      className={`relative shrink-0 flex items-center justify-center ${className}`}
       data-testid="avatar"
       data-stage={stage}
       data-gender={character.gender}
@@ -70,7 +76,7 @@ export function Avatar({ character }: { character: Character }) {
     >
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        className="h-full w-full"
+        className="h-full w-full object-contain"
         aria-hidden
         style={dead ? { opacity: 0.72, filter: 'grayscale(0.85)' } : undefined}
       >

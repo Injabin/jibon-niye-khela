@@ -12,7 +12,14 @@ import { Icon } from '@/components/ui/Icon';
  * anchor from the shared lookup. On Age Up the newest entry scrolls into view
  * (instant when reduced motion is forcing).
  */
-export function ChronicleStream({ history }: { history: LifeEventLogEntry[] }) {
+export function ChronicleStream({
+  history,
+  scrollContainerId,
+}: {
+  history: LifeEventLogEntry[];
+  /** ID of the scroll container element (tablet/desktop internal scroll). */
+  scrollContainerId?: string;
+}) {
   const endRef = useRef<HTMLDivElement>(null);
   const initialScroll = useRef(true);
 
@@ -24,8 +31,15 @@ export function ChronicleStream({ history }: { history: LifeEventLogEntry[] }) {
     const end = endRef.current;
     if (!end) return;
     const reduced = document.documentElement.dataset.reducedMotion === 'true';
+    if (scrollContainerId) {
+      const container = document.getElementById(scrollContainerId);
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
+        return;
+      }
+    }
     end.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'end' });
-  }, [history.length]);
+  }, [history.length, scrollContainerId]);
 
   if (history.length === 0) {
     return (
