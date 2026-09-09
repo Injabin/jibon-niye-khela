@@ -114,91 +114,69 @@ token here first; never introduce an ad-hoc hex value in a component.
 
 ---
 
-## 2. Screen layout
+## 2. Screen layout & Responsive Architecture
 
-### 2.1 Sticky Header (top ~15% of viewport, `position: sticky/fixed`, pinned during scroll)
+The game adopts a de-centered, full-bleed responsive layout across three distinct device tiers rather than a single centered column. Each tier is rendered mutually exclusively via reactive media-query matching (`useLayoutTier`) to guarantee clean HTML semantics, eliminate duplicate test IDs, and ensure optimal ergonomic reachability.
 
 ```
-┌─────────────────────────────────────────┐
-│  Character Name           Age  Wealth    │
-│  Title/Rank (secondary)                  │
-│  ▬▬▬▬▬▬▬▬  Health                        │
-│  ▬▬▬▬▬▬▬▬  Happiness                     │
-│  ▬▬▬▬▬▬▬▬  Martial Skill                 │
-│  ▬▬▬▬▬▬▬▬  Honor                         │
-└─────────────────────────────────────────┘
+Desktop (≥ 1280px): 3-Region Layout (3 cols : 6 cols : 3 cols)
+┌───────────────────────┬─────────────────────────────────┬───────────────────────┐
+│ LeftSidebar (Sticky)  │ Chronicle Stream (Main Center)  │ RightRail (Sticky)    │
+│ - Avatar & Identity   │ - Dedicated Internal Scroll     │ - Standing & Fame     │
+│ - 4 Core Stat Bars    │   Container (overflow-y: auto)  │ - Active Relations    │
+│ - AGE (+1 YEAR)       │ - Year Card Dividers            │ - Possessions/Assets  │
+│ - Nav & Save Actions  │ - Tagged Event Dilemmas         │ - Quick Family Access │
+└───────────────────────┴─────────────────────────────────┴───────────────────────┘
+
+Tablet (768px–1279px): 2-Column Split (5 cols : 7 cols)
+┌──────────────────────────────┬──────────────────────────────────────────────────┐
+│ LeftSidebar (Sticky)         │ Chronicle Stream (Main Body)                     │
+│ - Full Character Card        │ - Dedicated Internal Scroll (overflow-y: auto)   │
+│ - 4 Core Stat Bars           │ - Pinned year dividers                           │
+│ - AGE (+1 YEAR) & Nav        │ - Left sidebar remains fixed & fully reachable   │
+└──────────────────────────────┴──────────────────────────────────────────────────┘
+
+Mobile (< 768px): Single-Column Stack with Sticky Anchors
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ StickyHeader (Top ~15%, sticky top-0, compact summary + 4 stat bars)           │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ Chronicle Stream (Scrollable body, pb-36, tight 8px-grid margins)               │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ ControlDeck (Fixed bottom-0, tactile AGE (+1 YEAR) button + 4-tab icon bar)    │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
-- Left: character name (bold, ~16pt) + title/rank beneath in
-  `--text-secondary` (e.g. *Squire → Mercenary → Warlord*, derived from
-  age/career state per `DESIGN.md` §5.2 career track — this is a display
-  mapping onto existing career data, not a new system).
-- Right: Age (large, ~20pt bold) + Wealth in `--accent-wealth` gold.
-- Bottom of header: four flat horizontal stat bars per §0/§1.1 mapping.
-- Component: `components/game/StickyHeader.tsx`, composes the existing
-  `StatBars` component (reskinned via tokens, not rebuilt) plus a new
-  `TitleRank` display derived from existing `CareerState`.
 
-### 2.2 Chronicle Stream (middle ~70%, main scrollable body)
+### 2.1 Responsive Tiers & Region Breakdown
 
-- Continuous vertical timeline replacing/restyling the current flat "Life
-  Log" list.
-- **Year Cards:** each new age starts with a thin horizontal divider +
-  small "Year N" label — maps directly to existing `LifeEventLogEntry`
-  data grouped by age; no new data model needed.
-- **Event entries:** nested in borderless (hairline only, per §1.3) cards,
-  16px internal padding, each starting with a flat icon anchor mapped to
-  event `tag`/`tone` (per `DESIGN.md` §10) — e.g. ⚔️/combat icon for
-  training-type events, 🩸/wound icon for injury, 🪙/coin icon for income.
-  This icon-per-tag mapping must be defined once in a shared lookup table,
-  not hardcoded per component instance.
-- **Scroll behavior:** new years append to bottom; on Age Up, smooth-
-  scroll the viewport to bring the newest card into view (respecting
-  reduced-motion: instant jump instead of smooth scroll when that setting
-  is on, per `AGENT.md` §8).
-- Component: `components/game/ChronicleStream.tsx` — this replaces the
-  current plain `Life Log` list component; the underlying data source
-  (`history: LifeEventLogEntry[]`) is unchanged.
+#### A. Mobile (< 768px)
+- **Top Sticky Header:** Compact summary (`components/game/StickyHeader.tsx`) pinned at `top-0`, displaying character name, title/rank, age, wealth, and 4 horizontal stat bars.
+- **Center Chronicle:** Vertical timeline stream spanning full usable screen width with tight 8px-grid margins (`px-3 sm:px-4`, `pb-36`). Window scrolls naturally with auto-scroll anchoring newest cards into view.
+- **Bottom Control Deck:** Fixed dock (`components/game/ControlDeck.tsx`) pinned at `bottom-0 inset-x-0`, housing the oversized tactile primary action button ("AGE (+1 YEAR)") and 4 quick-access tabs (Profile, Activities, Family, Assets/Settings).
+- *Exclusivity:* Neither `LeftSidebar` nor `RightRail` is mounted on mobile.
 
-### 2.3 Interaction Overlay (event/dilemma pop-ups)
+#### B. Tablet (768px–1279px)
+- **Two-Column Split Grid:** 12-column grid (`grid-cols-12 gap-5`).
+- **Left Sidebar (5 cols):** Persistent, sticky container (`sticky top-6 h-[calc(100vh-3rem)]`, `components/game/dashboard/LeftSidebar.tsx`) housing character portrait avatar, identity readouts, 4 core stat bars, the tactile "AGE (+1 YEAR)" button, and navigation/utility actions.
+- **Right Main Chronicle (7 cols):** Houses `main#chronicle-scroll` (`h-[calc(100vh-3rem)] overflow-y-auto pr-2`) as a dedicated internal scroll container. The event history scrolls independently inside this container; the left sidebar and Age Up button remain permanently visible and reachable without scrolling past history.
+- *Exclusivity:* Neither `RightRail`, `StickyHeader`, nor `ControlDeck` is mounted on tablet.
 
-- Centered modal over a `--overlay-scrim` (60% black light / 72% dark)
-  full-screen backdrop.
-- Card: header icon, event description text (centered, ~14pt), vertical
-  stack of full-width choice buttons — this is the **event card system**
-  from `DESIGN.md` §8, now restyled to this theme, not a new system.
-- Buttons: 48px minimum height (thumb-friendly), centered bold text,
-  4px radius. The most consequential/aggressive choice uses
-  `--accent-primary` crimson fill; neutral/lesser choices use outline
-  style with `--text-primary` border+text on transparent fill.
-- This overlay is the same `EventCard` component described in
-  `DESIGN.md` §6/§8 and must still carry the mood-accent behavior already
-  specified there (green/gold-ish good, red bad, purple-ish odd/funny) —
-  reconcile that existing mood-accent token set with the new crimson/
-  steel-blue/gold palette here rather than running two competing color
-  systems; use `--accent-primary` for bad/aggressive, `--accent-secondary`
-  for neutral, `--accent-wealth` gold for good/reward-flavored outcomes.
+#### C. Desktop (≥ 1280px)
+- **Three-Region Full-Bleed Grid:** 12-column wide container (`max-w-[1700px] mx-auto px-4 lg:px-8`, `grid-cols-12 gap-6`).
+- **Left Region (3 cols):** Persistent sticky `LeftSidebar` (`sticky top-6 h-[calc(100vh-3rem)]`) with avatar, identity, core stats, Age Up, and quick navigation.
+- **Center Dominant Region (6 cols):** The widest element (`main#chronicle-scroll`, `h-[calc(100vh-3rem)] overflow-y-auto pr-2 scrollbar-none`), dedicated to the chronological narrative and interactive event choices.
+- **Right Secondary Rail (3 cols):** Persistent sticky rail (`sticky top-6 h-[calc(100vh-3rem)]`, `components/game/dashboard/RightRail.tsx`) displaying contextual secondary data: Fame & Karma reputation standing, active living relationships with quick tree shortcut, and current property/holdings. Completely eliminates empty margin gutters.
+- *Exclusivity:* Neither `StickyHeader` nor `ControlDeck` is mounted on desktop.
 
-### 2.4 Control Deck / Sticky Footer (bottom ~15%, fixed)
+### 2.2 Internal Chronicle Scroll Mechanics
+- On tablet and desktop, the event log region is its own independent scroll container (`#chronicle-scroll` with `overflow-y: auto`).
+- Advancing age appends new year entries to the bottom and programmatically scrolls `#chronicle-scroll` to the bottom.
+- When `prefers-reduced-motion: reduce` or the in-game reduced-motion setting is enabled, scroll jumps instantly without transition; otherwise, it glides smoothly.
+- Crucially, the character card, stat readouts, and Age Up button never scroll out of view.
 
-- **Age Up button:** oversized, full-width or near-full-width, sits just
-  above the tab bar. Flat claymore/gauntlet icon + "AGE (+1 YEAR)" label,
-  bold, uppercase per §1.2. This is the existing `Age Up` action, restyled
-  — no new logic.
-- **Bottom tab bar:** 4 flat icon tabs, evenly spaced:
-  - 👤 **Profile** → Stats/Traits/Lineage (existing character detail view)
-  - ⚔️ **Activities** → Train/Raid/Arena/Serve King — this is a *label*
-    reskin of the existing Activities/Career menu from `DESIGN.md` §5.2/
-    §5.4; "Serve King" maps to the existing career-employment flow,
-    "Raid"/"Arena" map to existing crime/combat-flavored activity events —
-    confirm with the team whether any of these need genuinely new event
-    content or are purely relabeled existing categories before building.
-  - 👥 **Relationships** → existing Relationships/family-tree system
-    (`DESIGN.md` §5.3), unchanged mechanically.
-  - 🛡️ **Assets** → existing Assets/finance system (`DESIGN.md` §5.5),
-    relabeled flavor: "Weapons, Armors, Castles, Mounts" instead of
-    generic "cars, houses, jewelry" — same underlying `Asset[]` data
-    shape with themed item names/icons in `/content`.
-- Component: `components/game/ControlDeck.tsx`.
+### 2.3 Interaction Overlay & Modals
+- **Dilemmas & Event Cards:** Renders inline within the Chronicle Stream or over backdrop scrim during pivotal dilemmas, with full-width choice buttons (48px minimum height for touch ergonomics).
+- **Secondary Modals:** Full Profile (`ProfileSheet`), Activities & Career (`ActiveMenu`), Family Tree (`FamilyTreeView`), and Settings (`SettingsPanel`) render as centered or slide-out modal dialogs with backdrop blur (`backdrop-blur-md`).
+- **No Horizontal Scroll:** All tab rows (e.g. `ActiveMenu` tab bar) wrap responsively (`flex-wrap`) on narrow screens; modals strictly enforce `max-w-full` with internal vertical scrolling. Zero horizontal scrollbars occur at any supported width (375px to 1440px+).
 
 ---
 
