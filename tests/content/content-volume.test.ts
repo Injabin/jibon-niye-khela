@@ -37,9 +37,9 @@ function collectText(event: LifeEventDef): string {
 }
 
 describe('content volume (Gate 5 / DESIGN.md §10)', () => {
-  it(`EVENT_REGISTRY totals 150–250 unique events (target: DESIGN.md §10)`, () => {
-    expect(EVENT_REGISTRY.length).toBeGreaterThanOrEqual(150);
-    expect(EVENT_REGISTRY.length).toBeLessThanOrEqual(250);
+  it(`EVENT_REGISTRY totals 300–400 unique events (target: DESIGN.md §10 / Phase 9)`, () => {
+    expect(EVENT_REGISTRY.length).toBeGreaterThanOrEqual(300);
+    expect(EVENT_REGISTRY.length).toBeLessThanOrEqual(400);
   });
 
   it('has a healthy share of content per life stage', () => {
