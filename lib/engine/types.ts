@@ -46,7 +46,9 @@ export type Relation =
   | 'pet'
   | 'crush'
   | 'dating'
-  | 'ex';
+  | 'ex'
+  | 'classmate'
+  | 'coworker';
 
 export interface Relationship {
   id: string;
@@ -119,11 +121,34 @@ export interface LifeEventLogEntry {
   tone: Tone;
 }
 
+export type Religion = 'islam' | 'hinduism';
+
+export type RelationshipAction =
+  | 'spend_time'
+  | 'chat'
+  | 'compliment'
+  | 'insult'
+  | 'ask_money'
+  | 'gift'
+  | 'call_ex'
+  | 'hookup_ex'
+  | 'reunite_ex'
+  | 'praise_child'
+  | 'child_treat'
+  | 'discipline_child'
+  | 'child_allowance'
+  | 'befriend'
+  | 'ask_out_peer';
+
+/** Ceremony choice offered when a partner accepts the wedding proposal. */
+export type WeddingStyle = 'kazi_office' | 'community_center';
+
 export interface Character {
   id: string;
   name: string;
   surname: string;
   gender: Gender;
+  religion: Religion;
   birthYear: number;
   stats: Stats;
   money: number;
@@ -152,6 +177,7 @@ export interface CustomCharacterOptions {
   name?: string;
   surname?: string;
   gender?: Gender;
+  religion?: Religion;
   birthYear?: number;
   wealthTier?: WealthTier;
   startingTraits?: string[];

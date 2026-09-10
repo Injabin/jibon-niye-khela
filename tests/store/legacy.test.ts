@@ -46,7 +46,7 @@ describe('continueAsHeir (M5 #4)', () => {
     expect(s.character!.name).not.toBe('');
     expect(s.character!.surname).toBe(before.character!.surname);
     expect(s.character!.money).toBe(60_000);
-    expect(s.character!.flags).toEqual([]);
+    expect(s.character!.flags).toContain('religion_muslim');
     expect(s.pendingEvents).toEqual([]);
     expect(s.seed).not.toBe(before.seed);
     expect(s.rngState).toBe(s.seed >>> 0);

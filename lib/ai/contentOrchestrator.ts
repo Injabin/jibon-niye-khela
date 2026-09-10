@@ -132,8 +132,9 @@ export async function fetchEventForYear(
     const fallback = getFallbackEvent({
       age: targetAge,
       recentEventIds: recentIds,
-      preferredTone: targetTone,
+preferredTone: targetTone,
       seed: lifeEventSeed,
+      religion: character.religion,
     });
     return { event: fallback, source: 'fallback' };
   }
@@ -148,9 +149,50 @@ export async function fetchEventForYear(
     else if (targetAge <= 64) stage = 'adult';
     else stage = 'senior';
 
+    // Derive player persona & life context for personalized story generation
+    let playerStyle = 'সাধারণ ঢাকাইয়া জীবন';
+    if (character.flags.includes('in_jail')) playerStyle = 'লাল দালানের কয়েদি (Jail Inmate)';
+    else if (character.criminalRecord.length > 0) playerStyle = 'মহল্লার মাস্তান ও ধান্ধাবাজ (Street Hustler)';
+    else if (character.education.enrolled && character.stats.smarts >= 65) playerStyle = 'পড়াকু ছাত্র ও ভবিষ্যৎ ক্যাডার (Studious Scholar)';
+    else if (character.career.jobId && character.career.performance >= 70) playerStyle = 'কাজের পাকা মানুষ (Hardworking Professional)';
+    else if (character.flags.includes('is_married') || character.flags.includes('has_child')) playerStyle = 'সংসারী গৃহস্থ (Family Person)';
+    else if (character.relationships.some((r) => r.relation === 'dating' || r.relation === 'partner')) playerStyle = 'দিলখোলা আশিক (Romantic Lover)';
+    else if (character.money > 3000) playerStyle = 'টাকাওয়ালা বড়লোক (Wealthy Person)';
+    else if (character.age >= 18 && !character.career.jobId) playerStyle = 'টংয়ের আড্ডাবাজ বেকার (Tea-Stall Loafer)';
+
+    const spouse = character.relationships.find((r) => r.relation === 'spouse' && r.alive);
+    const partner = character.relationships.find((r) => r.relation === 'partner' && r.alive);
+    const dating = character.relationships.find((r) => r.relation === 'dating' && r.alive);
+    const crush = character.relationships.find((r) => r.relation === 'crush' && r.alive);
+    const relationshipStatus = spouse
+      ? `বিবাহিত, জীবনসঙ্গী ${spouse.name}`
+      : partner
+      ? `অফিশিয়াল প্রেমিক/প্রেমিকা ${partner.name}`
+      : dating
+      ? `ডেট করতাছে ${dating.name}-এর লগে`
+      : crush
+      ? `ক্রাশ ${crush.name}-এর ওপর`
+      : 'সিঙ্গেল';
+
+    const careerStatus = character.education.enrolled
+      ? `পড়াশোনা করতাছে (${character.education.stage})`
+      : character.career.jobId
+      ? `চাকরি করতাছে: ${character.career.jobId} (পারফরম্যান্স ${character.career.performance}%)`
+      : 'বেকার / কোনো চাকরি নাই';
+
+    const criminalStatus = character.flags.includes('in_jail')
+      ? 'জেলে বন্দি'
+      : character.criminalRecord.length > 0
+      ? `পুলিশের রেকর্ড আছে (${character.criminalRecord.length} বার)`
+      : 'পরিষ্কার (কোনো অপরাধ নাই)';
+
+    const recentDecisions = (character.history ?? []).slice(-3).map((h) => h.text);
+
     const payload = {
       age: targetAge,
       stage,
+      gender: character.gender,
+      religion: character.religion,
       stats: {
         health: character.stats.health,
         happiness: character.stats.happiness,
@@ -161,6 +203,11 @@ export async function fetchEventForYear(
       traits: character.traits,
       recentEventIds: recentIds,
       targetTone,
+      playerStyle,
+      relationshipStatus,
+      careerStatus,
+      criminalStatus,
+      recentDecisions,
     };
 
     const res = await fetch('/api/generate-event', {
@@ -197,22 +244,24 @@ export async function fetchEventForYear(
       return { event: data.event, source: 'gemini' };
     }
 
-    // Response malformed -> fallback
+// Response malformed -> fallback
     const fallback = getFallbackEvent({
       age: targetAge,
       recentEventIds: recentIds,
       preferredTone: targetTone,
       seed: lifeEventSeed,
+      religion: character.religion,
     });
     return { event: fallback, source: 'fallback' };
   } catch {
     // Network failure / fetch abort -> short cooldown + fallback
     setRpmCooldown(30_000);
-    const fallback = getFallbackEvent({
+const fallback = getFallbackEvent({
       age: targetAge,
       recentEventIds: recentIds,
       preferredTone: targetTone,
       seed: lifeEventSeed,
+      religion: character.religion,
     });
     return { event: fallback, source: 'fallback' };
   }

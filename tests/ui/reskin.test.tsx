@@ -57,19 +57,19 @@ describe('Modern Martial reskin — stat keys and display labels', () => {
 
     const base = () => createCharacter(3).character;
 
-    expect(rankForLife({ ...base(), age: 3 })).toBe('Swaddled Whelp');
-    expect(rankForLife({ ...base(), age: 15 })).toBe('Squire');
-    expect(rankForLife({ ...base(), age: 21 })).toBe('Free Blade');
+    expect(rankForLife({ ...base(), age: 3 })).toBe('কোলের ছাওয়াল');
+    expect(rankForLife({ ...base(), age: 15 })).toBe('চালাক চতুর ছোকরা');
+    expect(rankForLife({ ...base(), age: 21 })).toBe('ড্যাশিং স্বাধীন জোয়ান');
     expect(
       rankForLife({
         ...base(),
         age: 30,
         career: { jobId: 'soldier', performance: 80, yearsAtJob: 4 },
       }),
-    ).toBe('Battle-Hardened Veteran');
-    expect(rankForLife({ ...base(), age: 40, reputation: { fame: 85, karma: 30 } })).toBe('Warlord');
+    ).toBe('পোড়খাওয়া ঘাঘু কারবারি');
+    expect(rankForLife({ ...base(), age: 40, reputation: { fame: 85, karma: 30 } })).toBe('মহল্লার ডন ও খলিফা');
     expect(rankForLife({ ...base(), alive: false, age: 75, reputation: { fame: 95, karma: 30 } })).toBe(
-      'The Departed',
+      'মরহুম / ওপারে পাড়ি দেওয়া আত্মা',
     );
   });
 });

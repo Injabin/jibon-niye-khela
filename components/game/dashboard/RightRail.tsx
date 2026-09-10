@@ -1,6 +1,8 @@
 'use client';
 
-import type { Character, Relation } from '@/lib/engine/types';
+import { useState } from 'react';
+import type { Character, Relation, Relationship } from '@/lib/engine/types';
+import { RelationshipModal } from '@/components/game/RelationshipModal';
 import { formatMoney } from '@/lib/ui/money';
 import {
   Sparkles,
@@ -18,6 +20,8 @@ import {
   Flame,
   HeartHandshake,
   HeartCrack,
+  GraduationCap,
+  Briefcase,
 } from 'lucide-react';
 
 interface RightRailProps {
@@ -36,6 +40,9 @@ const RELATION_ICONS: Partial<Record<Relation, React.ComponentType<{ className?:
   child: Users,
   sibling: Users,
   friend: Sparkles,
+  grandparent: Users,
+  classmate: GraduationCap,
+  coworker: Briefcase,
 };
 
 const ASSET_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -48,6 +55,8 @@ const ASSET_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 };
 
 export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
+  const [selectedRel, setSelectedRel] = useState<Relationship | null>(null);
+
   if (!character) {
     return (
       <div className="flex h-full flex-col justify-center items-center rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 text-center text-zinc-400 backdrop-blur-xl">
@@ -57,13 +66,17 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
     );
   }
 
-  const livingRelationships = character.relationships.filter((r) => r.alive);
+  // Defensive deduplication to ensure unique entries by ID
+  const livingRelationships = Array.from(
+    new Map(character.relationships.filter((r) => r.alive).map((r) => [r.id, r])).values()
+  );
 
   return (
-    <aside
-      className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20 scrollbar-none"
-      aria-label="Secondary stats and lineage"
-    >
+    <>
+      <aside
+        className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20 scrollbar-none"
+        aria-label="Secondary stats and lineage"
+      >
       {/* 1. Reputation & Standing */}
       <div className="flex flex-col gap-2.5 pb-4 border-b border-white/[0.06]">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
@@ -141,20 +154,22 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
           <p className="text-xs text-zinc-400 py-3 text-center">No current contacts.</p>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {livingRelationships.slice(0, 5).map((rel) => {
+            {livingRelationships.slice(0, 5).map((rel, index) => {
               const RelIcon = RELATION_ICONS[rel.relation] ?? Users;
               return (
-                <div
-                  key={rel.id}
-                  className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.02] p-2.5 hover:bg-white/[0.04] transition-colors"
+                <button
+                  type="button"
+                  key={`${rel.id}-${rel.relation}-${index}`}
+                  onClick={() => setSelectedRel(rel)}
+                  className="group w-full text-left flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.02] p-2.5 hover:bg-white/[0.06] hover:border-white/10 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] border border-white/[0.06] text-zinc-400">
+                    <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] border border-white/[0.06] text-zinc-400 group-hover:text-zinc-200 group-hover:border-white/20 transition-colors">
                       <RelIcon className="size-3.5" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="truncate text-xs font-medium text-zinc-200">{rel.name}</p>
+                        <p className="truncate text-xs font-medium text-zinc-200 group-hover:text-white transition-colors">{rel.name}</p>
                         {rel.romanceStage !== undefined && (
                           <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/20">
                             {rel.relation}
@@ -179,7 +194,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
                       {rel.meter}%
                     </span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -227,6 +242,14 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
           </div>
         </div>
       )}
-    </aside>
+      </aside>
+
+      {selectedRel && (
+        <RelationshipModal
+          relationship={selectedRel}
+          onClose={() => setSelectedRel(null)}
+        />
+      )}
+    </>
   );
 }

@@ -6,12 +6,12 @@ import { BOND_MAX, BOND_PER_VISIT, ageFamilyMembers, birthChild, generateFamilyT
 import type { FamilyTree, FamilyRole } from '@/lib/engine/family';
 import { buildHeirFamilyTree, createHeirCharacter, eligibleHeirs, nextLifeSeed } from '@/lib/engine/legacy';
 import { buyAsset, sellAsset } from '@/lib/engine/events/categories/assets';
-import { applyForJob, quitJob } from '@/lib/engine/events/categories/career';
+import { applyForJob, quitJob, workOvertime, suckUpToBoss, askForRaise } from '@/lib/engine/events/categories/career';
 import { commitCrime } from '@/lib/engine/events/categories/crime';
-import { enterHigherEducation } from '@/lib/engine/events/categories/education';
+import { enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, MilestoneKind, Relation, Tone } from '@/lib/engine/types';
+import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
 import {
   generateDatingPool,
   askOutCandidate,
@@ -19,8 +19,30 @@ import {
   proposeMarriage,
   cheatBranch,
   breakupOrDivorce,
+  dateCandidateOrPartner,
+  giveGiftToPartner,
+  tryForBaby,
+  callOrTextEx,
+  hookupWithEx,
+  begGetBackTogether,
+  insultEx,
   type DatingCandidate,
 } from '@/lib/engine/romance';
+import {
+  spendTimeWithPerson,
+  chatWithPerson,
+  complimentPerson,
+  insultPerson,
+  askMoneyFromPerson,
+  giveGiftToPerson,
+  praiseChild,
+  buyChildTreat,
+  disciplineChild,
+  giveChildAllowance,
+  befriendPeer,
+  askOutPeer,
+  type RelationshipActionResult,
+} from '@/lib/engine/relationships';
 import { achievementsStore } from '@/lib/store/achievementsStore';
 import { soundManager } from '@/lib/audio/SoundManager';
 import { fetchEventForYear } from '@/lib/ai/contentOrchestrator';
@@ -142,12 +164,54 @@ export interface GameStoreActions {
   askOut(candidate: DatingCandidate): boolean;
   /** Make an exclusive official partnership. */
   makeOfficial(relationshipId: string): boolean;
-  /** Propose marriage to an official partner. */
-  propose(relationshipId: string): boolean;
+  /** Propose marriage to an official partner with a chosen ceremony style. */
+  propose(relationshipId: string, style?: WeddingStyle): boolean;
   /** Engage in a consequence-driven cheating affair. */
   cheat(relationshipId: string): boolean;
   /** Break up or divorce an active romantic partner or spouse. */
   breakupOrDivorce(relationshipId: string): boolean;
+  /** Take partner or crush on an authentic Dhakaiya date. */
+  datePartner(relationshipId: string): boolean;
+  /** Give a gift to a romantic partner, crush, or spouse. */
+  giveGift(relationshipId: string): boolean;
+  /** Try for a baby with a committed partner or spouse. */
+  haveBaby(relationshipId: string): boolean;
+  /** Active-menu education action: study harder to boost GPA and smarts. */
+  studyHarder(): boolean;
+  /** Active-menu education action: hire a private tutor. */
+  hireTutor(): boolean;
+  /** Active-menu education action: drop out of school. */
+  dropOutOfSchool(): boolean;
+  /** Active-menu education action: bang class to hang out (skip class). */
+  skipClass(): boolean;
+  /** Active-menu education action: join the school/college debate club. */
+  joinDebateClub(): boolean;
+  /** Active-menu career action: work overtime to boost performance. */
+  workOvertime(): boolean;
+  /** Active-menu career action: suck up to boss. */
+  suckUpToBoss(): boolean;
+  /** Active-menu career action: ask for a raise. */
+  askForRaise(): boolean;
+  /** Interact with any living person in character.relationships using BitLife sub-actions. */
+  interactWithPerson(relationshipId: string, action: RelationshipAction): boolean;
+  /** Reach out to an ex-partner via call or text. */
+  callEx(relationshipId: string): boolean;
+  /** Secret rendezvous with an ex-partner. */
+  hookupEx(relationshipId: string): boolean;
+  /** Beg to get back together with an ex-partner. */
+  reuniteEx(relationshipId: string): boolean;
+  /** Insult an ex-partner. */
+  insultEx(relationshipId: string): boolean;
+  /** Visit Kabiraj (traditional herbalist/spiritual healer). */
+  visitKabiraj(): boolean;
+  /** Workout at the gym / akhora for health and looks. */
+  doGymWorkout(): boolean;
+  /** Watch a movie at Madhumita/Cineplex for happiness. */
+  watchMovie(): boolean;
+  /** Pray or worship at mosque or temple according to religion for karma and peace. */
+  prayOrWorship(): boolean;
+  /** Do quick side hustle for emergency cash (tuition, delivery, street vendor). */
+  doSideHustle(kind: 'tuition' | 'delivery' | 'street_vendor'): boolean;
   /** Legacy mode (init.md M5 #4): continue as a child who has come of age after */
   continueAsHeir(heirId: string): boolean;
   /** Set pause state (Phase 10). Ducks ambient music when paused. */
@@ -207,7 +271,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
    * persist so consumed randomness never re-rolls the same failed attempt.
    */
   function runIdleAction(
-    op: (character: Character, rng: RNG) => { ok: boolean; text: string },
+    op: (character: Character, rng: RNG) => { ok: boolean; text: string; tone?: Tone },
   ): boolean {
     const s = get();
     if (!s.character || !s.character.alive || s.isPaused) return false;
@@ -216,6 +280,16 @@ export const useGameStore = create<GameStore>()((set, get) => {
     const rng = makeRng(s.seed, s.rngState);
     const character = structuredClone(s.character);
     const result = op(character, rng);
+
+    // Guaranteed timeline logging for EVERY idle action
+    const lastHistory = character.history[character.history.length - 1];
+    if (!lastHistory || lastHistory.text !== result.text) {
+      character.history.push({
+        age: character.age,
+        text: result.text,
+        tone: result.tone ?? (result.ok ? 'good' : 'neutral'),
+      });
+    }
 
     set({ character, rngState: rng.getState(), message: result.text, error: null });
     persist();
@@ -310,8 +384,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
           ? ageFamilyMembers(s.familyTree, result.character.age)
           : s.familyTree;
 
-      let events = [...result.firedEvents];
-      if (result.character.alive && events.length === 0) {
+      let events: LifeEventDef[] = [];
+      if (result.character.alive) {
         const fallback = getFallbackEvent({
           age: result.character.age,
           recentEventIds: (result.character.recentEventHistory ?? []).map((r) => r.id),
@@ -611,6 +685,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
         if (rel) rel.meter = nextBond;
       }
 
+      character.history.push({
+        age: character.age,
+        text,
+        tone: ok ? 'good' : 'neutral',
+      });
+
       set({
         character,
         familyTree: { ...tree, members },
@@ -716,7 +796,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return result.ok;
     },
 
-    propose(relationshipId) {
+    propose(relationshipId, style = 'kazi_office') {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
@@ -724,7 +804,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
-      const result = proposeMarriage(character, familyTree, relationshipId, rng);
+      const result = proposeMarriage(character, familyTree, relationshipId, rng, style);
 
       set({
         character,
@@ -777,6 +857,402 @@ export const useGameStore = create<GameStore>()((set, get) => {
       });
       persist();
       return result.ok;
+    },
+
+    datePartner(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = dateCandidateOrPartner(character, relationshipId, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    giveGift(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = giveGiftToPartner(character, relationshipId, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    haveBaby(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
+      const result = tryForBaby(character, familyTree, relationshipId, rng);
+
+      set({
+        character,
+        familyTree,
+        rngState: rng.getState(),
+        message: result.text,
+        pendingSting: result.ok ? 'birth' : null,
+        stingToken: result.ok ? s.stingToken + 1 : s.stingToken,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    studyHarder() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const character = structuredClone(s.character);
+      const result = studyHarder(character);
+
+      set({
+        character,
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    hireTutor() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const character = structuredClone(s.character);
+      const result = hireTutor(character);
+
+      set({
+        character,
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    dropOutOfSchool() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const character = structuredClone(s.character);
+      const result = dropOutOfSchool(character);
+
+      set({
+        character,
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    skipClass() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = skipClass(character, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    joinDebateClub() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = joinDebateClub(character, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    workOvertime() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const character = structuredClone(s.character);
+      const result = workOvertime(character);
+
+      set({
+        character,
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    suckUpToBoss() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = suckUpToBoss(character, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    askForRaise() {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = askForRaise(character, rng);
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    interactWithPerson(relationshipId, action) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      let result: RelationshipActionResult;
+
+      switch (action) {
+        case 'spend_time':
+          result = spendTimeWithPerson(character, relationshipId, rng);
+          break;
+        case 'chat':
+          result = chatWithPerson(character, relationshipId, rng);
+          break;
+        case 'compliment':
+          result = complimentPerson(character, relationshipId, rng);
+          break;
+        case 'insult':
+          result = insultPerson(character, relationshipId, rng);
+          break;
+        case 'ask_money':
+          result = askMoneyFromPerson(character, relationshipId, rng);
+          break;
+        case 'gift':
+          result = giveGiftToPerson(character, relationshipId, rng);
+          break;
+        case 'call_ex': {
+          const out = callOrTextEx(character, relationshipId, rng);
+          result = { ok: out.ok, text: out.text, tone: 'neutral' };
+          break;
+        }
+        case 'hookup_ex': {
+          const out = hookupWithEx(character, relationshipId, rng);
+          result = { ok: out.ok, text: out.text, tone: 'neutral' };
+          break;
+        }
+        case 'reunite_ex': {
+          const out = begGetBackTogether(character, relationshipId, rng);
+          result = { ok: out.ok, text: out.text, tone: out.ok ? 'good' : 'bad' };
+          break;
+        }
+        case 'praise_child':
+          result = praiseChild(character, relationshipId, rng);
+          break;
+        case 'child_treat':
+          result = buyChildTreat(character, relationshipId, rng);
+          break;
+        case 'discipline_child':
+          result = disciplineChild(character, relationshipId, rng);
+          break;
+        case 'child_allowance':
+          result = giveChildAllowance(character, relationshipId, rng);
+          break;
+        case 'befriend':
+          result = befriendPeer(character, relationshipId, rng);
+          break;
+        case 'ask_out_peer':
+          result = askOutPeer(character, relationshipId, rng);
+          break;
+        default:
+          return false;
+      }
+
+      set({
+        character,
+        rngState: rng.getState(),
+        message: result.text,
+        error: null,
+      });
+      persist();
+      return result.ok;
+    },
+
+    callEx(relationshipId) {
+      return get().interactWithPerson(relationshipId, 'call_ex');
+    },
+
+    hookupEx(relationshipId) {
+      return get().interactWithPerson(relationshipId, 'hookup_ex');
+    },
+
+    reuniteEx(relationshipId) {
+      return get().interactWithPerson(relationshipId, 'reunite_ex');
+    },
+
+    insultEx(relationshipId) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const out = insultEx(character, relationshipId, rng);
+      set({
+        character,
+        rngState: rng.getState(),
+        message: out.text,
+        error: null,
+      });
+      persist();
+      return out.ok;
+    },
+
+    visitKabiraj() {
+      return runIdleAction((character, rng) => {
+        const cost = 100;
+        if (character.money < cost) {
+          return { ok: false, text: `কবিরাজি দাওয়াই নেওয়ার মতো ৳${cost} পকেটে নাই!` };
+        }
+        character.money -= cost;
+        const heal = rng.rangeInt(10, 22);
+        character.stats.health = Math.min(100, character.stats.health + heal);
+        character.stats.happiness = Math.min(100, character.stats.happiness + 6);
+        const text = `চকবাজারের নামকরা কবিরাজ সাবের কাছে গেলা। ঝাঁড়ফুক দিয়া খাঁটি তুলসী পাতা আর মধু মাখা গাছের শিকড় খাওয়াইয়া দিলো। শরীর চাঙ্গা হইলো! (+${heal} স্বাস্থ্য, −৳${cost})`;
+        return { ok: true, text, tone: 'good' };
+      });
+    },
+
+    doGymWorkout() {
+      return runIdleAction((character, rng) => {
+        const cost = 150;
+        if (character.money < cost) {
+          return { ok: false, text: `জিম বা আখড়ায় ভর্তি হওয়ার মতো ৳${cost} পকেটে নাই!` };
+        }
+        character.money -= cost;
+        const healthGain = rng.rangeInt(6, 12);
+        const looksGain = rng.rangeInt(4, 8);
+        character.stats.health = Math.min(100, character.stats.health + healthGain);
+        character.stats.looks = Math.min(100, character.stats.looks + looksGain);
+        character.stats.happiness = Math.min(100, character.stats.happiness + 5);
+        const text = `আর্মানিটোলার সনাতন আখড়ায় ও জিমে গিয়া ডাম্বেল আর বুক ডন মারলা! মাসল ফুললো, চর্বি ঝইড়া চেহারা খোলতাই হইলো! (+${healthGain} স্বাস্থ্য, +${looksGain} চেহারা, −৳${cost})`;
+        return { ok: true, text, tone: 'good' };
+      });
+    },
+
+    watchMovie() {
+      return runIdleAction((character) => {
+        const cost = 250;
+        if (character.money < cost) {
+          return { ok: false, text: `সিনেমার টিকিট কাটার মতো ৳${cost} পকেটে নাই!` };
+        }
+        character.money -= cost;
+        character.stats.happiness = Math.min(100, character.stats.happiness + 16);
+        const text = `মধুমিতা সিনেমা হলে গিয়া টিকিটের লগে গরম পপকর্ন নিয়া ফুল অ্যাকশন সিনেমা দেখলা! হলের দর্শকদের শিষ আর তালির লগে মনটা পুরাই ফুরফুরে হইয়া গেল! (+১৬ সুখ, −৳${cost})`;
+        return { ok: true, text, tone: 'good' };
+      });
+    },
+
+    prayOrWorship() {
+      return runIdleAction((character, rng) => {
+        const isMuslim = character.religion === 'islam';
+        const karmaGain = rng.rangeInt(10, 18);
+        const happyGain = rng.rangeInt(8, 14);
+        character.reputation.karma = Math.min(100, character.reputation.karma + karmaGain);
+        character.stats.happiness = Math.min(100, character.stats.happiness + happyGain);
+
+        const text = isMuslim
+          ? `তারা মসজিদে গিয়া খুশুখুজুর লগে নামাজ আদায় করলা এবং দেশ ও পরিবারের জন্য খাস দোয়া করলা। অন্তরে স্বর্গীয় প্রশান্তি নেমে আসলো! (+${karmaGain} কর্ম, +${happyGain} সুখ)`
+          : `ঢাকেশ্বরী জাতীয় মন্দিরে গিয়া দেবীর চরণে মাথা ঠেকাইয়া প্রণাম করলা ও পুষ্পাঞ্জলি দিলা। অন্তরে গভীর আত্মিক শান্তি পাইলা! (+${karmaGain} কর্ম, +${happyGain} সুখ)`;
+        return { ok: true, text, tone: 'good' };
+      });
+    },
+
+    doSideHustle(kind) {
+      return runIdleAction((character, rng) => {
+        let earned = 0;
+        let text = '';
+        if (kind === 'tuition') {
+          if (character.stats.smarts < 40) {
+            return { ok: false, text: 'নিজেরই পড়াশোনার ঠিক নাই, অন্যেরে টিউশনি পড়াইবা কেমনে?' };
+          }
+          earned = rng.rangeInt(400, 1200);
+          character.money += earned;
+          character.stats.smarts = Math.min(100, character.stats.smarts + 2);
+          text = `পাড়ার এক বড়লোকের পোলারে অংক আর ইংরেজি টিউশনি পড়াইয়া নগদ ৳${earned} পকেটে ভরলা! (+৳${earned}, +বুদ্ধি)`;
+        } else if (kind === 'delivery') {
+          earned = rng.rangeInt(300, 800);
+          character.money += earned;
+          character.stats.health = Math.max(1, character.stats.health - 3);
+          text = `পুরান ঢাকার অলিগলিতে সাইকেল নিয়া ফুড ও পার্সেল ডেলিভারি দিলা। রোদ-বৃষ্টিতে খাটাখাটুনি কইরা ৳${earned} কামাই করলা! (+৳${earned})`;
+        } else {
+          earned = rng.rangeInt(350, 950);
+          character.money += earned;
+          text = `চকবাজারের মোড়ে ভ্যানে কইরা বাকরখানি আর ঝালমুড়ি বেইচা ভালোই লাভ হইলো! নগদ ৳${earned} লাভ করলা! (+৳${earned})`;
+        }
+        return { ok: true, text, tone: 'good' };
+      });
     },
 
     exportToJson() {

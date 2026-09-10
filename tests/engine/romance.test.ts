@@ -9,6 +9,9 @@ import {
   proposeMarriage,
   cheatBranch,
   breakupOrDivorce,
+  dateCandidateOrPartner,
+  giveGiftToPartner,
+  tryForBaby,
   FICTIONAL_CELEBRITY_ARCHETYPES,
   type DatingCandidate,
 } from '@/lib/engine/romance';
@@ -35,7 +38,7 @@ describe('Romance Progression Engine (Gate 9 / Additional_plus_improved_plan.md)
     const rng = new RNG(999);
     const { character } = createCharacter(42);
     character.age = 24;
-    character.money = 200;
+    character.money = 10000;
     const tree = generateFamilyTree(character, 999);
 
     const candidate: DatingCandidate = {
@@ -178,5 +181,202 @@ describe('Sensitive Content Boundaries & Archetype Integrity (Gate 9 / DESIGN.md
 
     const pool = generateDatingPool(character, rng, 5);
     expect(pool.length).toBe(0);
+  });
+
+  it('deduplicates existing relationships when asking out an existing contact/crush', () => {
+    const rng = new RNG(55);
+    const { character } = createCharacter(42);
+    character.age = 17;
+    character.stats.looks = 95;
+    character.money = 3000;
+
+    const candidate: DatingCandidate = {
+      id: 'crush_orpa',
+      name: 'Orpa Mondol',
+      gender: 'female',
+      age: 17,
+      archetype: 'ইশকুলের সহপাঠী',
+      isCelebrity: false,
+      looks: 60,
+      smarts: 60,
+    };
+
+    // First ask out -> added as crush
+    const firstResult = askOutCandidate(character, candidate, rng);
+    expect(firstResult.ok).toBe(true);
+    const matchesBefore = character.relationships.filter((r) => r.name === 'Orpa Mondol');
+    expect(matchesBefore.length).toBe(1);
+
+    // Second ask out with same candidate id -> upgrades in-place, NEVER duplicates
+    const secondResult = askOutCandidate(character, candidate, rng);
+    expect(secondResult.ok).toBe(true);
+    const matchesAfter = character.relationships.filter((r) => r.name === 'Orpa Mondol');
+    expect(matchesAfter.length).toBe(1);
+    expect(matchesAfter[0].id).toBe('crush_orpa');
+  });
+
+  it('supports dating and gifting with partner', () => {
+    const rng = new RNG(42);
+    const { character } = createCharacter(42);
+    character.age = 22;
+    character.stats.looks = 95;
+    character.money = 3000;
+
+    const candidate: DatingCandidate = {
+      id: 'rel_nusrat',
+      name: 'Nusrat Jahan',
+      gender: 'female',
+      age: 21,
+      archetype: 'গ্রাফিক্স ডিজাইনার',
+      isCelebrity: false,
+      looks: 70,
+      smarts: 70,
+    };
+
+    const askOutResult = askOutCandidate(character, candidate, rng);
+    expect(askOutResult.ok).toBe(true);
+    const rel = character.relationships.find((r) => r.id === 'rel_nusrat')!;
+    expect(rel).toBeDefined();
+    const initialMeter = rel.meter;
+
+    // Date
+    const dateResult = dateCandidateOrPartner(character, rel.id, rng);
+    expect(dateResult.ok).toBe(true);
+    expect(character.money).toBe(2800); // 3000 - 200
+    expect(rel.meter).toBeGreaterThan(initialMeter);
+
+    // Gift
+    const giftResult = giveGiftToPartner(character, rel.id, rng);
+    expect(giftResult.ok).toBe(true);
+    expect(character.money).toBe(2400); // 2800 - 400
+  });
+
+  it('supports having a baby with spouse and adds child to family tree and relationships', () => {
+    const rng = new RNG(1);
+    const { character } = createCharacter(42);
+    character.age = 26;
+    character.money = 2000;
+    character.stats.health = 90;
+    const tree = generateFamilyTree(character, 1);
+
+    // Add spouse
+    character.relationships.push({
+      id: 'spouse_fatima',
+      relation: 'spouse',
+      name: 'Fatima Begum',
+      age: 24,
+      alive: true,
+      meter: 90,
+      metAge: 22,
+    });
+    character.flags.push('is_married');
+
+    const babyResult = tryForBaby(character, tree, 'spouse_fatima', rng);
+    expect(babyResult.ok).toBe(true);
+    expect(character.flags).toContain('has_child');
+
+    // Child in relationships
+    const childRel = character.relationships.find((r) => r.relation === 'child');
+    expect(childRel).toBeDefined();
+    expect(childRel!.age).toBe(0);
+
+    // Child in family tree
+    const childTreeMember = tree.members.find((m) => m.role === 'child');
+    expect(childTreeMember).toBeDefined();
+    expect(childTreeMember!.age).toBe(0);
+  });
+});
+
+describe('Wedding Styles (Kazi Office vs Community Center)', () => {
+  it('kazi_office marriage costs 2050 total and sets spouse relation with appropriate text', () => {
+    const rng = new RNG(7001);
+    const { character } = createCharacter(7001);
+    character.age = 26;
+    character.money = 10000;
+    const tree = generateFamilyTree(character, 7001);
+    character.relationships.push({
+      id: 'fiance_ruma',
+      relation: 'partner',
+      romanceStage: 'partner',
+      name: 'Ruma Akter',
+      age: 24,
+      alive: true,
+      meter: 90,
+      metAge: 22,
+    });
+
+    const result = proposeMarriage(character, tree, 'fiance_ruma', rng, 'kazi_office');
+    expect(result.ok).toBe(true);
+    expect(character.money).toBe(10000 - 50 - 2000);
+    expect(result.text).toContain('নিকাহ');
+    const spouse = tree.members.find((m) => m.role === 'spouse');
+    expect(spouse).toBeDefined();
+  });
+
+  it('community_center marriage costs 8050 and text mentions community center', () => {
+    const rng = new RNG(7002);
+    const { character } = createCharacter(7002);
+    character.age = 28;
+    character.money = 20000;
+    const tree = generateFamilyTree(character, 7002);
+    character.relationships.push({
+      id: 'fiance_samir',
+      relation: 'partner',
+      romanceStage: 'partner',
+      name: 'Samir Das',
+      age: 27,
+      alive: true,
+      meter: 90,
+      metAge: 22,
+    });
+
+    const result = proposeMarriage(character, tree, 'fiance_samir', rng, 'community_center');
+    expect(result.ok).toBe(true);
+    expect(character.money).toBe(20000 - 50 - 8000);
+    expect(result.text).toContain('কমিউনিটি সেন্টার');
+  });
+
+  it('rejects when funds are insufficient for the chosen style', () => {
+    const rng = new RNG(7003);
+    const { character } = createCharacter(7003);
+    character.age = 25;
+    character.money = 3000;
+    const tree = generateFamilyTree(character, 7003);
+    character.relationships.push({
+      id: 'fiance_low',
+      relation: 'partner',
+      romanceStage: 'partner',
+      name: 'Low Funds',
+      age: 24,
+      alive: true,
+      meter: 90,
+      metAge: 22,
+    });
+
+    const result = proposeMarriage(character, tree, 'fiance_low', rng, 'community_center');
+    expect(result.ok).toBe(false);
+    expect(result.text).toContain('৳');
+  });
+
+  it('defaults to kazi_office when style is omitted', () => {
+    const rng = new RNG(7004);
+    const { character } = createCharacter(7004);
+    character.age = 25;
+    character.money = 10000;
+    const tree = generateFamilyTree(character, 7004);
+    character.relationships.push({
+      id: 'fiance_default',
+      relation: 'partner',
+      romanceStage: 'partner',
+      name: 'Default Test',
+      age: 23,
+      alive: true,
+      meter: 90,
+      metAge: 22,
+    });
+
+    const result = proposeMarriage(character, tree, 'fiance_default', rng);
+    expect(result.ok).toBe(true);
+    expect(character.money).toBe(10000 - 50 - 2000);
   });
 });

@@ -3,11 +3,14 @@ import { ageUp } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { RNG } from '@/lib/engine/rng';
 import { buyAsset, sellAsset, tickAssets } from '@/lib/engine/events/categories/assets';
-import { applyForJob, getJobBoard, quitJob, tickCareer } from '@/lib/engine/events/categories/career';
+import { applyForJob, getJobBoard, quitJob, tickCareer, workOvertime, suckUpToBoss, askForRaise } from '@/lib/engine/events/categories/career';
 import { commitCrime, tickCrime } from '@/lib/engine/events/categories/crime';
 import {
   enterHigherEducation,
   tickEducation,
+  studyHarder,
+  hireTutor,
+  dropOutOfSchool,
 } from '@/lib/engine/events/categories/education';
 import {
   applyMentalSupport,
@@ -399,5 +402,55 @@ describe('systems tick through ageUp (init.md M5 #2)', () => {
     ageUp(character, rng);
     expect(character.career.yearsAtJob).toBeGreaterThanOrEqual(1);
     expect(character.money).toBeGreaterThan(before);
+  });
+
+  it('supports career active menu actions (overtime, suck up to boss, ask for raise)', () => {
+    const { character, rng } = createCharacter(24);
+    character.career.jobId = 'fastfood';
+    character.career.performance = 50;
+    character.career.yearsAtJob = 2;
+    character.money = 500;
+
+    // Overtime
+    const ot = workOvertime(character);
+    expect(ot.ok).toBe(true);
+    expect(character.career.performance).toBe(65);
+
+    // Suck up to boss
+    const suck = suckUpToBoss(character, rng);
+    expect(typeof suck.ok).toBe('boolean');
+
+    // Ask for raise with high performance
+    character.career.performance = 85;
+    const raise = askForRaise(character, rng);
+    expect(raise.ok).toBe(true);
+    expect(character.money).toBeGreaterThan(500);
+  });
+
+  it('supports education active menu actions (study harder, hire tutor, drop out)', () => {
+    const { character } = createCharacter(25);
+    character.age = 14;
+    character.education.enrolled = true;
+    character.education.stage = 'middle';
+    character.education.gpa = 2.5;
+    character.stats.smarts = 50;
+    character.money = 1000;
+
+    // Study harder
+    const studyRes = studyHarder(character);
+    expect(studyRes.ok).toBe(true);
+    expect(character.stats.smarts).toBeGreaterThan(50);
+    expect(character.education.gpa).toBeGreaterThan(2.5);
+
+    // Hire tutor
+    const tutorRes = hireTutor(character);
+    expect(tutorRes.ok).toBe(true);
+    expect(character.money).toBe(500); // 1000 - 500
+
+    // Drop out
+    const dropRes = dropOutOfSchool(character);
+    expect(dropRes.ok).toBe(true);
+    expect(character.education.enrolled).toBe(false);
+    expect(character.education.stage).toBe('dropped');
   });
 });

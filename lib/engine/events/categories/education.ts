@@ -11,6 +11,7 @@
 
 import type { RNG } from '@/lib/engine/rng';
 import { applyStatEffects } from '@/lib/engine/stats';
+import { seedClassmates } from '@/lib/engine/relationships';
 import type { Character, EducationStage, Tone } from '@/lib/engine/types';
 
 export interface EducationOutcome {
@@ -171,6 +172,9 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
 
   if (e.graduated || e.stage === 'dropped') return null;
 
+  // Keep a living circle of classmates around for the peer interaction suite.
+  if (e.enrolled) seedClassmates(character, rng, 3);
+
   // Post-secondary countdown → graduation.
   if (e.enrolled && (e.stage === 'undergraduate' || e.stage === 'vocational' || e.stage === 'graduate')) {
     const years = e.stage === 'vocational' ? VOCATIONAL_YEARS : UNDERGRAD_YEARS;
@@ -241,4 +245,117 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
   }
 
   return null;
+}
+
+/** Studies harder to boost GPA and smarts at the cost of happiness. */
+export function studyHarder(character: Character): { ok: boolean; text: string } {
+  if (!character.education.enrolled) {
+    return { ok: false, text: 'তুমি তো কোনো শিক্ষাপ্রতিষ্ঠানে ভর্তিই নাই, পড়বা কী?' };
+  }
+
+  character.stats.smarts = Math.min(100, character.stats.smarts + 4);
+  character.education.gpa = Math.min(4.0, Math.round((character.education.gpa + 0.3) * 10) / 10);
+  character.stats.happiness = Math.max(0, character.stats.happiness - 4);
+
+  const msg = `সারারাত হারিকেনের আলোয় আর টেবিলে মুখ গুঁইজা জান বাজি রাইখা পড়লা! রেজাল্ট ও বুদ্ধি বাড়লো, তয় মাথাটা পুরা ভোঁ ভোঁ করতাছে!`;
+  character.history.push({ age: character.age, text: msg, tone: 'good' });
+  return { ok: true, text: msg };
+}
+
+/** Hires a private tutor for specialized academic coaching. */
+export function hireTutor(character: Character): { ok: boolean; text: string } {
+  if (!character.education.enrolled) {
+    return { ok: false, text: 'ইশকুলে না পড়লে মাস্টার সাব কারে পড়াইবো?' };
+  }
+
+  const TUTOR_COST = 500;
+  if (character.money < TUTOR_COST) {
+    return { ok: false, text: `প্রাইভেট টিউটরের বেতন দেওয়ার মতো ৳${TUTOR_COST} পকেটে নাই!` };
+  }
+
+  character.money -= TUTOR_COST;
+  character.stats.smarts = Math.min(100, character.stats.smarts + 6);
+  character.education.gpa = Math.min(4.0, Math.round((character.education.gpa + 0.5) * 10) / 10);
+
+  const msg = `মহল্লার নামকরা মাস্টার সাবরে প্রাইভেট টিউটর রাখলা। কঠিন সব অঙ্ক আর বিজ্ঞানের সূত্র এহন পানির লাহান সোজা লাগতাছে!`;
+  character.history.push({ age: character.age, text: msg, tone: 'good' });
+  return { ok: true, text: msg };
+}
+
+/** Drops out of school early to pursue life in the streets or odd jobs. */
+export function dropOutOfSchool(character: Character): { ok: boolean; text: string } {
+  if (!character.education.enrolled) {
+    return { ok: false, text: 'তুমি তো অলরেডি পড়াশোনা করতাছো না!' };
+  }
+
+  character.education.enrolled = false;
+  character.education.stage = 'dropped';
+  toggleStudentFlag(character, false);
+  if (!hasFlag(character, 'unemployed') && !character.career.jobId) {
+    character.flags.push('unemployed');
+  }
+
+  const msg = `বই-খাতা সব আলমারিতে তুইলা পড়াশোনাকে "টা টা বাই বাই" কইলা! আব্বা-আম্মার চিল্লাচিল্লি উপেক্ষা কইরা রাজপথের স্বাধীন জীবনে নামলা!`;
+  character.history.push({ age: character.age, text: msg, tone: 'bad' });
+  return { ok: true, text: msg };
+}
+
+/** Bangs class to hang out with the gang — a chill risk with a chance of being caught. */
+export function skipClass(character: Character, rng: RNG): { ok: boolean; text: string; tone: Tone } {
+  if (!character.education.enrolled) {
+    return { ok: false, text: 'তুমি তো কোনো শিক্ষাপ্রতিষ্ঠানে ভর্তিই নাই, ক্লাস বাংক মারবা কীভাবে?', tone: 'neutral' };
+  }
+
+  const caught = rng.chance(0.3);
+  if (caught) {
+    character.education.gpa = Math.max(1.0, Math.round((character.education.gpa - 0.3) * 10) / 10);
+    character.stats.happiness = Math.max(0, character.stats.happiness - 7);
+    character.reputation.karma = Math.max(0, character.reputation.karma - 5);
+    const text = `ক্লাস বাংক মাইরা বন্ধুদের লগে টংখানা আর গুলিস্তান ঘুরতে যাইলি, তয় হেডমাস্টার সাবের চোখে ধরা খাইলা! সামনে দাঁড় করাইয়া সবাইরে মাঝে ঝাড়ি খাইলি—"পড়ার দশা দেখি তোদের!" জিপিএ ও ধোপদুরস্ত হইলো।`;
+    character.history.push({ age: character.age, text, tone: 'bad' });
+    return { ok: true, text, tone: 'bad' };
+  }
+
+  character.education.gpa = Math.max(1.0, Math.round((character.education.gpa - 0.2) * 10) / 10);
+  character.stats.happiness = Math.min(100, character.stats.happiness + 10);
+  character.stats.smarts = Math.max(0, character.stats.smarts - 2);
+  const text = `ক্লাস বাংক মাইরা পেছনের জানালা দিয়া ঢুকি বন্ধুদের লগে সদরঘাট নৌকা দেখতে গেলা! খুশিতে মন ভইরা গেল, তয় খাতাটা একটু খালি রইলো (জিপিএ সামান্য কমলো)।`;
+  character.history.push({ age: character.age, text, tone: 'good' });
+  return { ok: true, text, tone: 'good' };
+}
+
+/** Joins the school/college debate club — smarts up and a chance to win a prize. */
+export function joinDebateClub(character: Character, rng: RNG): { ok: boolean; text: string; tone: Tone } {
+  if (!character.education.enrolled) {
+    return { ok: false, text: 'ভর্তি না হইলে বিতর্ক ক্লাবে জায়গা পাইবা না বাপু!', tone: 'neutral' };
+  }
+  if (character.age < 10) {
+    return { ok: false, text: 'এত ছোট্ট বয়সে বিতর্ক মঞ্চে দাঁড়াইলে ভাষা বাঁধা খাইয়া যাইবো!', tone: 'neutral' };
+  }
+
+  const DEBATE_COST = 100;
+  if (character.money < DEBATE_COST) {
+    return { ok: false, text: `বিতর্ক ক্লাবের পত্রিকা আপডেট ফিজের ৳${DEBATE_COST} পকেটে নাই!`, tone: 'neutral' };
+  }
+
+  character.money -= DEBATE_COST;
+  character.stats.smarts = Math.min(100, character.stats.smarts + 6);
+  character.stats.happiness = Math.min(100, character.stats.happiness + 5);
+  character.reputation.karma = Math.min(100, character.reputation.karma + 3);
+  if (!character.flags.includes('extracurricular_debate')) {
+    character.flags.push('extracurricular_debate');
+  }
+
+  const wonPrize = rng.chance(0.25);
+  if (wonPrize) {
+    const prize = rng.rangeInt(200, 500);
+    character.money += prize;
+    const text = `স্কুল/কলেজের বার্ষিক বিতর্ক প্রতিযোগিতায় ভালো বক্তৃতা দিয়া ৳${prize} পুরস্কার জিতলা! শিক্ষকরা খুশি, ক্লাসমেটরা তোমারে ঘিরিয়া চিয়ার করলো!`;
+    character.history.push({ age: character.age, text, tone: 'good' });
+    return { ok: true, text, tone: 'good' };
+  }
+
+  const text = `বিতর্ক ক্লাবে ভর্তি হইলা! রুটিনে তর্ক-বিতর্ক আর যুক্তিতাড়িত জবাব দেওয়ার অভ্যেস শুরু। জ্ঞান-বুদ্ধিতে এক কদম অগ্রগতি, কিন্তু সাময়িক জয় মিললো না।`;
+  character.history.push({ age: character.age, text, tone: 'good' });
+  return { ok: true, text, tone: 'good' };
 }

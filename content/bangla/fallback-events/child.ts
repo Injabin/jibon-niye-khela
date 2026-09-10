@@ -251,6 +251,8 @@ export const CHILD_FALLBACK_EVENTS: readonly LifeEventDef[] = [
     tone: 'good',
     category: 'childhood',
     source: 'fallback',
+    requiredFlags: ['religion_muslim'],
+    tags: ['islam'],
     choices: [
       {
         id: 'feed_grass',
@@ -265,6 +267,34 @@ export const CHILD_FALLBACK_EVENTS: readonly LifeEventDef[] = [
         outcomeText: 'বাপের লুঙ্গি প্রায় খইলা যাওয়ার উপক্রম! হাটের সব বেপারী হাসলো।',
         tone: 'funny',
         effects: { happiness: -5, looks: -4 },
+      },
+    ],
+  },
+  {
+    id: 'child_shankharibazar_puja',
+    text: 'শাঁখারীবাজারে দুর্গাপূজার ধুমধাম! চারদিকে ঢাকের বাদ্য আর ধুনুচি নাচের গন্ধ। মা তোরে নতুন জামা পরাইয়া মণ্ডপে নিয়া গেছেন!',
+    minAge: 8,
+    maxAge: 12,
+    weight: 8,
+    tone: 'good',
+    category: 'childhood',
+    source: 'fallback',
+    requiredFlags: ['religion_hindu'],
+    tags: ['hinduism'],
+    choices: [
+      {
+        id: 'dhunuchi_dance',
+        text: 'ঢাকের তালে ধুনুচি হাতে নাচন দে',
+        outcomeText: 'তোর নাচ দেইখা মণ্ডপের মুরব্বিরা প্রশংসা করলো আর পেট ভইরা নারকেলের নাড়ু খাইতে দিল!',
+        tone: 'good',
+        effects: { happiness: 15, fame: 5, karma: 6 },
+      },
+      {
+        id: 'eat_prasad',
+        text: 'খিচুড়ি প্রসাদের লাইনে গিয়া দাঁড়াও',
+        outcomeText: 'গরম গরম খিচুড়ি আর লাবড়া খাইয়া পুরাই তৃপ্তি পাইলা!',
+        tone: 'good',
+        effects: { happiness: 12, health: 4 },
       },
     ],
   },

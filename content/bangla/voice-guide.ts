@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Jibon Niye Khela (জীবন নিয়ে খেলা) — Dhakaiya Bangla Voice Guide & Slang Bank
  *
  * Single source of truth for the authentic colloquial Dhakaiya dialect
@@ -120,6 +120,108 @@ export const DHAKAIYA_VOICE_GUIDE: DhakaiyaVoiceGuide = {
     {
       category: 'শেষ বয়স / মৃত্যু',
       text: 'এহন এক পা কবরে রাইখা কয়, জীবনে তো বহুত লাফালাফি করলি, বহুত চুদুর বুদুর করলি, তা শান্তিডা কি গুলিস্তানের ফুটপাতে পাইলি?',
+    },
+    // 💬 EVERYDAY DHAKAIYA SENTENCES
+    // — Greetings & Questions —
+    {
+      category: 'সালাম ও কুশল',
+      text: 'কিরে মামা, কেমতে দিনকাল কাডাইতাছস?',
+    },
+    {
+      category: 'সালাম ও কুশল',
+      text: 'আলহামদুলিল্লাহ, পুরাই মাখন আছি!',
+    },
+    {
+      category: 'সালাম ও কুশল',
+      text: 'কই যাস হালায়?',
+    },
+    {
+      category: 'সালাম ও কুশল',
+      text: 'এত দেরি ক্যালা? চান্দের দেশে গেছিলি নি?',
+    },
+    {
+      category: 'সালাম ও কুশল',
+      text: 'তুই কোন চিপায় থাহোস?',
+    },
+    // — Work, Study & Office —
+    {
+      category: 'পড়াশোনা / অফিস',
+      text: 'আইজকা পইড়া পুরা উল্টায়া ফালামু!',
+    },
+    {
+      category: 'পড়াশোনা / অফিস',
+      text: 'এহন আর বইয়ের দিকে তাকাইতেই মুন চায় না, প্যারা লাগতাছে।',
+    },
+    {
+      category: 'পড়াশোনা / অফিস',
+      text: 'মামা, এই বেপারডা আমার মগজে ঢুকতাছে না, একটু গিলানো দে!',
+    },
+    {
+      category: 'পড়াশোনা / অফিস',
+      text: 'বস আমারে তলব দিছে, মনে লয় আইজকা খবর আছে!',
+    },
+    {
+      category: 'পড়াশোনা / অফিস',
+      text: 'কাম তো এহনো লটকা রইছে মিয়া ভাই!',
+    },
+    // — Food, Weather & Home —
+    {
+      category: 'খানা / আবহাওয়া',
+      text: 'খানাডা পুরাই অস্থির অইছে মামা, খায়া কলিজা জুড়ায়া গেল!',
+    },
+    {
+      category: 'খানা / আবহাওয়া',
+      text: 'পেট পুরাই লোড, আর এক লোকমাও জাইগা নাই!',
+    },
+    {
+      category: 'খানা / আবহাওয়া',
+      text: 'বাজার থেইকা কিছু সদাই-পাতি লইয়া আহিস।',
+    },
+    {
+      category: 'খানা / আবহাওয়া',
+      text: 'আইজকা যে রোদ উঠছে, পুরাই কাবাব অইয়া যামু!',
+    },
+    // — Travel, Shopping & Tech —
+    {
+      category: 'যাতায়াত / শপিং',
+      text: 'আবে হালায়, আমার ফুনডা কোন চিপায় হারায়া গেল?',
+    },
+    {
+      category: 'যাতায়াত / শপিং',
+      text: 'ফুনের ব্যাটারি তো পুরাই গড়ের মাঠ অইয়া যাইতাছে!',
+    },
+    {
+      category: 'যাতায়াত / শপিং',
+      text: 'মিয়া ভাই, ফাপর নিয়েন না, হাচা কইরা কন শ্যাষ দাম কত?',
+    },
+    {
+      category: 'যাতায়াত / শপিং',
+      text: 'রাস্তায় যে গ্যাঞ্জাম, হাইটা গেলেই তো জলদি পৌঁছামু!',
+    },
+    // — General Feelings —
+    {
+      category: 'মনের ভাব',
+      text: 'মুখডা বাংলার পাঁচের মত কইরা রাখছস ক্যালা? প্যারা খাইছস নি?',
+    },
+    {
+      category: 'মনের ভাব',
+      text: 'মামা, পকেট পুরাই গড়ের মাঠ, দুইডা ট্যাহা ধার দে!',
+    },
+    {
+      category: 'মনের ভাব',
+      text: 'কিরে, ছব ঠিকঠাক তো? না কোনো ক্যাচাল লাগছে?',
+    },
+    {
+      category: 'মনের ভাব',
+      text: 'আরে মামা, সিরিয়াস নিস ক্যা, আমি তো মশকরা করতাছিলাম!',
+    },
+    {
+      category: 'মনের ভাব',
+      text: 'ভুল অইলে মাইনা নিবি, খামোখা ত্যাদড়ামি করবি না।',
+    },
+    {
+      category: 'মনের ভাব',
+      text: 'একটু চিল কর মামা, এত হাইপার অইস না!',
     },
   ],
 
@@ -360,7 +462,70 @@ export const DHAKAIYA_VOICE_GUIDE: DhakaiyaVoiceGuide = {
       transliteration: 'Kaijja',
       meaning: 'Brawling, verbal brawl or street fight',
       context: 'action',
-      example: 'খালি ফাপড়বাজি আর কাইজ্জা করতে দিলে অলিম্পিকে মেডেল আনবো!',
+      example: 'খালি ফাপড়বাজি আর কাইজ্জা করতে দিলে অলিম্পিকে মেডেল আনবো!',
+    },
+    {
+      term: 'ফাপর',
+      transliteration: 'Fapor',
+      meaning: 'Bluffing / showing off empty bravado',
+      context: 'action',
+      example: 'ফাপর লস হালায়? নিজে তো কিচ্ছু কইরা দেখাইতে পারস না!',
+    },
+    {
+      term: 'খাইসতা',
+      transliteration: 'Khaista',
+      meaning: 'Annoying, gross, or dirty behavior',
+      context: 'action',
+      example: 'কি খাইসতা কাম করস? লজ্জা-শরম কি গোস্ত লইয়া গেছে?',
+    },
+    {
+      term: 'টাউট',
+      transliteration: 'Taut',
+      meaning: 'A cheater, fraud, or tout',
+      context: 'action',
+      example: 'ওই টাউটের লগে কোনো কারবার করবি না, পুরা ঠকায়া ছাড়বে!',
+    },
+    {
+      term: 'আবাইল্লা',
+      transliteration: 'Abailla',
+      meaning: 'Useless, worthless, good-for-nothing',
+      context: 'status',
+      example: 'এক্কেরে আবাইল্লা কাম করলি! এইডা তো কুত্তায় মুতায় না!',
+    },
+    {
+      term: 'মাখন',
+      transliteration: 'Makhon',
+      meaning: 'Awesome, perfect, smooth as butter',
+      context: 'status',
+      example: 'পুরা মাখন অবস্থা মামা! জীবনটা এহন একদম ঝকমকা!',
+    },
+    {
+      term: 'ক্যাচাল',
+      transliteration: 'Kachal',
+      meaning: 'Useless argument, nagging, pointless bickering',
+      context: 'action',
+      example: 'খামোখা ক্যাচাল লাগাইস না, চল কাম কর!',
+    },
+    {
+      term: 'ঠোলা',
+      transliteration: 'Thola',
+      meaning: 'Police (ultra-local slang)',
+      context: 'address',
+      example: 'আবে ঠোলা আইতাছে, চল ভাগ এহানে থিকা!',
+    },
+    {
+      term: 'প্যারা',
+      transliteration: 'Pyara',
+      meaning: 'Headache, hassle, mental stress',
+      context: 'status',
+      example: 'মামা, আর প্যারা দিস না, মগজ পুরাই হ্যাং অইয়া গেছে!',
+    },
+    {
+      term: 'চিপা',
+      transliteration: 'Chipa',
+      meaning: 'Narrow alley, tight spot',
+      context: 'status',
+      example: 'কোন চিপায় লুকাইলি হালায়? সারা মহল্লা খুঁজলাম!',
     },
 
     // আইকনিক গান ও ডায়লগ (Iconic Punchlines)
@@ -388,10 +553,18 @@ export const DHAKAIYA_VOICE_GUIDE: DhakaiyaVoiceGuide = {
   ],
 
   iconicQuotes: [
-    'আমি ফাইস্যা গেছি, আমি ফাইস্যা গেছি, ফাইস্যা গেছি মাইঙ্কা চিপায়!',
-    'আব্বে হালায় ফাপড় দিস না, কানের নিচে দিমু একখান!',
-    'বেশি ত্যাড়ামি করলে এক্কেরে খাইয়া লামু একদম!',
+    'আমি ফাইস্যা গেছি, আমি ফাইস্যা গেছি, ফাইস্যা গেছি মাইঙ্কা চিপায়!',
+    'আব্বে হালায় ফাপড় দিস না, কানের নিচে দিমু একখান!',
+    'বেশি ত্যাড়ামি করলে এক্কেরে খাইয়া লামু একদম!',
     'কিরে মামুর বেটা, উড়াধুরা ভাব লস ক্যান?',
     'এক্কেরে চান তারা হোটেলে বইসা রগ চাবামু আর কাচ্চি খামু, পুরাই মাখনের লাহান!',
+    // 🎬 Famous Dhallywood & Bollywood dialogues used in Dhaka
+    'মোগ্যাম্বো খুশ হুয়া!',
+    'মারব এহানে, লাশ পড়ব শ্মশানে!',
+    'রিশতে মে তো হাম তুমহারে বাপ লাগতে হ্যায়... নাম হ্যায় শাহেনশাহ!',
+    'পিকচার আভি বাকি হ্যায় মেরে দোস্ত!',
+    'চান্দের দেশে পাঠায়া দিমু এক্কেরে!',
+    'খাইছে আমারে!',
+    'আবে হালায়, কি কস এইগুলা?',
   ],
 };

@@ -88,7 +88,7 @@ describe('createHeirCharacter', () => {
     expect(heirCharacter.age).toBe(20);
     expect(heirCharacter.alive).toBe(true);
     expect(heirCharacter.money).toBe(45_000); // 90_000 split two ways
-    expect(heirCharacter.flags).toEqual([]);
+    expect(heirCharacter.flags).toContain('religion_muslim');
     expect(heirCharacter.education.stage).toBe('high');
     expect(heirCharacter.education.graduated).toBe(false);
     expect(heirCharacter.reputation).toEqual({ fame: 0, karma: 40 });

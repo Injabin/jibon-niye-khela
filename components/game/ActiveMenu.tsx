@@ -17,11 +17,11 @@ type Tab = 'school' | 'career' | 'romance' | 'assets' | 'crime' | 'health';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'school', label: 'পড়াশোনা' },
-  { id: 'career', label: 'চাকরি-বাকরি' },
+  { id: 'career', label: 'চাকরি ও রুজি' },
   { id: 'romance', label: 'প্রেম-ভালোবাসা' },
   { id: 'assets', label: 'ধন-সম্পদ' },
   { id: 'crime', label: 'ধান্ধাবাজি' },
-  { id: 'health', label: 'স্বাস্থ্য' },
+  { id: 'health', label: 'স্বাস্থ্য ও জীবনযাপন' },
 ];
 
 export type { Tab };
@@ -61,12 +61,27 @@ export function ActiveMenu({
   const [tab, setTab] = useState<Tab>(initialTab);
 
   const enrollHigherEducation = useGameStore((s) => s.enrollHigherEducation);
+  const studyHarder = useGameStore((s) => s.studyHarder);
+  const hireTutor = useGameStore((s) => s.hireTutor);
+  const dropOutOfSchool = useGameStore((s) => s.dropOutOfSchool);
+  const skipClass = useGameStore((s) => s.skipClass);
+  const joinDebateClub = useGameStore((s) => s.joinDebateClub);
+
   const applyForJob = useGameStore((s) => s.applyForJob);
   const quitJob = useGameStore((s) => s.quitJob);
+  const workOvertime = useGameStore((s) => s.workOvertime);
+  const suckUpToBoss = useGameStore((s) => s.suckUpToBoss);
+  const askForRaise = useGameStore((s) => s.askForRaise);
+  const doSideHustle = useGameStore((s) => s.doSideHustle);
+
   const commitCrime = useGameStore((s) => s.commitCrime);
   const buyAsset = useGameStore((s) => s.buyAsset);
   const sellAsset = useGameStore((s) => s.sellAsset);
   const visitDoctor = useGameStore((s) => s.visitDoctor);
+  const visitKabiraj = useGameStore((s) => s.visitKabiraj);
+  const doGymWorkout = useGameStore((s) => s.doGymWorkout);
+  const watchMovie = useGameStore((s) => s.watchMovie);
+  const prayOrWorship = useGameStore((s) => s.prayOrWorship);
 
   const getDatingCandidates = useGameStore((s) => s.getDatingCandidates);
   const askOut = useGameStore((s) => s.askOut);
@@ -74,14 +89,14 @@ export function ActiveMenu({
   const propose = useGameStore((s) => s.propose);
   const cheat = useGameStore((s) => s.cheat);
   const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
+  const datePartner = useGameStore((s) => s.datePartner);
+  const giveGift = useGameStore((s) => s.giveGift);
+  const haveBaby = useGameStore((s) => s.haveBaby);
 
   const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
 
   if (!character) return null;
 
-  const education = character.education;
-  const studying =
-    education.enrolled && (education.stage === 'undergraduate' || education.stage === 'vocational');
   const board = getJobBoard(character);
 
   return (
@@ -142,8 +157,29 @@ export function ActiveMenu({
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
-              {tab === 'school' && <SchoolTab character={character} studying={studying} onEnroll={enrollHigherEducation} />}
-              {tab === 'career' && <CareerTab character={character} board={board} onApply={applyForJob} onQuit={quitJob} />}
+              {tab === 'school' && (
+                <SchoolTab
+                  character={character}
+                  onEnroll={enrollHigherEducation}
+                  onStudyHarder={studyHarder}
+                  onHireTutor={hireTutor}
+                  onDropOut={dropOutOfSchool}
+                  onSkipClass={skipClass}
+                  onJoinDebateClub={joinDebateClub}
+                />
+              )}
+              {tab === 'career' && (
+                <CareerTab
+                  character={character}
+                  board={board}
+                  onApply={applyForJob}
+                  onQuit={quitJob}
+                  onWorkOvertime={workOvertime}
+                  onSuckUpToBoss={suckUpToBoss}
+                  onAskForRaise={askForRaise}
+                  onSideHustle={doSideHustle}
+                />
+              )}
               {tab === 'romance' && (
                 <RomanceTab
                   character={character}
@@ -153,11 +189,23 @@ export function ActiveMenu({
                   onCheat={cheat}
                   onBreakup={breakupOrDivorce}
                   onGetCandidates={getDatingCandidates}
+                  onDate={datePartner}
+                  onGift={giveGift}
+                  onHaveBaby={haveBaby}
                 />
               )}
               {tab === 'assets' && <AssetsTab character={character} onBuy={buyAsset} onSell={sellAsset} />}
               {tab === 'crime' && <CrimeTab character={character} onCommit={commitCrime} />}
-              {tab === 'health' && <HealthTab character={character} onVisit={visitDoctor} />}
+              {tab === 'health' && (
+                <HealthTab
+                  character={character}
+                  onVisitDoctor={visitDoctor}
+                  onVisitKabiraj={visitKabiraj}
+                  onDoGymWorkout={doGymWorkout}
+                  onWatchMovie={watchMovie}
+                  onPrayOrWorship={prayOrWorship}
+                />
+              )}
             </div>
           </motion.section>
         </motion.div>
@@ -183,37 +231,79 @@ const RELATION_LABELS: Record<string, string> = {
 
 function SchoolTab({
   character,
-  studying,
   onEnroll,
+  onStudyHarder,
+  onHireTutor,
+  onDropOut,
+  onSkipClass,
+  onJoinDebateClub,
 }: {
   character: Character;
-  studying: boolean;
   onEnroll: (path: 'undergraduate' | 'vocational') => boolean;
+  onStudyHarder: () => boolean;
+  onHireTutor: () => boolean;
+  onDropOut: () => boolean;
+  onSkipClass: () => boolean;
+  onJoinDebateClub: () => boolean;
 }) {
   const education = character.education;
   const schoolDone = character.age >= 18;
   const stageName = STAGE_LABELS[education.stage] ?? education.stage;
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-text">
-        ধাপ: <span className="font-medium">{stageName}</span> · জিপিএ{' '}
-        {education.gpa.toFixed(1)}
-        {education.graduated ? ' · পাস করছত' : ''}
-      </p>
-      {studying ? (
-        <p className="text-sm text-text-muted">তুই এহন ক্লাসে ভর্তি আছত। বছর ঘুরলেই পরীক্ষা আর রেজাল্ট আইবো।</p>
-      ) : education.graduated ? (
-        <p className="text-sm text-text-muted">পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!</p>
-      ) : !schoolDone ? (
-        <p className="text-sm text-text-muted">বয়স কম, নিজের মনে পড়াশোনা চালাও — ক্লাসের পড়া সামনেই আইতাছে।</p>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => onEnroll('undergraduate')} data-testid="enroll-university">
-            ভার্সিটিতে ভর্তি হও (৳১,০০০)
-          </Button>
-          <Button variant="secondary" onClick={() => onEnroll('vocational')} data-testid="enroll-vocational">
-            কারিগরি ট্রেডে ভর্তি হও (৳২৫০)
-          </Button>
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-sm text-text">
+          ধাপ: <span className="font-medium text-white">{stageName}</span> · জিপিএ{' '}
+          <span className="font-bold text-amber-400 font-mono">{education.gpa.toFixed(1)}</span>
+          {education.graduated ? ' · পাস করছত' : ''}
+        </p>
+        <p className="text-xs text-zinc-400 mt-1">
+          {education.enrolled
+            ? 'নিয়মিত শিক্ষাপ্রতিষ্ঠানে পড়াশোনা চলতাছে।'
+            : education.graduated
+            ? 'পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!'
+            : education.stage === 'dropped'
+            ? 'পড়াশোনা ছাইড়া দিয়া এহন মুক্ত বিহঙ্গের লাহান ঘুরতাছো!'
+            : 'পড়াশোনায় ভর্তি নাই।'}
+        </p>
+      </div>
+
+      {education.enrolled && (
+        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">পড়াশোনার বিশেষ কারবার</p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={onStudyHarder} data-testid="study-harder">
+              পড়াশোনায় জান দেওয়া (জিপিএ ও বুদ্ধি +)
+            </Button>
+            <Button variant="secondary" onClick={onHireTutor} data-testid="hire-tutor">
+              প্রাইভেট টিউটর ধরা (৳৫০০)
+            </Button>
+            {character.age >= 10 && (
+              <Button variant="secondary" onClick={onJoinDebateClub} data-testid="join-debate-club">
+                বিতর্ক ক্লাবে ভর্তি হওয়া (৳১০০)
+              </Button>
+            )}
+            <Button variant="secondary" onClick={onSkipClass} data-testid="skip-class">
+              ক্লাস বাংক মারা
+            </Button>
+            <Button variant="danger" onClick={onDropOut} data-testid="drop-out">
+              ইশকুল থিকা ভাগা (ড্রপআউট)
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {!education.enrolled && !education.graduated && schoolDone && (
+        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">উচ্চশিক্ষায় ভর্তি</p>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => onEnroll('undergraduate')} data-testid="enroll-university">
+              ভার্সিটিতে ভর্তি হও (৳১,০০০)
+            </Button>
+            <Button variant="secondary" onClick={() => onEnroll('vocational')} data-testid="enroll-vocational">
+              কারিগরি ট্রেডে ভর্তি হও (৳২৫০)
+            </Button>
+          </div>
         </div>
       )}
     </div>
@@ -225,32 +315,78 @@ function CareerTab({
   board,
   onApply,
   onQuit,
+  onWorkOvertime,
+  onSuckUpToBoss,
+  onAskForRaise,
+  onSideHustle,
 }: {
   character: Character;
   board: readonly JobDef[];
   onApply: (jobId: string) => boolean;
   onQuit: () => boolean;
+  onWorkOvertime: () => boolean;
+  onSuckUpToBoss: () => boolean;
+  onAskForRaise: () => boolean;
+  onSideHustle: (kind: 'tuition' | 'delivery' | 'street_vendor') => boolean;
 }) {
   const career = character.career;
+  const currentJob = board.find((j) => j.id === career.jobId);
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-text">
-        {career.jobId ? (
-          <>
-            বর্তমান পদ:{' '}
-            <span className="font-medium">
-              {board.find((j) => j.id === career.jobId)?.title ?? career.jobId}
-            </span>{' '}
-            · চাকুরির বয়স {career.yearsAtJob} বছর · পারফরম্যান্স {career.performance}
-          </>
-        ) : (
-          'বেকার বইসা আছত — নিচের রুজির তালিকা থেইকা কোনো কাম বেছে নেও।'
-        )}
-      </p>
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-sm text-text">
+          {career.jobId ? (
+            <>
+              বর্তমান পদ:{' '}
+              <span className="font-bold text-white">
+                {currentJob?.title ?? career.jobId}
+              </span>{' '}
+              · চাকুরির বয়স <span className="font-mono text-zinc-300">{career.yearsAtJob}</span> বছর · পারফরম্যান্স{' '}
+              <span className="font-mono font-bold text-emerald-400">{career.performance}%</span>
+            </>
+          ) : (
+            'বেকার বইসা আছত — নিচের রুজির তালিকা থেইকা কোনো কাম বেছে নেও।'
+          )}
+        </p>
+      </div>
+
       {career.jobId && (
-        <Button variant="danger" onClick={onQuit} data-testid="quit-job">
-          চাকরি ছাড়মু (ইস্তফা)
-        </Button>
+        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">চাকরির বিশেষ কাজকর্ম</p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={onWorkOvertime} data-testid="work-overtime">
+              ওভারটাইম খাটা (পারফরম্যান্স +১৫)
+            </Button>
+            <Button variant="secondary" onClick={onSuckUpToBoss} data-testid="suck-up-boss">
+              বসকে তেল মারা (খাতির জমানো)
+            </Button>
+            <Button variant="secondary" onClick={onAskForRaise} data-testid="ask-for-raise">
+              বেতন বাড়ানোর দরখাস্ত (Raise)
+            </Button>
+            <Button variant="danger" onClick={onQuit} data-testid="quit-job">
+              চাকরি ছাড়মু (ইস্তফা)
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {character.age >= 13 && (
+        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            সাইড হাসল ও পার্টটাইম রুজি-রোজগার
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => onSideHustle('tuition')} data-testid="side-hustle-tuition">
+              ছাত্র পড়ানো / টিউশনি (মেধা ৪০+ লাগবে)
+            </Button>
+            <Button variant="secondary" onClick={() => onSideHustle('delivery')} data-testid="side-hustle-delivery">
+              ফুড ও পার্সেল ডেলিভারি (সাইকেল নিয়া ধান্ধা)
+            </Button>
+            <Button variant="secondary" onClick={() => onSideHustle('street_vendor')} data-testid="side-hustle-vendor">
+              চকবাজারের মোড়ে ভ্যানে খাবার বিক্রি
+            </Button>
+          </div>
+        </div>
       )}
       {board.length === 0 ? (
         <p className="text-sm text-text-muted">তোর যোগ্যতার কোনো কাম এহন খালি নাই।</p>
@@ -389,16 +525,79 @@ function CrimeTab({
   );
 }
 
-function HealthTab({ character, onVisit }: { character: Character; onVisit: () => boolean }) {
+function HealthTab({
+  character,
+  onVisitDoctor,
+  onVisitKabiraj,
+  onDoGymWorkout,
+  onWatchMovie,
+  onPrayOrWorship,
+}: {
+  character: Character;
+  onVisitDoctor: () => boolean;
+  onVisitKabiraj: () => boolean;
+  onDoGymWorkout: () => boolean;
+  onWatchMovie: () => boolean;
+  onPrayOrWorship: () => boolean;
+}) {
+  const isMuslim = character.religion === 'islam';
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-text">
-        স্বাস্থ্য <span className="font-medium">{character.stats.health}</span> · সুখ{' '}
-        <span className="font-medium">{character.stats.happiness}</span>
-      </p>
-      <Button onClick={onVisit} data-testid="visit-doctor">
-        ডাক্তারখানায় দেখাও (স্বাস্থ্য +১৫, সুখ +৫, −৳৫০)
-      </Button>
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-sm text-zinc-200">
+          স্বাস্থ্য <span className="font-bold text-emerald-400 font-mono">{character.stats.health}%</span> · সুখ{' '}
+          <span className="font-bold text-amber-400 font-mono">{character.stats.happiness}%</span> · চেহারা{' '}
+          <span className="font-bold text-rose-400 font-mono">{character.stats.looks}%</span> · কর্ম{' '}
+          <span className="font-bold text-teal-400 font-mono">{character.reputation.karma}%</span>
+        </p>
+      </div>
+
+      {/* 1. Healing & Treatment */}
+      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">চিকিৎসা ও নিরাময়</p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={onVisitDoctor} data-testid="visit-doctor">
+            ডাক্তারখানায় দেখাও (স্বাস্থ্য +১৫, সুখ +৫, −৳৫০)
+          </Button>
+          <Button variant="secondary" onClick={onVisitKabiraj} data-testid="visit-kabiraj">
+            চকবাজারের কবিরাজ (ভেষজ দাওয়াই ও ঝাড়ফুঁক, −৳১০০)
+          </Button>
+        </div>
+      </div>
+
+      {/* 2. Fitness */}
+      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">শরীরচর্চা ও ফিটনেস</p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={onDoGymWorkout} data-testid="gym-workout">
+            আখড়া ও বডিবিল্ডিং জিম (কসরত ও বুকডন, −৳১৫০)
+          </Button>
+        </div>
+      </div>
+
+      {/* 3. Entertainment */}
+      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">বিনোদন ও ফুর্তি</p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={onWatchMovie} data-testid="watch-movie">
+            মধুমিতা সিনেমা হলে ছবি দেখা (সুখ +১৬, −৳২৫০)
+          </Button>
+        </div>
+      </div>
+
+      {/* 4. Spiritual & Faith */}
+      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          {isMuslim ? 'ইবাদত ও আধ্যাত্মিকতা' : 'পূজা-অর্চনা ও ধর্মীয় আচার'}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={onPrayOrWorship} data-testid="pray-worship">
+            {isMuslim
+              ? 'তারা মসজিদে জামাতে নামাজ ও খাস দোয়া (কর্ম ও সুখ বাড়বে)'
+              : 'ঢাকেশ্বরী জাতীয় মন্দিরে পূজা ও পুষ্পাঞ্জলি (কর্ম ও সুখ বাড়বে)'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -411,6 +610,9 @@ function RomanceTab({
   onCheat,
   onBreakup,
   onGetCandidates,
+  onDate,
+  onGift,
+  onHaveBaby,
 }: {
   character: Character;
   onAskOut: (candidate: DatingCandidate) => boolean;
@@ -419,6 +621,9 @@ function RomanceTab({
   onCheat: (relationshipId: string) => boolean;
   onBreakup: (relationshipId: string) => boolean;
   onGetCandidates: () => DatingCandidate[];
+  onDate: (relationshipId: string) => boolean;
+  onGift: (relationshipId: string) => boolean;
+  onHaveBaby: (relationshipId: string) => boolean;
 }) {
   const [candidates, setCandidates] = useState<DatingCandidate[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -497,7 +702,7 @@ function RomanceTab({
                 )}
 
                 {/* Actions based on relationship state */}
-                <div className="flex flex-wrap gap-2 pt-1 border-t border-white/[0.05]">
+                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.05]">
                   {partner.relation === 'crush' && (
                     <Button
                       variant="secondary"
@@ -534,6 +739,34 @@ function RomanceTab({
                       data-testid={`propose-${partner.id}`}
                     >
                       বিয়ের প্রস্তাব দেও
+                    </Button>
+                  )}
+                  {['dating', 'partner', 'spouse'].includes(partner.relation) && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => onDate(partner.id)}
+                      data-testid={`date-${partner.id}`}
+                    >
+                      ডেট মারা (৳২০০)
+                    </Button>
+                  )}
+                  {['dating', 'partner', 'spouse'].includes(partner.relation) && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => onGift(partner.id)}
+                      data-testid={`gift-${partner.id}`}
+                    >
+                      তোহফা দেওয়া (৳৪০০)
+                    </Button>
+                  )}
+                  {['partner', 'spouse'].includes(partner.relation) && character.age >= 18 && (
+                    <Button
+                      variant="secondary"
+                      onClick={() => onHaveBaby(partner.id)}
+                      data-testid={`baby-${partner.id}`}
+                      className="bg-emerald-500/10 text-emerald-300 border-emerald-500/25 hover:bg-emerald-500/20"
+                    >
+                      বাচ্চা নেওয়ার চেষ্টা
                     </Button>
                   )}
                   {(partner.relation === 'partner' || partner.relation === 'spouse') && (

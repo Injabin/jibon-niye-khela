@@ -556,6 +556,8 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
     tone: 'good',
     category: 'adult',
     source: 'fallback',
+    requiredFlags: ['religion_muslim'],
+    tags: ['islam'],
     choices: [
       {
         id: 'sponsor_and_serve_personally',
@@ -570,6 +572,34 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
         outcomeText: 'মানুষ তোরে লোকদেখানো দাতা বলে ব্যঙ্গ করলো, আত্মতৃপ্তি মিললো না!',
         tone: 'bad',
         effects: { karma: -12, looks: -5 },
+      },
+    ],
+  },
+  {
+    id: 'adult_durga_puja_sponsorship',
+    text: 'শারদীয় দুর্গোৎসবে পুরান ঢাকার প্রাচীন মন্দিরে বিশেষ ভোগ ও বস্ত্র বিতরণের আয়োজনে দায়িত্ব পাইলা!',
+    minAge: 35,
+    maxAge: 59,
+    weight: 8,
+    tone: 'good',
+    category: 'adult',
+    source: 'fallback',
+    requiredFlags: ['religion_hindu'],
+    tags: ['hinduism'],
+    choices: [
+      {
+        id: 'sponsor_temple_bhog',
+        text: 'ভক্তদের মাঝে নিজের হাতে মহাপ্রসাদ ও নতুন শাড়ি-ধুতি বিতরণ করো',
+        outcomeText: 'সবাই হাত তুলে আশীর্বাদ করলো, আত্মায় অপার্থিব প্রশান্তি নেমে আসলো!',
+        tone: 'good',
+        effects: { money: -100, karma: 25, happiness: 25 },
+      },
+      {
+        id: 'just_photo_pose',
+        text: 'মণ্ডপের সামনে দাঁড়িয়ে আলগা ভাব নিয়ে ফটোসেশন করো',
+        outcomeText: 'লোকেরা কইলো—"মন দিয়া কাজ না কইরা খালি ফুটানি মারে!"',
+        tone: 'bad',
+        effects: { karma: -10, looks: -5 },
       },
     ],
   },

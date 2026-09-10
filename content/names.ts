@@ -1,4 +1,4 @@
-export const MALE_NAMES = [
+export const MUSLIM_MALE_NAMES = [
   'আদনান',
   'তানভীর',
   'সাব্বির',
@@ -9,48 +9,45 @@ export const MALE_NAMES = [
   'সালমান',
   'ইমরান',
   'রুবেল',
-  'কৌশিক',
-  'দিপু',
   'সিদ্দিক',
   'ফারহান',
   'রাকীন',
   'তানজিম',
-  'অয়ন',
   'নাবিল',
-  'শুভ',
   'মারুফ',
   'কাশেম',
   'কালা মানিক',
   'রমিজ',
   'শাকিল',
+  'জুবায়ের',
+  'ফাহিম',
+  'হাসান',
+  'মাহমুদ',
 ] as const;
 
-export const FEMALE_NAMES = [
+export const MUSLIM_FEMALE_NAMES = [
   'নুসরাত',
   'মীম',
   'সাদিয়া',
   'রিয়া',
   'তাসনিম',
   'ফারজানা',
-  'ঝর্ণা',
   'নাদিয়া',
   'শিরিন',
-  'প্রমা',
   'আম্বিয়া',
-  'দীপা',
-  'সূচনা',
   'মালিহা',
-  'ওর্পা',
   'সাথী',
-  'মৌলী',
   'তানজিলা',
-  'রূপসা',
-  'নিশা',
   'ফারিয়া',
   'জান্নাত',
+  'সুমাইয়া',
+  'আয়েশা',
+  'আফসানা',
+  'রাবেয়া',
+  'ফাতেমা',
 ] as const;
 
-export const SURNAMES = [
+export const MUSLIM_SURNAMES = [
   'রহমান',
   'হোসেন',
   'ইসলাম',
@@ -60,14 +57,69 @@ export const SURNAMES = [
   'সরকার',
   'মিয়া',
   'তালুকদার',
-  'দাস',
-  'পাল',
-  'বিশ্বাস',
-  'মণ্ডল',
-  'রায়',
   'শিকদার',
   'বেপারী',
   'ভূঁইয়া',
   'মোল্লা',
   'উদ্দিন',
+  'কাজী',
+  'মজুমদার',
 ] as const;
+
+export const HINDU_MALE_NAMES = [
+  'কৌশিক',
+  'দিপু',
+  'অয়ন',
+  'শুভ',
+  'পার্থ',
+  'জয়',
+  'সৌরভ',
+  'রাহুল',
+  'অনীক',
+  'প্রীতম',
+  'সজীব',
+  'অভিজিৎ',
+  'সায়ন',
+  'চিরঞ্জিত',
+  'রবিন',
+] as const;
+
+export const HINDU_FEMALE_NAMES = [
+  'প্রমা',
+  'দীপা',
+  'সূচনা',
+  'ওর্পা',
+  'মৌলী',
+  'রূপসা',
+  'নিশা',
+  'ঝর্ণা',
+  'শ্রাবণী',
+  'পূজা',
+  'তিথি',
+  'অনন্যা',
+  'দেবশ্রী',
+  'প্রিয়াঙ্কা',
+  'বর্ণালী',
+] as const;
+
+export const HINDU_SURNAMES = [
+  'দাস',
+  'পাল',
+  'বিশ্বাস',
+  'মণ্ডল',
+  'রায়',
+  'বণিক',
+  'চক্রবর্তী',
+  'সূত্রধর',
+  'ঘোষ',
+  'সেন',
+  'দে',
+  'ভৌমিক',
+  'সাহা',
+  'কর্মকার',
+] as const;
+
+// Aggregated lists for backward compatibility
+export const MALE_NAMES = [...MUSLIM_MALE_NAMES, ...HINDU_MALE_NAMES] as const;
+export const FEMALE_NAMES = [...MUSLIM_FEMALE_NAMES, ...HINDU_FEMALE_NAMES] as const;
+export const SURNAMES = [...MUSLIM_SURNAMES, ...HINDU_SURNAMES] as const;

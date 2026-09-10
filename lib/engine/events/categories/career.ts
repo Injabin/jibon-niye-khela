@@ -11,6 +11,7 @@
 
 import type { RNG } from '@/lib/engine/rng';
 import { applyStatEffects } from '@/lib/engine/stats';
+import { seedCoworkers } from '@/lib/engine/relationships';
 import type { Character, EducationStage, Tone } from '@/lib/engine/types';
 
 export interface JobDef {
@@ -261,7 +262,91 @@ export function applyForJob(
       tone: 'good',
     };
   }
-  return { hired: false, text: `${job.title} পদের ইন্টারভিউতে তোমারে নাকচ কইরা দিল—"মামা, এহন কোনো লোক লাগবো না, অন্য কোথাও লাইন মারো!"`, tone: 'neutral' };
+
+  const rejectLines = [
+    `${job.title} পদের ইন্টারভিউতে তোমারে দেইখা মালিক মুখ ভেটকাইয়া কইলো—"তোমার সিভিতে তো কাজের চেয়ে চাপাবাজি বেশি, ভাগো এহন থিকা!"`,
+    `${job.title} পদের ইন্টারভিউয়ার কইলো—"মামা, এহন কোনো লোক লাগবো না, অন্য কোথাও লাইন মারো!"`,
+    `${job.title} পদের ভাইভায় কঠিন সব প্যাঁচানো প্রশ্ন কইরা তোমারে নাকচ কইরা দিল!`,
+    `${job.title} পদের ম্যানেজমেন্ট জানাইলো যে বসের শালার ঘরের শালা অলরেডি এই চাকরি পাইয়া গেছে!`,
+  ];
+  return { hired: false, text: rng.pick(rejectLines), tone: 'neutral' };
+}
+
+/** Works overtime to boost job performance at the cost of health and happiness. */
+export function workOvertime(character: Character): { ok: boolean; text: string } {
+  if (!character.career.jobId) {
+    return { ok: false, text: 'তোমার তো কোনো চাকরিই নাই, ওভারটাইম কার লাইগা খাটবা?' };
+  }
+  const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
+  const title = job?.title ?? 'কর্মস্থলে';
+
+  character.career.performance = Math.min(100, character.career.performance + 15);
+  character.stats.health = Math.max(0, character.stats.health - 5);
+  character.stats.happiness = Math.max(0, character.stats.happiness - 5);
+
+  const msg = `${title} কাজে রাত-দিন এক কইরা অতিরিক্ত ওভারটাইম খাটলা। বসের চোখে তোমার পারফরম্যান্স বাড়লো, তয় শরীলের অবস্থা কাহিল!`;
+  character.history.push({ age: character.age, text: msg, tone: 'neutral' });
+  return { ok: true, text: msg };
+}
+
+/** Sucks up to the boss for career favors and relationship boost. */
+export function suckUpToBoss(character: Character, rng: RNG): { ok: boolean; text: string } {
+  if (!character.career.jobId) {
+    return { ok: false, text: 'কোনো বসের অস্তিত্বই নাই, তেল মারবা কারে?' };
+  }
+
+  const roll = rng.next();
+  if (roll > 0.35) {
+    character.career.performance = Math.min(100, character.career.performance + 10);
+    character.stats.happiness = Math.min(100, character.stats.happiness + 5);
+    const msg = `বসরে চা-সিঙ্গারা খাওয়াইয়া মুখে মধু ঢাইলা তেল মারলা। বস একগাল হাইসা কইলো—"তোর মতো কাজের পোলাই তো দরকার!"`;
+    character.history.push({ age: character.age, text: msg, tone: 'good' });
+    return { ok: true, text: msg };
+  }
+
+  character.career.performance = Math.max(0, character.career.performance - 5);
+  character.stats.happiness = Math.max(0, character.stats.happiness - 8);
+  const failMsg = `বস তোমার চাটুকারিতা ধইরা ফালাইয়া খ্যাঁক কইরা উঠলো—"চুদুর বুদুর বাদ দিয়া নিজের টেবিলে গিয়া কাম কর, তেল মারা বন্ধ কর!"`;
+  character.history.push({ age: character.age, text: failMsg, tone: 'bad' });
+  return { ok: false, text: failMsg };
+}
+
+/** Asks for a salary raise based on performance and tenure. */
+export function askForRaise(character: Character, rng: RNG): { ok: boolean; text: string } {
+  if (!character.career.jobId) {
+    return { ok: false, text: 'চাকরি ছাড়া বেতন বাড়ানোর কথা ভাবাও পাপ!' };
+  }
+
+  const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
+  if (!job) return { ok: false, text: 'চাকরি খুঁজে পাওয়া যায় নাই।' };
+
+  if (character.career.yearsAtJob < 1) {
+    return { ok: false, text: 'চাকরিতে জয়েন কইরাই বেতন বাড়ানোর আবদার? মালিক তো খেদাইয়া দিবো!' };
+  }
+
+  if (character.career.performance < 55) {
+    character.career.performance = Math.max(0, character.career.performance - 10);
+    character.stats.happiness = Math.max(0, character.stats.happiness - 10);
+    const scoldMsg = `মালিক তোমারে দেইখা চোখ রাঙাইয়া কইলো—"কাজে ফাঁকিবাজি মারোস, আবার বেতন বাড়াইতে আইছস? বেয়াদব!"`;
+    character.history.push({ age: character.age, text: scoldMsg, tone: 'bad' });
+    return { ok: false, text: scoldMsg };
+  }
+
+  const approved = character.career.performance >= 75 ? true : rng.chance(0.5);
+  if (approved) {
+    const boost = rng.rangeInt(15, 25);
+    const bonusMoney = Math.round(((job.salary[0] + job.salary[1]) / 2) * (boost / 100));
+    character.money += bonusMoney;
+    character.stats.happiness = Math.min(100, character.stats.happiness + 15);
+    const successMsg = `মালিক তোমার মেহনত দেইখা বেতন ${boost}% বাড়াইয়া দিল লগে ৳${bonusMoney.toLocaleString()} বোনাস দিলো! খুশিতে বুক ভইরা গেল!`;
+    character.history.push({ age: character.age, text: successMsg, tone: 'good' });
+    return { ok: true, text: successMsg };
+  }
+
+  character.stats.happiness = Math.max(0, character.stats.happiness - 5);
+  const rejectMsg = `বস গম্ভীর হইয়া কইলো—"মার্কেটে মন্দা চলতাছে মামা, এহন এক পয়সাও বাড়ানো সম্ভব না, পরের বছর দেখুম।"`;
+  character.history.push({ age: character.age, text: rejectMsg, tone: 'neutral' });
+  return { ok: false, text: rejectMsg };
 }
 
 export function quitJob(character: Character): CareerOutcome & { quit: boolean } {
@@ -286,6 +371,7 @@ export function tickCareer(character: Character, rng: RNG): CareerOutcome | null
   if (!job) return null;
 
   character.career.yearsAtJob += 1;
+  if (character.career.yearsAtJob === 1) seedCoworkers(character, rng, 3);
   const pay = annualSalary(job, character.career.performance);
   applyStatEffects(character, { money: pay });
 
