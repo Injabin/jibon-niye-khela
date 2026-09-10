@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-hind), "Hind Siliguri", system-ui, sans-serif;
+  --font-display: var(--font-baloo), "Baloo Da 2", cursive, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-baloo), "Baloo Da 2", cursive, sans-serif;
+}
+
+.font-body {
+  font-family: var(--font-hind), "Hind Siliguri", system-ui, sans-serif;
+}
+
 /*
  * Design tokens — backs `lib/theme.ts` (single source of truth, AGENT.md §8).
  * THEME: "Modern Martial" (UI-DESIGN.md) — light default, dark follows
