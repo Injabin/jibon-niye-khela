@@ -91,11 +91,11 @@
   --color-tree-self: #9e2a2b;
   --color-tree-mother: #4a6984;
   --color-tree-father: #7a5230;
-  --color-tree-grandparent: #8a8f96;
+  --color-tree-grandparent: #545b64;
   --color-tree-sibling: #d4af37;
   --color-tree-spouse: #5a7a94;
   --color-tree-child: #d4af37;
-  --color-tree-deceased: #a8acb3;
+  --color-tree-deceased: #545b64;
   --color-tree-text-on-fill: #ffffff;
   --color-tree-stroke: #fdfdf8;
   --color-tree-selected: #b8860b;
@@ -171,7 +171,7 @@
     --color-tree-self: #b23a3b;
     --color-tree-mother: #5a7a94;
     --color-tree-father: #8a6d4a;
-    --color-tree-grandparent: #8a8f96;
+    --color-tree-grandparent: #545b64;
     --color-tree-sibling: #e0c04f;
     --color-tree-spouse: #6f94b0;
     --color-tree-child: #e0c04f;

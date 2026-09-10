@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import type { EventChoice, LifeEventDef, StatEffects } from '@/lib/engine/types';
 import { motion as motionTokens } from '@/lib/theme';
+import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
 import { TONE_META, EVENT_TAG_ICON, type IconName } from '@/lib/theme/concepts';
 import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
@@ -53,6 +54,7 @@ interface EventCardProps {
 
 export function EventCard({ event, onChoose }: EventCardProps) {
   const overlayRef = useRef<HTMLElement>(null);
+  const reducedMotion = useEffectiveReducedMotion();
   const tone = TONE_META[event.tone];
   const icon = iconFor(event);
 
@@ -121,10 +123,10 @@ export function EventCard({ event, onChoose }: EventCardProps) {
   return (
     <motion.div
       className="fixed inset-0 z-30 flex items-center justify-center px-4 pointer-events-none"
-      initial={{ opacity: 0 }}
+      initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: motionTokens.micro, ease: 'easeOut' }}
+      transition={{ duration: reducedMotion ? 0 : motionTokens.micro, ease: 'easeOut' }}
     >
       <div
         className="absolute inset-0 pointer-events-none"
@@ -139,10 +141,10 @@ export function EventCard({ event, onChoose }: EventCardProps) {
         aria-label={`Life event — ${tone.label}`}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        initial={{ opacity: 0, y: 16, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+        initial={reducedMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}
+        animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+        transition={{ duration: reducedMotion ? 0 : motionTokens.quick, ease: 'easeOut' }}
         className="relative w-full max-w-md rounded-md border border-border bg-surface p-5 shadow-[var(--shadow-overlay)] pointer-events-auto"
         data-testid="event-card"
         data-tone={event.tone}

@@ -6,7 +6,7 @@ export async function readDisplayedState(page: Page) {
   const ageText = await page.getByTestId('character-summary').textContent();
   const moneyText = await page.getByTestId('money').textContent();
 
-  const ageMatch = ageText?.match(/(\d+) years old/);
+  const ageMatch = ageText?.match(/(\d+)/);
   const health = await page.getByRole('progressbar', { name: 'Health' }).getAttribute('aria-valuenow');
   const happiness = await page
     .getByRole('progressbar', { name: 'Happiness' })

@@ -98,7 +98,7 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     gender: 'female',
     role: 'mother',
     age: motherAge,
-    alive: rollAlive(motherAge, rng),
+    alive: true,
     bond: rng.rangeInt(72, 88),
     metAge: 0,
     lastSpentAge: -1,
@@ -110,7 +110,7 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     gender: 'male',
     role: 'father',
     age: fatherAge,
-    alive: rollAlive(fatherAge, rng),
+    alive: true,
     bond: rng.rangeInt(68, 86),
     metAge: 0,
     lastSpentAge: -1,
@@ -232,22 +232,22 @@ export function ageFamilyMembers(tree: FamilyTree, characterAge: number): Family
   return { ...tree, members };
 }
 
-/** Human label for a member in the panel (e.g. "Mother", "Grandmother"). */
+/** Human label for a member in the panel (e.g. "আম্মা", "আব্বা", "দাদী"). */
 export function relationLabel(member: FamilyMember): string {
   switch (member.role) {
     case 'self':
-      return 'You';
+      return 'তুমি';
     case 'mother':
-      return 'Mother';
+      return 'আম্মা';
     case 'father':
-      return 'Father';
+      return 'আব্বা';
     case 'grandparent':
-      return member.gender === 'female' ? 'Grandmother' : 'Grandfather';
+      return member.gender === 'female' ? 'দাদী / নানী' : 'দাদা / নানা';
     case 'sibling':
-      return member.gender === 'female' ? 'Sister' : 'Brother';
+      return member.gender === 'female' ? 'বোন' : 'ভাই';
     case 'spouse':
-      return 'Spouse';
+      return member.gender === 'female' ? 'বউ (স্ত্রী)' : 'স্বামী (জামাই)';
     case 'child':
-      return 'Child';
+      return member.gender === 'female' ? 'মেয়ে' : 'ছেলে';
   }
 }

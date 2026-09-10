@@ -225,10 +225,12 @@ export function GameHub() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('start') === '1' && !character) {
       startFreshLife();
+      router.replace('/play');
     } else if (params.get('custom') === '1') {
       setTimeout(() => setCustomLifeOpen(true), 0);
+      router.replace('/play');
     }
-  }, [isHydrated, character, startFreshLife]);
+  }, [isHydrated, character, startFreshLife, router]);
 
   const noCharacter = !character;
   const dead = Boolean(character && !character.alive && pendingEvents.length === 0);

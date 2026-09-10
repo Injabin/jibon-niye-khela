@@ -75,7 +75,6 @@ export function LeftSidebar({
           {/* Avatar Hero Frame — Centered, uncropped, fully visible */}
           <div
             className="h-28 w-28 flex items-center justify-center overflow-visible"
-            data-testid="avatar"
           >
             <Avatar character={character} className="h-full w-full object-contain" />
           </div>
@@ -89,13 +88,13 @@ export function LeftSidebar({
             </p>
             <div className="flex items-center justify-center gap-2 mt-2">
               <span className="text-xs font-semibold tabular-nums text-zinc-200">
-                {character.age} <span className="text-[10px] font-normal text-zinc-400">years old</span>
+                {character.age} <span className="text-[10px] font-normal text-zinc-400">বছর বয়স</span>
               </span>
               <span className="text-zinc-400 text-xs">•</span>
               <div className="flex items-center gap-1" data-testid="money">
                 <Coins className="size-3 text-amber-400" />
                 <span className="text-xs font-bold tabular-nums text-amber-300">
-                  {formatMoney(character.money)}
+                  ৳{formatMoney(character.money)}
                 </span>
               </div>
             </div>
@@ -104,10 +103,10 @@ export function LeftSidebar({
 
         {/* 4 Rounded-Full Stat Progress Bars */}
         <div className="flex flex-col gap-2.5 py-0.5">
-          <StatBar label="Health" value={character.stats.health} statKey="health" />
-          <StatBar label="Happiness" value={character.stats.happiness} statKey="happiness" />
-          <StatBar label="Martial Skill" value={character.stats.smarts} statKey="smarts" />
-          <StatBar label="Honor" value={character.stats.looks} statKey="looks" />
+          <StatBar label="স্বাস্থ্য" value={character.stats.health} statKey="health" />
+          <StatBar label="সুখ" value={character.stats.happiness} statKey="happiness" />
+          <StatBar label="বুদ্ধি" value={character.stats.smarts} statKey="smarts" />
+          <StatBar label="চেহারা" value={character.stats.looks} statKey="looks" />
         </div>
 
         {/* Tactile 3D Candy Button — Restored Classic Crimson Palette */}
@@ -119,13 +118,13 @@ export function LeftSidebar({
           className="group relative flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 shadow-lg shadow-rose-950/40 px-4 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
         >
           <Sparkles className="size-4" />
-          <span>Age (+1 Year)</span>
+          <span>বয়স বাড়াও (+১ বছর)</span>
         </button>
 
         {/* Minimal Vertical Navigation with smooth transition hover states */}
         <nav className="flex flex-col gap-1 border-t border-white/[0.06] pt-3" aria-label="Navigation">
           <span className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-            Actions & Systems
+            কাজকর্ম ও জীবনধারা
           </span>
           <button
             type="button"
@@ -135,7 +134,7 @@ export function LeftSidebar({
           >
             <div className="flex items-center gap-2.5">
               <User className="size-4 text-zinc-400" />
-              <span>Full Profile</span>
+              <span>জীবনবৃত্তান্ত (প্রোফাইল)</span>
             </div>
             <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
@@ -148,7 +147,7 @@ export function LeftSidebar({
           >
             <div className="flex items-center gap-2.5">
               <Swords className="size-4 text-zinc-400" />
-              <span>Activities & Career</span>
+              <span>কাজকর্ম ও ব্যস্ততা</span>
             </div>
             <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
@@ -161,7 +160,7 @@ export function LeftSidebar({
           >
             <div className="flex items-center gap-2.5">
               <Users className="size-4 text-zinc-400" />
-              <span>Lineage & Relations</span>
+              <span>পরিবার ও আত্মীয়স্বজন</span>
             </div>
             <ChevronRight className="size-3.5 text-zinc-400" />
           </button>
@@ -174,7 +173,7 @@ export function LeftSidebar({
           >
             <div className="flex items-center gap-2.5">
               <Coins className="size-4 text-zinc-400" />
-              <span>Assets & Finance</span>
+              <span>সম্পদ ও ট্যাকা-পয়সা</span>
             </div>
             <ChevronRight className="size-3.5 text-zinc-400" />
           </button>

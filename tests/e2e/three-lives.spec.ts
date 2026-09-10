@@ -18,7 +18,11 @@ type Strategy = 'first' | 'last' | 'middle';
 
 async function startLife(page: Page): Promise<void> {
   if (!(await page.getByTestId('age-up').isVisible().catch(() => false))) {
-    await page.getByTestId('new-game').click();
+    if (await page.getByTestId('new-life').isVisible().catch(() => false)) {
+      await page.getByTestId('new-life').click();
+    } else {
+      await page.getByTestId('new-game').click();
+    }
   }
   await expect(page.getByTestId('age-up')).toBeVisible({ timeout: 10_000 });
 }
@@ -56,15 +60,30 @@ async function playUntilDeath(page: Page, strategy: Strategy, maxYears = 220): P
     if (await page.getByTestId('life-summary').isVisible().catch(() => false)) return;
     await drainAll(page, strategy);
     if (await page.getByTestId('life-summary').isVisible().catch(() => false)) return;
-    await page.getByTestId('age-up').click();
+    const ageUpBtn = page.getByTestId('age-up');
+    if (!(await ageUpBtn.isVisible().catch(() => false))) return;
+    await expect(ageUpBtn).toBeEnabled({ timeout: 10_000 });
+    await ageUpBtn.click();
     await drainAll(page, strategy);
   }
   await expect(page.getByTestId('life-summary')).toBeVisible({ timeout: 30_000 });
 }
 
 async function drainAll(page: Page, strategy: Strategy): Promise<void> {
+  await page
+    .waitForFunction(
+      () => {
+        const store = (window as unknown as { __JNK_GAME_STORE__?: { getState: () => { isGeneratingEvent?: boolean } } })
+          .__JNK_GAME_STORE__;
+        return !store?.getState()?.isGeneratingEvent;
+      },
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
+
   for (let i = 0; i < 200; i++) {
     if (await drainOne(page, strategy)) return;
+    await page.waitForTimeout(10);
   }
   throw new Error('events did not drain');
 }

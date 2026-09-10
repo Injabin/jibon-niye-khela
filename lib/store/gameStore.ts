@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { ageUp, checkForDeath } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
-import { BOND_MAX, BOND_PER_VISIT, ageFamilyMembers, birthChild, generateFamilyTree } from '@/lib/engine/family';
+import { BOND_MAX, BOND_PER_VISIT, ageFamilyMembers, birthChild, generateFamilyTree, relationLabel } from '@/lib/engine/family';
 import type { FamilyTree, FamilyRole } from '@/lib/engine/family';
 import { buildHeirFamilyTree, createHeirCharacter, eligibleHeirs, nextLifeSeed } from '@/lib/engine/legacy';
 import { buyAsset, sellAsset } from '@/lib/engine/events/categories/assets';
@@ -83,6 +83,13 @@ export interface GameStoreState {
   isGeneratingEvent: boolean;
 }
 
+export type FamilyInteractionType = 'spend_time' | 'chitchat' | 'compliment' | 'ask_money' | 'gift';
+
+export interface FamilyInteractionResult {
+  ok: boolean;
+  message: string;
+}
+
 export interface GameStoreActions {
   /** Restore a save from storage once per page load. */
   hydrate(): void;
@@ -119,6 +126,8 @@ export interface GameStoreActions {
    * character, the year's visit is used, or their bond is maxed.
    */
   spendTimeWith(memberId: string): boolean;
+  /** Detailed interactive family interactions (chitchat, compliment, ask for money, gift, spend time). */
+  interactWithFamily(memberId: string, action: FamilyInteractionType): FamilyInteractionResult;
   /** Export the current game as a formatted JSON string; null when no character exists. */
   exportToJson(): string | null;
   /** Import a raw save file. Returned boolean is success; sets `error`/`message` accordingly. */
@@ -500,6 +509,117 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       persist();
       return true;
+    },
+
+    interactWithFamily(memberId, action) {
+      const s = get();
+      if (!s.character || !s.character.alive) return { ok: false, message: 'জীবন শেষ হইয়া গেছে!' };
+      const tree = s.familyTree;
+      if (!tree) return { ok: false, message: 'পরিবারের কোনো হদিস নাই!' };
+      const member = tree.members.find((m) => m.id === memberId);
+      if (!member) return { ok: false, message: 'এই মানুষকে তো চিনি না!' };
+      if (member.role === 'self') return { ok: false, message: 'নিজের লগে নিজে তামাশা করবা?' };
+      if (!member.alive) return { ok: false, message: `${member.name} আর দুনিয়ায় নাই!` };
+
+      const character = structuredClone(s.character);
+      const rng = makeRng(s.seed, s.rngState);
+      let bondDelta = 0;
+      let happyDelta = 0;
+      let moneyDelta = 0;
+      let text = '';
+      let ok = true;
+
+      const roleBangla = relationLabel(member);
+
+      switch (action) {
+        case 'spend_time': {
+          if (member.lastSpentAge === character.age) {
+            return { ok: false, message: 'এই বছর উনার লগে কাচ্চি খাওয়া শেষ! সামনে বছর আবার খাইয়ো।' };
+          }
+          bondDelta = BOND_PER_VISIT;
+          happyDelta = 6;
+          member.lastSpentAge = character.age;
+          text = `${roleBangla} ${member.name}-রে নিয়া নাজিরাবাজারের নান্নার বিরিয়ানিতে গেলা। গরম কাচ্চি আর বোরহানি খাইয়া দিলটা ঠাণ্ডা হইয়া গেল! (+৮ খাতির, +৬ সুখ)`;
+          break;
+        }
+        case 'chitchat': {
+          bondDelta = 3;
+          happyDelta = 4;
+          const topics = [
+            `টং দোকানে বইসা লাল চা আর টোস্ট বিস্কুট খাইতে খাইতে পাড়ার নানা কিচ্ছা-কাহিনী নিয়া জমজমাট আড্ডা মারলা।`,
+            `পুরান ঢাকার সাকরাইন আর শবে বরাতের হালুয়া রুটির স্মৃতি নিয়া মেলা কথা হইল। দিলটা হালকা লাগল!`,
+            `মহল্লার কার ঘরে কী হইল, কার পোলা কার লগে ঘুরল — এই নিয়া জম্পেশ গসিপ চলল।`,
+          ];
+          text = `${roleBangla} ${member.name}-এর লগে আড্ডা: ${rng.pick(topics)} (+৩ খাতির, +৪ সুখ)`;
+          break;
+        }
+        case 'compliment': {
+          bondDelta = 4;
+          happyDelta = 3;
+          const praises = [
+            `'আপনের মতো দিলদরিয়া মানুষ পুরা পুরান ঢাকায় আর একটাও পাইবা না!'`,
+            `'আপনের চেহারা আর স্বভাব দেইখা সবাই কয় আপনে সাক্ষাৎ নবাবের বংশধর!'`,
+            `'আপনের হাতের রান্নার কাছে তো স্টার হোটেলের বাবুর্চিও ফেইল!'`,
+          ];
+          text = `${roleBangla} ${member.name}-রে মাখন মারলা: ${rng.pick(praises)} উনি খুশিতে বাকবাকুম হইয়া গেলেন! (+৪ খাতির)`;
+          break;
+        }
+        case 'ask_money': {
+          if (member.bond >= 40) {
+            const amount = rng.pick([100, 200, 300, 500]);
+            moneyDelta = amount;
+            happyDelta = 4;
+            bondDelta = -2;
+            text = `${roleBangla} ${member.name}-এর কাছে হাত পাতলা। উনি পকেট থেইকা ৳${amount} বাইর কইরা দিলেন: 'এই নে, রাখ। ফালতু চুদুর বুদুর করবি না কইলাম!' (+৳${amount})`;
+          } else {
+            ok = false;
+            happyDelta = -5;
+            bondDelta = -3;
+            text = `${roleBangla} ${member.name} চোখ গরম কইরা ধমক দিলেন: 'কামকাজের মুরোদ নাই, খালি ট্যাকা ধার চাইতে আইছত! বের হ চোখের সামনে থেইকা!' (-৫ সুখ)`;
+          }
+          break;
+        }
+        case 'gift': {
+          const cost = 200;
+          if (character.money < cost) {
+            return { ok: false, message: `পকেটে ফুটো পয়সাও নাই (৳${cost} দরকার)! উপহার দিবা কেমনে?` };
+          }
+          moneyDelta = -cost;
+          bondDelta = 10;
+          happyDelta = 5;
+          const giftItems = [
+            'চকবাজারের খাঁটি জাফরানি মিষ্টি আর বাকরখানি',
+            'নবাববাড়ির সুগন্ধি আতর আর সুরমা',
+            'পাতলা রেশমি শাল আর সুরমাদানি',
+          ];
+          text = `${roleBangla} ${member.name}-রে ${rng.pick(giftItems)} উপহার দিলা। উনি বেজায় খুশি হইয়া মাথায় হাত বুলাইয়া দোয়া দিলেন! (+১০ খাতির, −৳${cost})`;
+          break;
+        }
+      }
+
+      const nextBond = Math.max(0, Math.min(BOND_MAX, member.bond + bondDelta));
+      const members = tree.members.map((m) =>
+        m.id === memberId ? { ...m, bond: nextBond, lastSpentAge: member.lastSpentAge } : m,
+      );
+
+      character.stats.happiness = Math.max(0, Math.min(100, character.stats.happiness + happyDelta));
+      character.money = Math.max(0, character.money + moneyDelta);
+
+      const relation = ROLE_TO_RELATION[member.role];
+      if (relation) {
+        const rel = character.relationships.find((r) => r.relation === relation && r.name === member.name);
+        if (rel) rel.meter = nextBond;
+      }
+
+      set({
+        character,
+        familyTree: { ...tree, members },
+        rngState: rng.getState(),
+        message: text,
+      });
+
+      persist();
+      return { ok, message: text };
     },
 
     enrollHigherEducation(path) {

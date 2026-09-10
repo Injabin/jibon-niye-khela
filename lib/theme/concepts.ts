@@ -42,12 +42,12 @@ const statFill = {
   honor: 'var(--color-stat-honor)',
 } as const;
 
-/** §0 mapping: engine keys stay; rank/display name + icon change only. */
+/** §0 mapping: engine keys stay; rank/display name + icon change to Dhakaiya Bangla. */
 export const STAT_META: Record<StatKey, StatMeta> = {
-  health: { key: 'health', readable: 'Health', label: 'Health', icon: 'heart', fillVar: statFill.health },
-  happiness: { key: 'happiness', readable: 'Happiness', label: 'Happiness', icon: 'sun', fillVar: statFill.happiness },
-  smarts: { key: 'smarts', readable: 'Smarts', label: 'Martial Skill', icon: 'sword', fillVar: statFill.martial },
-  looks: { key: 'looks', readable: 'Looks', label: 'Honor', icon: 'shield', fillVar: statFill.honor },
+  health: { key: 'health', readable: 'Health', label: 'স্বাস্থ্য', icon: 'heart', fillVar: statFill.health },
+  happiness: { key: 'happiness', readable: 'Happiness', label: 'সুখ', icon: 'sun', fillVar: statFill.happiness },
+  smarts: { key: 'smarts', readable: 'Smarts', label: 'বুদ্ধি', icon: 'dot', fillVar: statFill.martial },
+  looks: { key: 'looks', readable: 'Looks', label: 'চেহারা', icon: 'shield', fillVar: statFill.honor },
 };
 
 export interface ToneMeta {
@@ -61,25 +61,25 @@ export interface ToneMeta {
 
 export const TONE_META: Record<Tone, ToneMeta> = {
   good: {
-    label: 'Good break',
+    label: 'দারুণ ব্যাপার',
     icon: 'coin',
     fillVar: 'var(--color-tone-good)',
     textVar: 'var(--color-tone-text-good)',
   },
   bad: {
-    label: 'Tough beat',
+    label: 'মাইঙ্কা চিপা',
     icon: 'skull',
     fillVar: 'var(--color-tone-bad)',
     textVar: 'var(--color-tone-text-bad)',
   },
   neutral: {
-    label: 'Just life',
+    label: 'জীবন এমনই',
     icon: 'dot',
     fillVar: 'var(--color-tone-neutral)',
     textVar: 'var(--color-tone-text-neutral)',
   },
   funny: {
-    label: 'Funny moment',
+    label: 'চরম ফান',
     icon: 'laugh',
     fillVar: 'var(--color-tone-funny)',
     textVar: 'var(--color-tone-text-funny)',
@@ -87,7 +87,7 @@ export const TONE_META: Record<Tone, ToneMeta> = {
 };
 
 export const WEALTH = {
-  label: 'Coins',
+  label: 'ট্যাকা',
   fillVar: 'var(--color-wealth)',
   textVar: 'var(--color-wealth-text)',
 } as const;

@@ -51,12 +51,12 @@ export interface CareerOutcome {
  * Education = the highest stage that must have been reached on the arc.
  */
 export const JOB_BOARD: readonly JobDef[] = [
-  { id: 'fastfood', title: 'Fast-food server', minAge: 16, flag: 'job_service', salary: [120, 260] },
-  { id: 'retail_clerk', title: 'Department-store clerk', minAge: 16, flag: 'job_retail', salary: [140, 320] },
-  { id: 'hustle_delivery', title: 'Delivery courier', minAge: 16, flag: 'job_service', requires: { minSmarts: 30 }, salary: [180, 460] },
+  { id: 'fastfood', title: 'কাচ্চির সহকারী বাবুর্চি', minAge: 16, flag: 'job_service', salary: [120, 260] },
+  { id: 'retail_clerk', title: 'চকবাজারের পাইকারি সেলসম্যান', minAge: 16, flag: 'job_retail', salary: [140, 320] },
+  { id: 'hustle_delivery', title: 'পাঠাও / ফুড ডেলিভারি রাইডার', minAge: 16, flag: 'job_service', requires: { minSmarts: 30 }, salary: [180, 460] },
   {
     id: 'entertainer',
-    title: 'Street performer',
+    title: 'রাস্তার ম্যাজিশিয়ান ও পারফর্মার',
     minAge: 16,
     flag: 'job_entertainer',
     requires: { minLooks: 55 },
@@ -64,7 +64,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'warehouse',
-    title: 'Warehouse worker',
+    title: 'সদরঘাটের গুদাম শ্রমিক',
     minAge: 18,
     flag: 'job_trade',
     requires: { education: 'middle' },
@@ -72,7 +72,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'construction_app',
-    title: 'Construction worker',
+    title: 'নির্মাণ শ্রমিক ও রাজমিস্ত্রি',
     minAge: 18,
     flag: 'job_trade',
     requires: { education: 'middle' },
@@ -80,7 +80,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'office_admin',
-    title: 'Office assistant',
+    title: 'মতিঝিলের অফিস সহকারী',
     minAge: 18,
     flag: 'job_office',
     requires: { education: 'high' },
@@ -88,7 +88,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'tech_support',
-    title: 'Tech support rep',
+    title: 'নবাবপুরের ইলেকট্রনিক্স মিস্ত্রি',
     minAge: 18,
     flag: 'job_tech',
     requires: { education: 'high', minSmarts: 55 },
@@ -96,7 +96,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'nurse',
-    title: 'Nurse',
+    title: 'মিটফোর্ড হাসপাতালের নার্স',
     minAge: 19,
     flag: 'job_medical',
     requires: { education: 'vocational', minSmarts: 55 },
@@ -104,14 +104,14 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'soldier',
-    title: 'Military recruit',
+    title: 'সেনাবাহিনীর রিক্রুট',
     minAge: 18,
     flag: 'job_military',
     salary: [330, 850],
   },
   {
     id: 'illustrator',
-    title: 'Freelance illustrator',
+    title: 'নীলক্ষেতের গ্রাফিক্স ডিজাইনার',
     minAge: 18,
     flag: 'job_art',
     requires: { minSmarts: 50 },
@@ -119,7 +119,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'side_business',
-    title: 'Side-business owner',
+    title: 'বাকরখানি ও মিষ্টির ব্যবসা',
     minAge: 18,
     flag: 'job_business',
     requires: { minSmarts: 45 },
@@ -127,7 +127,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'pro_athlete',
-    title: 'Pro athlete',
+    title: 'পেশাদার ফুটবলার / ক্রিকেটার',
     minAge: 18,
     flag: 'job_sports',
     requires: { trait: 'hobby_sport', minLooks: 60 },
@@ -135,7 +135,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'programmer',
-    title: 'Software developer',
+    title: 'সফটওয়্যার ডেভেলপার',
     minAge: 22,
     flag: 'job_tech',
     requires: { education: 'undergraduate', minSmarts: 60 },
@@ -143,7 +143,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'accountant',
-    title: 'Accountant',
+    title: 'হিসাবরক্ষক (অ্যাকাউন্ট্যান্ট)',
     minAge: 22,
     flag: 'job_finance',
     requires: { education: 'undergraduate', major: 'major_business', minSmarts: 60 },
@@ -151,7 +151,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'lawyer',
-    title: 'Associate lawyer',
+    title: 'জজ কোর্টের শিক্ষানবিস উকিল',
     minAge: 24,
     flag: 'job_legal',
     requires: { education: 'undergraduate', major: 'major_law', minSmarts: 70 },
@@ -159,7 +159,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'doctor',
-    title: 'Doctor',
+    title: 'বিশেষজ্ঞ এমবিবিএস ডাক্তার',
     minAge: 26,
     flag: 'job_medical',
     requires: { education: 'undergraduate', major: 'major_medicine', minSmarts: 75 },
@@ -167,7 +167,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'politician',
-    title: 'Local councillor',
+    title: 'ওয়ার্ড কাউন্সিলর',
     minAge: 30,
     flag: 'job_politics',
     requires: { education: 'undergraduate', minSmarts: 70 },
@@ -230,14 +230,14 @@ export function applyForJob(
   reasonOverride?: string,
 ): JobApplicationResult {
   if (!character.alive) {
-    return { hired: false, text: 'You cannot job-hunt now.', tone: 'bad' };
+    return { hired: false, text: 'এহন তো চাকরি খোঁজার উপায় নাই।', tone: 'bad' };
   }
   const job = JOB_BOARD.find((j) => j.id === jobId);
   if (!job) {
-    return { hired: false, text: 'No such job exists in this world.', tone: 'neutral' };
+    return { hired: false, text: 'এমন কোনো চাকরি দুনিয়ায় নাই!', tone: 'neutral' };
   }
   if (!isJobEligible(job, character)) {
-    return { hired: false, text: `You do not meet the requirements for ${job.title}.`, tone: 'neutral' };
+    return { hired: false, text: `${job.title} পদের জন্য প্রয়োজনীয় যোগ্যতা তোমার এখনও হয় নাই।`, tone: 'neutral' };
   }
 
   let chance = 0.45 + (character.stats.smarts - 50) * 0.004 + (character.stats.looks - 50) * 0.002;
@@ -257,22 +257,22 @@ export function applyForJob(
       hired: true,
       jobId: job.id,
       title: job.title,
-      text: reasonOverride ?? `${job.title} hires you. The first payday looms with quiet promise. (≈${pay} coins / year)`,
+      text: reasonOverride ?? `${job.title} পদে তোমার চাকরি হইয়া গেল! মালিক খুশি হইয়া কইলো—"মন দিয়া কাম করবা, ফাঁকিবাজি সহ্য করুম না!" (বছরে আয় ≈৳${pay.toLocaleString()})`,
       tone: 'good',
     };
   }
-  return { hired: false, text: `${job.title} turns you down — politely, heroically.`, tone: 'neutral' };
+  return { hired: false, text: `${job.title} পদের ইন্টারভিউতে তোমারে নাকচ কইরা দিল—"মামা, এহন কোনো লোক লাগবো না, অন্য কোথাও লাইন মারো!"`, tone: 'neutral' };
 }
 
 export function quitJob(character: Character): CareerOutcome & { quit: boolean } {
   if (!character.career.jobId) {
-    return { quit: false, text: 'You have no job to leave.', tone: 'neutral' };
+    return { quit: false, text: 'তোমার তো কোনো চাকরিই নাই, ছাড়বা কী?', tone: 'neutral' };
   }
   const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
   character.career = { jobId: null, performance: 50, yearsAtJob: 0 };
   if (job) character.flags = character.flags.filter((f) => f !== job.flag);
   if (!character.flags.includes('unemployed')) character.flags.push('unemployed');
-  return { quit: true, text: 'You hand in your notice. Employment, briefly, becomes a rumour.', tone: 'neutral' };
+  return { quit: true, text: 'চাকরিতে ইস্তফা দিয়া দিলা! বসরে কইয়া আসলা—"আমারে দিয়া আর এই গোলামি হইবো না!" এহন তুমি স্বাধীন বেহুদা মানুষ!', tone: 'neutral' };
 }
 
 /**
@@ -297,14 +297,14 @@ export function tickCareer(character: Character, rng: RNG): CareerOutcome | null
 
   if (nextPerf >= 75 && rng.chance(0.3)) {
     character.career.performance = 62;
-    return { text: `Your work at ${job.title} pays off — promotion. The new title fits like a nice coat.`, tone: 'good' };
+    return { text: `${job.title} কাজে তোমার দারুণ পারফরম্যান্সের কারণে পদোন্নতি (promotion) হইলো! মালিক মাইনে বাড়াইয়া দিল!`, tone: 'good' };
   }
 
   if (nextPerf <= 28 && character.career.yearsAtJob >= 1 && rng.chance(0.28)) {
     character.career = { jobId: null, performance: 50, yearsAtJob: 0 };
     character.flags = character.flags.filter((f) => f !== job.flag);
     if (!character.flags.includes('unemployed')) character.flags.push('unemployed');
-    return { text: `The ${job.title} job ends — the firm calls it "restructuring". You call it a lunch invite.`, tone: 'bad' };
+    return { text: `${job.title} চাকরি থেইকা তোমারে খেদাইয়া দিল! মালিক কইলো—"অফিসে বইসা খালি ফাপড় মারলে কম্পানি চলবো না!"`, tone: 'bad' };
   }
 
   return null;

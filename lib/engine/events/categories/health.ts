@@ -28,10 +28,11 @@ export interface HealthIncident {
 }
 
 /** Stylized incident pool — scaled by age; consequences are abstract, never graphic. */
+/** Stylized incident pool — scaled by age; consequences are abstract, never graphic. */
 export const INCIDENTS: readonly HealthIncident[] = [
   {
     id: 'cold',
-    label: 'A cold settles in for the week and rearranges the furniture.',
+    label: 'হালকা সর্দি-কাশি লাইগা নাক দিয়া পানি ঝরতাছে। আম্মা গরম আদা চা বানায়া দিল।',
     minAge: 0,
     weight: 26,
     effects: { health: -7, happiness: -3, addFlag: 'ill_recovered' },
@@ -39,7 +40,7 @@ export const INCIDENTS: readonly HealthIncident[] = [
   },
   {
     id: 'winter_flu',
-    label: 'A proper flu finds you. Everything tastes faintly of aspirin.',
+    label: 'তীব্র ঠাণ্ডা আর সিজনাল ফ্লুতে শরীর কাবু হইয়া গেল! বিছানা থেইকা উঠার তাগদ নাই।',
     minAge: 0,
     weight: 14,
     effects: { health: -12, happiness: -5, addFlag: 'ill_recovered' },
@@ -47,7 +48,7 @@ export const INCIDENTS: readonly HealthIncident[] = [
   },
   {
     id: 'sprain',
-    label: 'A stair well you have used a hundred times bites back — a sprain.',
+    label: 'পুরান ঢাকার ছাদের সিঁড়িতে পিছলা খাইয়া পা মচকাইয়া ফালাইলা! হাঁটাচলা পুরাই বন্ধ।',
     minAge: 10,
     weight: 12,
     effects: { health: -9, looks: -2, addFlag: 'injury_recovered' },
@@ -55,7 +56,7 @@ export const INCIDENTS: readonly HealthIncident[] = [
   },
   {
     id: 'exhaustion',
-    label: 'Exhaustion catches you mid-stride. The battery icon is your spirit animal.',
+    label: 'চাকরিবাকরি আর দুনিয়াদারির চাপে চান্দি গরম হইয়া শরীর পুরাই কাইত হইয়া পড়লো।',
     minAge: 14,
     weight: 10,
     effects: { health: -5, happiness: -9, addFlag: 'mental_low' },
@@ -63,7 +64,7 @@ export const INCIDENTS: readonly HealthIncident[] = [
   },
   {
     id: 'fracture',
-    label: 'A clumsy moment — the fracture heals, but slower than your pride.',
+    label: 'গলিতে দৌড়াদৌড়ি করতে গিয়া আছাড় খাইলা! ডাক্তার কইলো হাত মচকে গেছে, ব্যান্ডেজ লাগবো!',
     minAge: 35,
     weight: 8,
     effects: { health: -16, happiness: -4, addFlag: 'injury_recovered' },
@@ -71,7 +72,7 @@ export const INCIDENTS: readonly HealthIncident[] = [
   },
   {
     id: 'hospital',
-    label: 'A serious scare lands you in hospital. The ward is calm and very beige.',
+    label: 'হঠাৎ বুক ধরফর আর অসুস্থতায় মিটফোর্ড হাসপাতালে ভর্তি হওয়া লাগলো! কড়া ওষুধ চলতাছে।',
     minAge: 55,
     weight: 9,
     effects: { health: -18, happiness: -6, addFlag: 'ill_recovered' },
@@ -114,7 +115,7 @@ export function mentalSupportIfNeeded(character: Character): HealthOutcome | nul
   if (hasFlag(character, 'mental_low')) return null;
   if (character.stats.happiness >= 28 || character.age < 13) return null;
   return {
-    text: 'Some weeks sit heavy. A quiet session with a professional helps more than you expected.',
+    text: 'কয়েকটা দিন মনের ওপর দিয়া খুব ধকল গেল। একজন অভিজ্ঞ কাউন্সেলরের লগে বইসা খোলাখুলি কথা কইলা, মনটা অনেক হালকা লাগতাছে!',
     tone: 'good',
   };
 }
@@ -149,7 +150,7 @@ export function tickHealth(character: Character, rng: RNG): HealthOutcome | null
 export function visitDoctor(character: Character): HealthOutcome {
   applyStatEffects(character, { health: 15, happiness: 5, money: -50 });
   return {
-    text: 'The doctor listens, prescribes sensible rest, and charges you a mysterious fifty.',
+    text: 'মিটফোর্ড হাসপাতালের অভিজ্ঞ ডাক্তার দেখাইলা। ডাক্তার নাড়ি টিপে বিশ্রাম নেওয়ার প্রেসক্রিপশন দিল আর ফি বাবদ ৫০ ট্যাকা রাখলো।',
     tone: 'good',
   };
 }

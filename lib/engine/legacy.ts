@@ -57,7 +57,13 @@ export function createHeirCharacter(
   rng: RNG,
 ): Character {
   const age = heir.age;
-  const firstName = heir.name.split(' ')[0];
+  let firstName = heir.name;
+  if (parent.surname && firstName.endsWith(` ${parent.surname}`)) {
+    firstName = firstName.slice(0, -parent.surname.length - 1);
+  } else if (firstName.includes(' ')) {
+    const lastSpace = firstName.lastIndexOf(' ');
+    firstName = firstName.slice(0, lastSpace);
+  }
   const share = Math.max(0, Math.floor(parent.money / Math.max(1, heirsCount)));
   const inheritance = Math.min(MAX_INHERITANCE, share);
 
@@ -125,7 +131,9 @@ export function createHeirCharacter(
  */
 export function buildHeirFamilyTree(tree: FamilyTree, heir: Character): FamilyTree {
   const oldSelf = tree.members.find((m) => m.role === 'self');
-  const heirMember = tree.members.find((m) => m.role === 'child' && m.name === `${heir.name} ${heir.surname}`);
+  const heirMember = tree.members.find(
+    (m) => m.role === 'child' && (m.name === `${heir.name} ${heir.surname}` || m.name === heir.name),
+  );
   if (!oldSelf || !heirMember) {
     throw new Error('Cannot build a heir family tree without the late self and the chosen child');
   }

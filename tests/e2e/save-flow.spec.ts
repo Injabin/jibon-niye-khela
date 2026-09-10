@@ -25,7 +25,7 @@ test.describe('export/import save round-trip (Gate 2)', () => {
 
     // Wipe storage and reload -> back to the fresh "new life" screen.
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.goto('/play');
     await expect(page.getByTestId('new-game')).toBeVisible();
 
     // Import the exported file.
@@ -62,7 +62,7 @@ test.describe('export/import save round-trip (Gate 2)', () => {
 async function readStateSummary(page: import('@playwright/test').Page) {
   const name = (await page.getByTestId('character-summary').locator('h2').textContent())?.trim() ?? '';
   const summaryText = await page.getByTestId('character-summary').textContent();
-  const ageMatch = summaryText?.match(/(\d+) years old/);
+  const ageMatch = summaryText?.match(/(\d+)/);
   const money = (await page.getByTestId('money').textContent())?.trim() ?? '';
   const health = await page.getByRole('progressbar', { name: 'Health' }).getAttribute('aria-valuenow');
   const happiness = await page

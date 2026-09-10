@@ -144,7 +144,7 @@ test.describe('Gate 7 birth + arc crossfade', () => {
     // Age up with events drained until we cross the 18th birthday.
     const readAge = async () => {
       const text = await page.getByTestId('character-summary').textContent();
-      return Number(text?.match(/(\d+) years old/)?.[1] ?? -1);
+      return Number(text?.match(/(\d+)/)?.[1] ?? -1);
     };
     let age = await readAge();
     for (let i = 0; i < 60 && age < 18; i += 1) {

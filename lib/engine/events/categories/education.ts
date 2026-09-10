@@ -96,6 +96,14 @@ function toggleStudentFlag(character: Character, enrolled: boolean): void {
   }
 }
 
+export const MAJOR_NAMES_BANGLA: Record<MajorField, string> = {
+  stem: 'বুয়েটে ইঞ্জিনিয়ারিং',
+  medicine: 'মিটফোর্ড মেডিকেল কলেজে ডাক্তারি',
+  law: 'ঢাকা বিশ্ববিদ্যালয়ের আইন বিভাগ',
+  business: 'ঢাকা বিশ্ববিদ্যালয়ে বাণিজ্য ও ব্যবসা শিক্ষা',
+  arts: 'জগন্নাথ বিশ্ববিদ্যালয়ে সাহিত্য ও মানবিক',
+};
+
 /** Post-secondary enrollment of the player's choosing (DESIGN.md §5.1). */
 export function enterHigherEducation(
   character: Character,
@@ -105,16 +113,16 @@ export function enterHigherEducation(
   const e = character.education;
 
   if (!character.alive) {
-    return { accepted: false, text: 'You cannot enroll now.', tone: 'bad' };
+    return { accepted: false, text: 'এহন তো পড়াশোনায় ভর্তি হওয়ার উপায় নাই।', tone: 'bad' };
   }
   if (e.enrolled) {
-    return { accepted: false, text: 'You are already studying.', tone: 'neutral' };
+    return { accepted: false, text: 'তুমি তো অলরেডি পড়াশোনা করতাছো, ক্লাসে মন দেও!', tone: 'neutral' };
   }
   if (e.graduated) {
-    return { accepted: false, text: 'Your studying days are already done.', tone: 'neutral' };
+    return { accepted: false, text: 'পড়াশোনার পাট তো চুকাইয়া ফালাইছো, এহন কামাই-রুজির ধান্দা করো!', tone: 'neutral' };
   }
   if (character.age < SCHOOL_END_AGE) {
-    return { accepted: false, text: 'School is not behind you yet.', tone: 'neutral' };
+    return { accepted: false, text: 'স্কুল তো এখনও শ্যাষ হয় নাই, আগেই এতো বড় খোয়াব দেইখো না!', tone: 'neutral' };
   }
   if (path === 'vocational') {
     e.stage = 'vocational';
@@ -127,7 +135,7 @@ export function enterHigherEducation(
     if (character.money < 0 && !hasFlag(character, 'has_debt')) character.flags.push('has_debt');
     return {
       accepted: true,
-      text: `You enroll in a vocational program. The tools smell like possibility (and slightly of solvent).`,
+      text: 'ঢাকা পলিটেকনিক ইনস্টিটিউটে কারিগরি কোর্সে ভর্তি হইলা। হাতে টেস্টার আর স্লাইরেঞ্জ নিয়া কাজের পাকা তালিম শুরু!',
       tone: 'good',
     };
   }
@@ -135,7 +143,7 @@ export function enterHigherEducation(
   if (character.stats.smarts < 40 && !hasFlag(character, 'gpa_high')) {
     return {
       accepted: false,
-      text: 'The admission office politely suggests a different path.',
+      text: 'ভর্তি অফিসের বড় কর্তা এক কাপ লাল চা খাইতে খাইতে কইলো—"মামা, এই নম্বরে তো এখানে চান্স হইবো না, অন্য কোথাও চেষ্টা মারো!"',
       tone: 'neutral',
     };
   }
@@ -151,7 +159,7 @@ export function enterHigherEducation(
   if (character.money < 0 && !hasFlag(character, 'has_debt')) character.flags.push('has_debt');
   return {
     accepted: true,
-    text: `You win a spot at university, ${major} major. Tuition bites, but the library is a cathedral.`,
+    text: `${MAJOR_NAMES_BANGLA[major]} শাখায় ভর্তি পাইলা! টিউশন ফির ধাক্কা আছে, তয় ক্যাম্পাসে তোমার কদর এহন তুঙ্গে!`,
     tone: 'good',
   };
 }
@@ -172,8 +180,8 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
       toggleStudentFlag(character, false);
       return {
         text: e.stage === 'vocational'
-          ? `You finish your vocational training, certificate in hand and toolbox packed.`
-          : `You graduate with a ${e.major || 'chosen'} degree. The cap fits.`,
+          ? 'ঢাকা পলিটেকনিকের কারিগরি ডিপ্লোমা শেষ কইরা সার্টিফিকেট হাতে পাইলা! এহন তুমি পুরাই ওস্তাদ কারিগর!'
+          : `মাথায় সমাবর্তনের কালো ক্যাপ পইরা গ্র্যাজুয়েট (graduate) হইলা! মহল্লার পোলাপাইন কয়—"মামা তো এহন আস্ত শিক্ষিত জজ-ব্যারিস্টার!"`,
         tone: 'good',
       };
     }
@@ -205,11 +213,20 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
       removeFlag(character, 'gpa_low');
     }
     if (changed) {
-      const label = e.stage === 'elementary' ? 'primary school' : e.stage === 'middle' ? 'middle school' : 'high school';
+      if (e.stage === 'elementary') {
+        return {
+          text: 'তুমি আরমানিটোলা সরকারি প্রাথমিক বিদ্যালয়ে ভর্তি হইলা। নতুন খাতা-কলম আর পেন্সিল বক্সের গন্ধে মনটা খুশিতে ঝলমল করতাছে!',
+          tone: 'neutral',
+        };
+      }
+      if (e.stage === 'middle') {
+        return {
+          text: 'পগোজ স্কুলে নতুন ক্লাসে উঠলা! পুরান ঢাকার অলিগলিপথে বন্ধুদের লগে আড্ডা আর পড়ালেখার নতুন চাপ!',
+          tone: 'neutral',
+        };
+      }
       return {
-        text: e.stage === 'elementary'
-          ? `You start primary school. The pencil case is the proudest thing you own.`
-          : `${label === 'middle school' ? 'Middle school' : 'High school'} begins. New faces, new noise, new rules.`,
+        text: 'ঢাকা কলেজিয়েট স্কুলে এসএসসির পড়াশোনা শুরু হইলো! মুরব্বিরা কইলো—"এহন যদি মন দিয়া না পড়স, বাপে কিন্তু দোকানে বসায় দিবো!"',
         tone: 'neutral',
       };
     }
@@ -220,7 +237,7 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
   if (e.enrolled && inSchoolStages.includes(e.stage) && age > SCHOOL_END_AGE) {
     e.enrolled = false;
     toggleStudentFlag(character, false);
-    return { text: `School's out. Your next chapter is yours to choose.`, tone: 'neutral' };
+    return { text: 'স্কুলের পাট চুকাইলা (School is out)! এহন তো তুমি সাবালক, সামনে ভার্সিটিতে যাইবা নাকি রুজি-রোজগারে নামবা?', tone: 'neutral' };
   }
 
   return null;

@@ -16,17 +16,26 @@ import type { DatingCandidate } from '@/lib/engine/romance';
 type Tab = 'school' | 'career' | 'romance' | 'assets' | 'crime' | 'health';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'school', label: 'School' },
-  { id: 'career', label: 'Career' },
-  { id: 'romance', label: 'Romance' },
-  { id: 'assets', label: 'Assets' },
-  { id: 'crime', label: 'Crime' },
-  { id: 'health', label: 'Health' },
+  { id: 'school', label: 'পড়াশোনা' },
+  { id: 'career', label: 'চাকরি-বাকরি' },
+  { id: 'romance', label: 'প্রেম-ভালোবাসা' },
+  { id: 'assets', label: 'ধন-সম্পদ' },
+  { id: 'crime', label: 'ধান্ধাবাজি' },
+  { id: 'health', label: 'স্বাস্থ্য' },
 ];
 
 export type { Tab };
 
 const BUYABLE_KINDS: AssetKind[] = ['car', 'home', 'jewelry', 'collectible', 'stock', 'crypto'];
+
+const ASSET_KIND_LABELS: Record<AssetKind, string> = {
+  car: 'গাড়ি / বাইক',
+  home: 'বাড়ি / ফ্ল্যাট',
+  jewelry: 'সোনার গহনা',
+  collectible: 'শখের জিনিস',
+  stock: 'শেয়ার মার্কেট',
+  crypto: 'ডিজিটাল সম্পদ',
+};
 
 function coins(value: number): string {
   return value.toLocaleString();
@@ -104,11 +113,11 @@ export function ActiveMenu({
           >
             <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3.5">
               <div>
-                <h2 className="text-base font-bold tracking-tight text-white">Activities & Pathways</h2>
-                <p className="text-xs text-zinc-400">Pursue education, jobs, assets, and life choices</p>
+                <h2 className="text-base font-bold tracking-tight text-white">হাতেকলমে জীবনের ধান্ধা</h2>
+                <p className="text-xs text-zinc-400">পড়াশোনা, চাকরি, সম্পদ, রোমান্স ও যাবতীয় কারবার</p>
               </div>
               <Button variant="secondary" onClick={onClose} data-testid="close-actions">
-                Close
+                বন্ধ করো
               </Button>
             </div>
 
@@ -157,6 +166,21 @@ export function ActiveMenu({
   );
 }
 
+const STAGE_LABELS: Record<string, string> = {
+  none: 'শুরু হয় নাই',
+  primary: 'প্রাথমিক বিদ্যালয়',
+  high: 'উচ্চ বিদ্যালয়',
+  undergraduate: 'বিশ্ববিদ্যালয়',
+  vocational: 'পলিটেকনিক / কারিগরি',
+};
+
+const RELATION_LABELS: Record<string, string> = {
+  crush: 'ক্রাশ',
+  dating: 'প্রেম করতাছত',
+  partner: 'মনের মানুষ',
+  spouse: 'বউ / স্বামী',
+};
+
 function SchoolTab({
   character,
   studying,
@@ -168,26 +192,27 @@ function SchoolTab({
 }) {
   const education = character.education;
   const schoolDone = character.age >= 18;
+  const stageName = STAGE_LABELS[education.stage] ?? education.stage;
   return (
     <div className="space-y-3">
       <p className="text-sm text-text">
-        Stage: <span className="font-medium">{education.stage}</span> · GPA{' '}
+        ধাপ: <span className="font-medium">{stageName}</span> · জিপিএ{' '}
         {education.gpa.toFixed(1)}
-        {education.graduated ? ' · graduated' : ''}
+        {education.graduated ? ' · পাস করছত' : ''}
       </p>
       {studying ? (
-        <p className="text-sm text-text-muted">You are currently enrolled. Graduation counts down with each passing year.</p>
+        <p className="text-sm text-text-muted">তুই এহন ক্লাসে ভর্তি আছত। বছর ঘুরলেই পরীক্ষা আর রেজাল্ট আইবো।</p>
       ) : education.graduated ? (
-        <p className="text-sm text-text-muted">Your studying days are already done.</p>
+        <p className="text-sm text-text-muted">পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!</p>
       ) : !schoolDone ? (
-        <p className="text-sm text-text-muted">School is not behind you yet — the classroom comes to you.</p>
+        <p className="text-sm text-text-muted">বয়স কম, নিজের মনে পড়াশোনা চালাও — ক্লাসের পড়া সামনেই আইতাছে।</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => onEnroll('undergraduate')} data-testid="enroll-university">
-            Attend university
+            ভার্সিটিতে ভর্তি হও (৳১,০০০)
           </Button>
           <Button variant="secondary" onClick={() => onEnroll('vocational')} data-testid="enroll-vocational">
-            Vocational training
+            কারিগরি ট্রেডে ভর্তি হও (৳২৫০)
           </Button>
         </div>
       )}
@@ -212,23 +237,23 @@ function CareerTab({
       <p className="text-sm text-text">
         {career.jobId ? (
           <>
-            Currently:{' '}
+            বর্তমান পদ:{' '}
             <span className="font-medium">
               {board.find((j) => j.id === career.jobId)?.title ?? career.jobId}
             </span>{' '}
-            · year {career.yearsAtJob} · performance {career.performance}
+            · চাকুরির বয়স {career.yearsAtJob} বছর · পারফরম্যান্স {career.performance}
           </>
         ) : (
-          'Unemployed — the board is open below.'
+          'বেকার বইসা আছত — নিচের রুজির তালিকা থেইকা কোনো কাম বেছে নেও।'
         )}
       </p>
       {career.jobId && (
         <Button variant="danger" onClick={onQuit} data-testid="quit-job">
-          Quit job
+          চাকরি ছাড়মু (ইস্তফা)
         </Button>
       )}
       {board.length === 0 ? (
-        <p className="text-sm text-text-muted">Nothing posted that fits you yet.</p>
+        <p className="text-sm text-text-muted">তোর যোগ্যতার কোনো কাম এহন খালি নাই।</p>
       ) : (
         <ul className="space-y-2">
           {board.map((job) => (
@@ -240,11 +265,11 @@ function CareerTab({
               <div className="min-w-0">
                 <p className="text-sm font-medium text-text">{job.title}</p>
                 <p className="text-xs text-text-muted">
-                  ≈{coins((job.salary[0] + job.salary[1]) / 2)} / year · from {job.minAge}
+                  ≈৳{coins((job.salary[0] + job.salary[1]) / 2)} / বছর · বয়স {job.minAge}+
                 </p>
               </div>
               <Button variant="secondary" onClick={() => onApply(job.id)} data-testid={`job-${job.id}`}>
-                Apply
+                আবেদন করো
               </Button>
             </li>
           ))}
@@ -266,24 +291,24 @@ function AssetsTab({
   return (
     <div className="space-y-3">
       <p className="text-sm text-text">
-        Coins: <span className="font-medium">{coins(character.money)}</span>
+        ট্যাকা-পয়সা: <span className="font-medium">৳{coins(character.money)}</span>
       </p>
 
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">Buy</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">কিনাকাটা</p>
         <div className="flex flex-wrap gap-2">
           {BUYABLE_KINDS.map((kind) => (
             <Button key={kind} variant="secondary" onClick={() => onBuy(kind)} data-testid={`buy-${kind}`}>
-              {kind}
+              {ASSET_KIND_LABELS[kind]}
             </Button>
           ))}
         </div>
       </div>
 
       <div>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">Owned</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">নিজের সম্পদ</p>
         {character.assets.length === 0 ? (
-          <p className="text-sm text-text-muted">Nothing yet — the market eyes you hopefully.</p>
+          <p className="text-sm text-text-muted">হাতে এখনো কিছু নাই — বাজারে ট্যাকা নিয়া নামো!</p>
         ) : (
           <ul className="space-y-2">
             {character.assets.map((asset) => (
@@ -294,11 +319,11 @@ function AssetsTab({
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-text">{asset.name}</p>
                   <p className="text-xs text-text-muted">
-                    {asset.kind} · worth {coins(asset.value)} · bought at {asset.acquiredAge}
+                    {ASSET_KIND_LABELS[asset.kind] ?? asset.kind} · দাম ৳{coins(asset.value)} · {asset.acquiredAge} বছর বয়সে কেনা
                   </p>
                 </div>
                 <Button variant="secondary" onClick={() => onSell(asset.id)} data-testid={`sell-${asset.id}`}>
-                  Sell
+                  বেচে দাও
                 </Button>
               </li>
             ))}
@@ -321,7 +346,7 @@ function CrimeTab({
     <div className="space-y-3">
       {inJail && (
         <p className="rounded-md border border-danger-border bg-danger/10 px-3 py-2 text-sm text-danger-text">
-          You are serving a sentence — no new crimes until release.
+          তুই এহন লাল দালানে (জেলে) বন্দি আছত — খালাস পাওয়ার আগে নতুন কোনো ধান্ধা করন যাইবো না।
         </p>
       )}
       <ul className="space-y-2">
@@ -330,7 +355,7 @@ function CrimeTab({
             <div className="min-w-0">
               <p className="text-sm font-medium text-text">{crime.label}</p>
               <p className="text-xs text-text-muted">
-                reward ≈{coins((crime.reward[0] + crime.reward[1]) / 2)} · risk {Math.round(crime.risk * 100)}%
+                লাভ ≈৳{coins((crime.reward[0] + crime.reward[1]) / 2)} · ধরা খাওয়ার রিস্ক {Math.round(crime.risk * 100)}%
               </p>
             </div>
             <Button
@@ -339,20 +364,24 @@ function CrimeTab({
               disabled={inJail}
               data-testid={`crime-${crime.id}`}
             >
-              Commit
+              ঝুঁকি নেও
             </Button>
           </li>
         ))}
       </ul>
       {character.criminalRecord.length > 0 && (
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">Record</p>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">পুলিশের খাতার রেকর্ড</p>
           <ul className="space-y-1 text-sm text-text-muted">
-            {character.criminalRecord.map((entry, index) => (
-              <li key={`${entry.offense}-${entry.age}-${index}`}>
-                Age {entry.age} · {entry.offense} · {entry.served ? 'served' : `${entry.sentenceYears} yrs left`}
-              </li>
-            ))}
+            {character.criminalRecord.map((entry, index) => {
+              const crimeDef = CRIMES.find((c) => c.id === entry.offense);
+              const offenseTitle = crimeDef ? crimeDef.label : entry.offense;
+              return (
+                <li key={`${entry.offense}-${entry.age}-${index}`}>
+                  {entry.age} বছর বয়সে · {offenseTitle} · {entry.served ? 'জেল খাটা শেষ' : `আরো ${entry.sentenceYears} বছর বাকি`}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -364,11 +393,11 @@ function HealthTab({ character, onVisit }: { character: Character; onVisit: () =
   return (
     <div className="space-y-3">
       <p className="text-sm text-text">
-        Health <span className="font-medium">{character.stats.health}</span> · Happiness{' '}
+        স্বাস্থ্য <span className="font-medium">{character.stats.health}</span> · সুখ{' '}
         <span className="font-medium">{character.stats.happiness}</span>
       </p>
       <Button onClick={onVisit} data-testid="visit-doctor">
-        Visit the doctor (health +15, happiness +5, −50 coins)
+        ডাক্তারখানায় দেখাও (স্বাস্থ্য +১৫, সুখ +৫, −৳৫০)
       </Button>
     </div>
   );
@@ -398,9 +427,9 @@ function RomanceTab({
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-white/5 bg-white/[0.02]">
         <Flame className="size-8 text-rose-400 mb-3 opacity-60" />
-        <h3 className="text-sm font-bold text-white">Youth & Adolescence</h3>
+        <h3 className="text-sm font-bold text-white">কৈশোরের দিনকাল</h3>
         <p className="text-xs text-zinc-400 max-w-xs mt-1.5 leading-relaxed">
-          Serious dating and relationships unlock at age 16. Enjoy your friendships, studies, and hobbies for now!
+          ১৬ বছর বয়স না হইলে সিরিয়াস প্রেম-পিরিতির ধান্ধা বন্ধ! এহন বন্ধুদের লগে আড্ডা মারো আর মন দিয়া পড়াশোনা করো।
         </p>
       </div>
     );
@@ -420,11 +449,11 @@ function RomanceTab({
       {/* 1. Active Relationships */}
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-          Current Romance & Bonds
+          বর্তমান প্রেম ও সম্পর্ক
         </h3>
         {romanticPartners.length === 0 ? (
           <p className="text-xs text-zinc-500 py-2">
-            You currently have no active romantic partners or crushes.
+            তোর জীবনে এহন কোনো ক্রাশ বা ভালোবাসার মানুষ নাই!
           </p>
         ) : (
           <div className="space-y-2.5">
@@ -438,15 +467,15 @@ function RomanceTab({
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-white">{partner.name}</span>
                       <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/25">
-                        {partner.relation}
+                        {RELATION_LABELS[partner.relation] ?? partner.relation}
                       </span>
                     </div>
                     <p className="text-xs text-zinc-400 mt-0.5">
-                      Age {partner.age} {partner.occupation ? `· ${partner.occupation}` : ''}
+                      বয়স {partner.age} {partner.occupation ? `· ${partner.occupation}` : ''}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 block font-medium">Bond</span>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 block font-medium">খাতির</span>
                     <span className="text-xs font-bold text-emerald-400 font-mono">{partner.meter}%</span>
                   </div>
                 </div>
@@ -455,7 +484,7 @@ function RomanceTab({
                 {partner.romanceStage !== undefined && (
                   <div>
                     <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
-                      <span>Romance Progress</span>
+                      <span>প্রেমের গভীরতা</span>
                       <span className="font-mono">{partner.romanceStage}/100</span>
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
@@ -478,7 +507,7 @@ function RomanceTab({
                           name: partner.name,
                           gender: 'female',
                           age: partner.age,
-                          archetype: partner.occupation || 'Local Companion',
+                          archetype: partner.occupation || 'মহল্লার মানুষ',
                           isCelebrity: false,
                           looks: 50,
                           smarts: 50,
@@ -486,7 +515,7 @@ function RomanceTab({
                       }
                       data-testid={`ask-out-${partner.id}`}
                     >
-                      Ask Out on Date
+                      ডেট মারার প্রস্তাব দেও
                     </Button>
                   )}
                   {partner.relation === 'dating' && (
@@ -495,7 +524,7 @@ function RomanceTab({
                       onClick={() => onMakeOfficial(partner.id)}
                       data-testid={`make-official-${partner.id}`}
                     >
-                      Make Official Partner
+                      মনের মানুষ বানাও (অফিশিয়াল)
                     </Button>
                   )}
                   {partner.relation === 'partner' && (
@@ -504,7 +533,7 @@ function RomanceTab({
                       onClick={() => onPropose(partner.id)}
                       data-testid={`propose-${partner.id}`}
                     >
-                      Propose Marriage
+                      বিয়ের প্রস্তাব দেও
                     </Button>
                   )}
                   {(partner.relation === 'partner' || partner.relation === 'spouse') && (
@@ -514,7 +543,7 @@ function RomanceTab({
                       data-testid={`cheat-${partner.id}`}
                       className="rounded-xl border border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors"
                     >
-                      Flirt with Danger
+                      পরকীয়ার চক্কর
                     </button>
                   )}
                   <button
@@ -523,7 +552,7 @@ function RomanceTab({
                     data-testid={`breakup-${partner.id}`}
                     className="rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors ml-auto"
                   >
-                    {partner.relation === 'spouse' ? 'Divorce' : 'Break Up'}
+                    {partner.relation === 'spouse' ? 'তালাক / বিচ্ছেদ' : 'ব্রেকআপ করো'}
                   </button>
                 </div>
               </div>
@@ -537,9 +566,9 @@ function RomanceTab({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Meet Someone New
+              নতুন কারো লগে পরিচয়
             </h3>
-            <p className="text-xs text-zinc-500">Explore procedurally generated dating prospects</p>
+            <p className="text-xs text-zinc-500">শহরের ও মহল্লার পাত্র-পাত্রীর খোঁজখবর</p>
           </div>
           <button
             type="button"
@@ -548,7 +577,7 @@ function RomanceTab({
             className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-300 transition-colors"
           >
             <UserPlus className="size-3.5" />
-            <span>Search Pool</span>
+            <span>সন্ধান করো</span>
           </button>
         </div>
 
@@ -562,10 +591,10 @@ function RomanceTab({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-white">{candidate.name}</span>
-                    <span className="text-[10px] text-zinc-400">Age {candidate.age}</span>
+                    <span className="text-[10px] text-zinc-400">বয়স {candidate.age}</span>
                   </div>
                   <p className="text-xs text-zinc-400 mt-0.5">
-                    {candidate.archetype} · Looks: {candidate.looks} · Smarts: {candidate.smarts}
+                    {candidate.archetype} · রূপ: {candidate.looks} · বুদ্ধি: {candidate.smarts}
                   </p>
                 </div>
                 <Button
@@ -573,7 +602,7 @@ function RomanceTab({
                   onClick={() => onAskOut(candidate)}
                   data-testid={`candidate-askout-${idx}`}
                 >
-                  Ask Out
+                  প্রস্তাব দেও
                 </Button>
               </div>
             ))}

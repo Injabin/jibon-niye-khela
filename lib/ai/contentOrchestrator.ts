@@ -72,6 +72,15 @@ export function isUnderCooldown(): { blocked: boolean; reason?: 'RPM' | 'RPD' } 
   return { blocked: false };
 }
 
+function computeLifeEventSeed(character: Character, targetAge: number): number {
+  let charHash = 0;
+  const idOrName = character.id || character.name || 'char';
+  for (let i = 0; i < idOrName.length; i++) {
+    charHash = (Math.imul(31, charHash) + idOrName.charCodeAt(i)) | 0;
+  }
+  return Math.abs(charHash ^ (character.birthYear * 37) ^ (targetAge * 13));
+}
+
 /**
  * Determines whether the character is currently eligible to request a live Gemini event,
  * strictly reserving capacity for upcoming milestone ages before allowing wildcard rolls.
@@ -101,9 +110,7 @@ export function isEligibleForGemini(character: Character, targetAge: number): bo
   }
 
   // 5. Seeded deterministic 15% roll using engine RNG
-  const lifeSeed = Math.abs(
-    character.birthYear * 37 + (character.name.charCodeAt(0) || 1) * 19 + targetAge * 13,
-  );
+  const lifeSeed = computeLifeEventSeed(character, targetAge);
   const rng = new RNG(lifeSeed);
   const roll = rng.next();
 
@@ -116,6 +123,7 @@ export async function fetchEventForYear(
   targetTone: Tone = 'neutral',
 ): Promise<OrchestratorResult> {
   const recentIds = (character.recentEventHistory ?? []).map((r) => r.id);
+  const lifeEventSeed = computeLifeEventSeed(character, targetAge);
 
   // 1. Check rationing eligibility
   const eligible = isEligibleForGemini(character, targetAge);
@@ -125,7 +133,7 @@ export async function fetchEventForYear(
       age: targetAge,
       recentEventIds: recentIds,
       preferredTone: targetTone,
-      seed: character.birthYear + targetAge,
+      seed: lifeEventSeed,
     });
     return { event: fallback, source: 'fallback' };
   }
@@ -179,7 +187,7 @@ export async function fetchEventForYear(
         age: targetAge,
         recentEventIds: recentIds,
         preferredTone: targetTone,
-        seed: character.birthYear + targetAge,
+        seed: lifeEventSeed,
       });
       return { event: fallback, source: 'fallback' };
     }
@@ -194,7 +202,7 @@ export async function fetchEventForYear(
       age: targetAge,
       recentEventIds: recentIds,
       preferredTone: targetTone,
-      seed: character.birthYear + targetAge,
+      seed: lifeEventSeed,
     });
     return { event: fallback, source: 'fallback' };
   } catch {
@@ -204,7 +212,7 @@ export async function fetchEventForYear(
       age: targetAge,
       recentEventIds: recentIds,
       preferredTone: targetTone,
-      seed: character.birthYear + targetAge,
+      seed: lifeEventSeed,
     });
     return { event: fallback, source: 'fallback' };
   }

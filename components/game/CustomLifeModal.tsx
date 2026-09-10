@@ -11,18 +11,18 @@ import { MALE_NAMES, FEMALE_NAMES, SURNAMES } from '@/lib/engine/romance';
 import type { Gender, WealthTier } from '@/lib/engine/types';
 
 const SELECTABLE_TRAITS: { id: string; label: string; desc: string }[] = [
-  { id: 'athletic', label: 'Athletic', desc: 'Higher physical stamina & sports affinity' },
-  { id: 'bookworm', label: 'Bookworm', desc: 'Fast reader with natural academic focus' },
-  { id: 'creative', label: 'Creative', desc: 'Thrives in music, writing, and arts' },
-  { id: 'charismatic', label: 'Charismatic', desc: 'Magnetic charm in conversations & romance' },
-  { id: 'resilient', label: 'Resilient', desc: 'Bounces back stronger from hardship' },
-  { id: 'ambitious', label: 'Ambitious', desc: 'Driven to conquer leadership & career heights' },
+  { id: 'athletic', label: 'ব্যায়ামবীর ও তেজি', desc: 'শারীরিক শক্তি, দম ও খেলাধুলায় সেরা' },
+  { id: 'bookworm', label: 'পড়ুয়া পোকা', desc: 'বইয়ের পোকা, ক্লাসে ফার্স্ট হওয়ার স্বভাব' },
+  { id: 'creative', label: 'শিল্পী ও কারিগর', desc: 'গান, নকশা আর আঁকাআঁকিতে হাত পাকা' },
+  { id: 'charismatic', label: 'কথার জাদুকর', desc: 'মুখের মিষ্টি কথায় মহল্লা মাত, প্রেমেও ওস্তাদ' },
+  { id: 'resilient', label: 'লড়াকু হিম্মত', desc: 'মাইঙ্কা চিপায় পড়লেও ঘুরে দাঁড়ানোর খাঁটি জোর' },
+  { id: 'ambitious', label: 'উচ্চাকাঙ্ক্ষী', desc: 'বড় কারবারি বা মহল্লার মাথা হওয়ার স্বপ্ন' },
 ];
 
 const WEALTH_TIERS: { id: WealthTier; title: string; subtitle: string; bonus: string }[] = [
-  { id: 'poor', title: 'Humble Beginnings', subtitle: 'Modest upbringing, built on grit', bonus: 'High Karma & Grit' },
-  { id: 'middle', title: 'Middle Class', subtitle: 'Comfortable family, balanced footing', bonus: 'Balanced Foundation' },
-  { id: 'wealthy', title: 'High Society', subtitle: 'Family fortune & early financial safety net', bonus: 'Substantial Savings' },
+  { id: 'poor', title: 'গরিবের সংসার', subtitle: 'কষ্টের দিনকাল, হাড়ে হাড়ে খাঁটি সংগ্রাম', bonus: 'বেশি কর্ম ও হিম্মত' },
+  { id: 'middle', title: 'মধ্যবিত্ত পরিবার', subtitle: 'নুন আনতে পান্তা ফুরায় না, মোটামুটি স্বস্তি', bonus: 'ভারসাম্যপূর্ণ সূচনা' },
+  { id: 'wealthy', title: 'বনেদি নবাব পরিবার', subtitle: 'খানদানি রূপার চামচ, অঢেল ট্যাকা-পয়সা', bonus: 'ভরা সিন্দুক' },
 ];
 
 export function CustomLifeModal({
@@ -38,8 +38,8 @@ export function CustomLifeModal({
   const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
 
   const [gender, setGender] = useState<Gender>('female');
-  const [name, setName] = useState('Anika');
-  const [surname, setSurname] = useState('Rahman');
+  const [name, setName] = useState('আনিকা');
+  const [surname, setSurname] = useState('চৌধুরী');
   const [birthYear, setBirthYear] = useState(2000);
   const [wealthTier, setWealthTier] = useState<WealthTier>('middle');
   const [selectedTraits, setSelectedTraits] = useState<string[]>(['creative']);
@@ -67,8 +67,8 @@ export function CustomLifeModal({
 
   const handleStart = () => {
     newCustomGame({
-      name: name.trim() || 'Protagonist',
-      surname: surname.trim() || 'Roy',
+      name: name.trim() || 'জীবন',
+      surname: surname.trim() || 'মিয়া',
       gender,
       birthYear,
       wealthTier,
@@ -76,6 +76,11 @@ export function CustomLifeModal({
     });
     onStarted?.();
     onClose();
+  };
+
+  const GENDER_LABELS: Record<Gender, string> = {
+    female: 'মেয়ে',
+    male: 'ছেলে',
   };
 
   return (
@@ -113,11 +118,11 @@ export function CustomLifeModal({
                 </div>
                 <div>
                   <h2 id="custom-life-title" className="text-base font-bold tracking-tight text-white">
-                    Custom Life Creator
+                    কাস্টম জীবন বানাও
                   </h2>
                   <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
                     <ShieldCheck className="size-3.5" />
-                    <span>100% Free · No Paywalls</span>
+                    <span>১০০% মাগনা · কোনো খরচ নাই</span>
                   </div>
                 </div>
               </div>
@@ -136,21 +141,21 @@ export function CustomLifeModal({
               {/* Gender Picker */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-                  Identity & Gender
+                  পরিচয় ও লিঙ্গ
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['female', 'male', 'non-binary'] as Gender[]).map((g) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {(['female', 'male'] as Gender[]).map((g) => (
                     <button
                       key={g}
                       type="button"
                       onClick={() => setGender(g)}
-                      className={`rounded-xl px-3 py-2.5 text-xs font-medium capitalize border transition-all ${
+                      className={`rounded-xl px-3 py-2.5 text-xs font-medium border transition-all ${
                         gender === g
                           ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300 font-semibold'
                           : 'border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.06]'
                       }`}
                     >
-                      {g}
+                      {GENDER_LABELS[g]}
                     </button>
                   ))}
                 </div>
@@ -160,7 +165,7 @@ export function CustomLifeModal({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                    Character Name
+                    চরিত্রের নাম
                   </label>
                   <button
                     type="button"
@@ -168,7 +173,7 @@ export function CustomLifeModal({
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
                   >
                     <Dice5 className="size-3.5" />
-                    <span>Randomize</span>
+                    <span>এলোমেলো নাম</span>
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -176,7 +181,7 @@ export function CustomLifeModal({
                     <input
                       type="text"
                       aria-label="First Name"
-                      placeholder="First Name"
+                      placeholder="নাম"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       data-testid="custom-name-input"
@@ -187,7 +192,7 @@ export function CustomLifeModal({
                     <input
                       type="text"
                       aria-label="Surname"
-                      placeholder="Surname"
+                      placeholder="পদবি / বংশনাম"
                       value={surname}
                       onChange={(e) => setSurname(e.target.value)}
                       data-testid="custom-surname-input"
@@ -200,7 +205,7 @@ export function CustomLifeModal({
               {/* Birth Year */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-                  Birth Year
+                  জন্ম সাল
                 </label>
                 <div className="flex items-center gap-3">
                   <input
@@ -212,7 +217,7 @@ export function CustomLifeModal({
                     className="w-32 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   <span className="text-xs text-zinc-500">
-                    Era simulation will adjust starting tech & historical calendar
+                    যুগের পরিবর্তনের সাথে সাথে টেকনোলজি ও চালচলন বদলাবে
                   </span>
                 </div>
               </div>
@@ -220,7 +225,7 @@ export function CustomLifeModal({
               {/* Wealth Tier */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-                  Starting Wealth Background
+                  পারিবারিক আর্থিক অবস্থা
                 </label>
                 <div className="space-y-2">
                   {WEALTH_TIERS.map((tier) => {
@@ -253,9 +258,9 @@ export function CustomLifeModal({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                    Starting Traits ({selectedTraits.length}/2)
+                    শুরুর স্বভাব ও গুণ ({selectedTraits.length}/২)
                   </label>
-                  <span className="text-[11px] text-zinc-500">Pick up to 2 distinct traits</span>
+                  <span className="text-[11px] text-zinc-500">পছন্দের যেকোনো ২টি গুণ বেছে নাও</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {SELECTABLE_TRAITS.map((trait) => {
@@ -288,7 +293,7 @@ export function CustomLifeModal({
             {/* Footer actions */}
             <div className="flex items-center justify-end gap-3 border-t border-white/[0.08] bg-white/[0.02] px-6 py-4">
               <Button variant="secondary" onClick={onClose}>
-                Cancel
+                বাতিল
               </Button>
               <button
                 type="button"
@@ -297,7 +302,7 @@ export function CustomLifeModal({
                 className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-6 py-2.5 text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
               >
                 <Sparkles className="size-3.5" />
-                <span>Begin Custom Life</span>
+                <span>নতুন জীবন শুরু করো</span>
               </button>
             </div>
           </motion.section>

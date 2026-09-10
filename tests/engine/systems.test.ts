@@ -305,7 +305,7 @@ describe('crime engine (DESIGN.md §5.6)', () => {
     character.age = 21;
     character.flags.push('in_jail');
     const result = commitCrime(character, rng, 'shoplift');
-    expect(result.text).toContain('already inside');
+    expect(result.text).toMatch(/already inside|ঘানি টানতাছো/);
     expect(character.criminalRecord.length).toBe(0);
   });
 

@@ -88,7 +88,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
     history: [
       {
         age: 0,
-        text: `You were born in ${birthYear} as ${name} ${surname}. Relatives compare you to a potato with eyelashes.`,
+        text: `${birthYear} সালে পুরান ঢাকায় ${name} ${surname} নামে তোমার জন্ম হইলো! পাড়ার মুরব্বিরা কইলো—"মাশাল্লাহ, এক্কেরে চাঁদের টুকরা, তয় চিল্লাচিল্লি দেখলে মনে হয় আস্ত সাইরেন!"`,
         tone: 'funny',
       },
     ],
@@ -120,7 +120,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
 
     character.history[0] = {
       age: 0,
-      text: `You were born in ${character.birthYear} as ${character.name} ${character.surname}. Relatives compare you to a potato with eyelashes.`,
+      text: `${character.birthYear} সালে পুরান ঢাকায় ${character.name} ${character.surname} নামে তোমার জন্ম হইলো! পাড়ার মুরব্বিরা কইলো—"মাশাল্লাহ, এক্কেরে চাঁদের টুকরা, তয় চিল্লাচিল্লি দেখলে মনে হয় আস্ত সাইরেন!"`,
       tone: 'funny',
     };
 

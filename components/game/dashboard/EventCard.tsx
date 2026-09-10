@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import type { EventChoice, LifeEventDef, StatEffects } from '@/lib/engine/types';
 import { motion as motionTokens } from '@/lib/theme';
+import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
 import { Sparkles, AlertCircle, Smile, HelpCircle, ArrowRight } from 'lucide-react';
 
 function choiceWeight(choice: EventChoice): number {
@@ -61,6 +62,7 @@ const TONE_CONFIG: Record<
 
 export function EventCard({ event, onChoose }: EventCardProps) {
   const overlayRef = useRef<HTMLElement>(null);
+  const reducedMotion = useEffectiveReducedMotion();
   const toneCfg = TONE_CONFIG[event.tone];
   const ToneIcon = toneCfg.icon;
 
@@ -95,6 +97,18 @@ export function EventCard({ event, onChoose }: EventCardProps) {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [event.choices, onChoose]);
+
+  useEffect(() => {
+    // Accessible modal focus management: when event card appears, focus the first choice
+    const timer = setTimeout(() => {
+      const panel = overlayRef.current;
+      if (panel) {
+        const firstChoice = panel.querySelector<HTMLElement>('button[data-testid^="choice-"]');
+        firstChoice?.focus();
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [event.id]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (['1', '2', '3', '4'].includes(e.key)) {
@@ -132,10 +146,10 @@ export function EventCard({ event, onChoose }: EventCardProps) {
   return (
     <motion.div
       className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6 pointer-events-none"
-      initial={{ opacity: 0 }}
+      initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: motionTokens.micro, ease: 'easeOut' }}
+      transition={{ duration: reducedMotion ? 0 : motionTokens.micro, ease: 'easeOut' }}
     >
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-md pointer-events-none"
@@ -149,10 +163,10 @@ export function EventCard({ event, onChoose }: EventCardProps) {
         aria-label={`Life event — ${toneCfg.label}`}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        initial={{ opacity: 0, y: 16, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.98 }}
-        transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+        initial={reducedMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}
+        animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.98 }}
+        transition={{ duration: reducedMotion ? 0 : motionTokens.quick, ease: 'easeOut' }}
         className={`relative w-full max-w-lg rounded-2xl bg-zinc-900/90 backdrop-blur-2xl border ${toneCfg.borderAccent} p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] pointer-events-auto flex flex-col gap-6`}
         data-testid="event-card"
         data-tone={event.tone}

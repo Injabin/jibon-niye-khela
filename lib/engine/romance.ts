@@ -18,35 +18,35 @@ export interface DatingCandidate {
 }
 
 export const FICTIONAL_CELEBRITY_ARCHETYPES = [
-  'Rising Pop Star',
-  'Local Cricket Sensation',
-  'Indie Film Director',
-  'Tech Startup Founder',
-  'Haute Couture Model',
-  'Award-Winning Novelist',
-  'Underground DJ',
-  'Acclaimed Playwright',
-  'Viral Food Critic',
+  'জনপ্রিয় পপ তারকা',
+  'পাড়ার উদীয়মান ক্রিকেটার',
+  'ইন্ডি সিনেমা পরিচালক',
+  'আইটি স্টার্টআপের উদ্যোক্তা',
+  'র‌্যাম্পের সুপার মডেল',
+  'পুরস্কারপ্রাপ্ত ঔপন্যাসিক',
+  'ডিজে ও সংগীতশিল্পী',
+  'নাট্যমঞ্চের জনপ্রিয় অভিনেতা',
+  'ভাইরাল ফুড ভ্লগার',
 ] as const;
 
 export const TEEN_ARCHETYPES = [
-  'High School Classmate',
-  'Debate Club Captain',
-  'Art Class Partner',
-  'Neighborhood Friend',
-  'Library Regular',
-  'Drama Club Lead',
+  'স্কুলের সহপাঠী',
+  'ডিবেট ক্লাবের দলনেতা',
+  'চিত্রাঙ্কন ক্লাসের বন্ধু',
+  'পাড়ার পরিচিত বন্ধু',
+  'লাইব্রেরির নিয়মিত পাঠক',
+  'স্কুল নাটকের প্রধান চরিত্র',
 ] as const;
 
 export const ADULT_ARCHETYPES = [
-  'Software Engineer',
-  'Graphic Designer',
-  'Tea Stall Connoisseur',
-  'University Lecturer',
-  'Architect',
-  'Fitness Trainer',
-  'Bank Analyst',
-  'Freelance Photographer',
+  'সফটওয়্যার ইঞ্জিনিয়ার',
+  'গ্রাফিক্স ডিজাইনার',
+  'টং দোকানের চায়ের রসিক',
+  'বিশ্ববিদ্যালয়ের প্রভাষক',
+  'বুয়েটের স্থপতি',
+  'ফিটনেস ট্রেইনার',
+  'ব্যাংক কর্মকর্তা',
+  'ফ্রিল্যান্স ফটোগ্রাফার',
 ] as const;
 
 const BANNED_FULL_NAMES = new Set([
@@ -148,7 +148,7 @@ export function askOutCandidate(
   rng: RNG
 ): { ok: boolean; text: string; relationship?: Relationship } {
   if (character.age < 13) {
-    return { ok: false, text: 'You are too young to date.' };
+    return { ok: false, text: 'প্রেম করার বয়স তোমার এখনও হয় নাই!' };
   }
 
   // Acceptance check based on character looks, happiness and celebrity difficulty
@@ -162,14 +162,14 @@ export function askOutCandidate(
   if (!accepted) {
     const rejectTexts = character.age < 18
       ? [
-          `${candidate.name} blushed, said they only see you as a study buddy, and hurried away.`,
-          `${candidate.name} laughed nervously and pretended their bus had just arrived.`,
-          `${candidate.name} said they are focusing on their SSC exams right now.`,
+          `${candidate.name} লজ্জা পাইয়া কইলো—"আরে ধুর, আমি তো তোমারে খালি পড়ার দোস্ত ভাবি!" কইয়া দৌড়ে ভাগলো।`,
+          `${candidate.name} আমতা আমতা কইরা কইলো—"সামনে এসএসসি পরীক্ষা, এহন আব্বা পিরিতের কথা শুনলে পিঠের চামড়া তুলবো!"`,
+          `${candidate.name} হাসিমুখে কইলো—"আমগো বাস আইসা পড়ছে, আমি ভাগলাম!"`,
         ]
       : [
-          `${candidate.name} politely declined, stating their schedule is too hectic right now.`,
-          `${candidate.name} said there is no romantic spark, but wished you the best.`,
-          `${candidate.name} smiled apologetically and mentioned they are currently seeing someone.`,
+          `${candidate.name} মিষ্টি হাইসা কইলো—"দোস্ত, আমার লাইফে এহন প্রেম করার বিন্দুমাত্র টাইম নাই, সামনে অনেক কাজ!"`,
+          `${candidate.name} কইলো—"তোমার লগে আমার মনের মিল হইবো না, তয় ফ্রেন্ড হিসেবে ভালো থাইকো!"`,
+          `${candidate.name} মৃদু হাইসা জানাইলো যে সে অলরেডি অন্য কারো লগে সম্পর্কে আছে।`,
         ];
 
     character.stats.happiness = clamp(character.stats.happiness - 5);
@@ -197,8 +197,8 @@ export function askOutCandidate(
   }
 
   const acceptText = isTeen
-    ? `You asked ${candidate.name} (${candidate.archetype}) to share an ice cream after school. They beamed and said yes!`
-    : `You took ${candidate.name} (${candidate.archetype}) out for dinner. The evening went brilliantly, and you are now officially seeing each other!`;
+    ? `ছুটির পর ${candidate.name}-রে (${candidate.archetype}) বিউটি লাচ্ছিতে ফালুদা খাওয়ার দাওয়াত দিলা। সে একগাল হাসি দিয়া রাজি হইয়া গেল!`
+    : `${candidate.name}-কে (${candidate.archetype}) নাজিরাবাজারে কাচ্চি খাইতে নিয়া গেলা। সন্ধ্যাটা দারুণ কাটলো এবং তোমরা আনুষ্ঠানিকভাবে ডেটিং শুরু করলা!`;
 
   character.history.push({
     age: character.age,
@@ -216,19 +216,19 @@ export function makeOfficialPartner(
   rng: RNG
 ): { ok: boolean; text: string } {
   if (character.age < 18) {
-    return { ok: false, text: 'You must be at least 18 to make a partnership official.' };
+    return { ok: false, text: 'অফিসিয়াল পার্টনার বানাইতে হইলে অন্তত ১৮ বছর বয়স হওয়া লাগবো!' };
   }
 
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.romanceStage !== 'dating' && rel.relation !== 'dating')) {
-    return { ok: false, text: 'You are not currently casually dating this person.' };
+    return { ok: false, text: 'তুমি তো এই মানুষের লগে ডেটিং করতাছো না!' };
   }
 
   if (rel.meter < 50) {
     rel.meter = clamp(rel.meter - 5);
     return {
       ok: false,
-      text: `${rel.name} feels things are moving too fast and wants to keep things casual for now.`,
+      text: `${rel.name} কইলো—"এতো তাড়াহুড়ো কিসের মামা? আগে আরেকটু বুঝেশুনে নেই!"`,
     };
   }
 
@@ -238,7 +238,7 @@ export function makeOfficialPartner(
   const happinessBoost = rng.rangeInt(8, 15);
   character.stats.happiness = clamp(character.stats.happiness + happinessBoost);
 
-  const msg = `You had an honest conversation with ${rel.name} and decided to make your relationship official!`;
+  const msg = `${rel.name}-এর লগে মন খুইলা কথা কইয়া সম্পর্কের একটা পাকাপোক্ত নাম দিলা—এহন তোমরা অফিসিয়াল প্রেমিক-প্রেমিকা!`;
   character.history.push({ age: character.age, text: msg, tone: 'good' });
   return { ok: true, text: msg };
 }
@@ -251,22 +251,22 @@ export function proposeMarriage(
   rng: RNG
 ): { ok: boolean; text: string } {
   if (character.age < 18) {
-    return { ok: false, text: 'You must be at least 18 to get married.' };
+    return { ok: false, text: 'বিয়া করার বয়স ১৮ হওয়ার আগে কাজী অফিস তোমারে খেদাইয়া দিবো!' };
   }
 
   const existingSpouse = character.relationships.find((r) => r.relation === 'spouse' && r.alive);
   if (existingSpouse) {
-    return { ok: false, text: 'You are already married!' };
+    return { ok: false, text: 'ঘরে বউ/জামাই থাকতে আবার বিয়ার ধান্দা? চান্দি গরম নাকি!' };
   }
 
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.romanceStage !== 'partner' && rel.relation !== 'partner')) {
-    return { ok: false, text: 'You can only propose to an official partner.' };
+    return { ok: false, text: 'আগে তো অফিসিয়াল প্রেম করবা, হুট কইরা বিয়ার প্রস্তাব দিলে মাইর খাইবা!' };
   }
 
   const RING_COST = 50;
   if (character.money < RING_COST) {
-    return { ok: false, text: `You need at least ৳${RING_COST} to buy a proper ring for the proposal.` };
+    return { ok: false, text: `আংটি কেনার মতো ৳${RING_COST} পকেটে নাই, বিয়ার প্রস্তাব দিবা ক্যামনে?` };
   }
 
   character.money -= RING_COST;
@@ -274,7 +274,7 @@ export function proposeMarriage(
   if (rel.meter < 65) {
     rel.meter = clamp(rel.meter - 20);
     character.stats.happiness = clamp(character.stats.happiness - 15);
-    const rejectMsg = `${rel.name} was stunned by the proposal, but admitted they are not ready for marriage yet.`;
+    const rejectMsg = `${rel.name} আকাশ থেইকা পইড়া কইলো—"আমি এহনই বিয়া করার জন্য প্রস্তুত না, এতো ফাপড় মারিস না!"`;
     character.history.push({ age: character.age, text: rejectMsg, tone: 'bad' });
     return { ok: false, text: rejectMsg };
   }
@@ -305,7 +305,7 @@ export function proposeMarriage(
     familyTree.members.push(spouseMember);
   }
 
-  const successMsg = `Under a canopy of fairy lights, you proposed to ${rel.name}. With joyful tears, they shouted YES! You are officially married!`;
+  const successMsg = `আলো ঝলমলে সন্ধ্যায় লালবাগ কেল্লার সামনে আংটি বাড়াইয়া ${rel.name}-কে বিয়ের প্রস্তাব দিলা! খুশিতে চোখ মুইছা সে কইলো—"হ হ, রাজি!" তোমরা বিবাহবন্ধনে আবদ্ধ হইলা!`;
   character.history.push({ age: character.age, text: successMsg, tone: 'good' });
 
   return { ok: true, text: successMsg };
@@ -323,7 +323,7 @@ export function cheatBranch(
 ): { ok: boolean; text: string; caught: boolean } {
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.relation !== 'partner' && rel.relation !== 'spouse')) {
-    return { ok: false, text: 'You do not have an active serious partner to cheat on.', caught: false };
+    return { ok: false, text: 'চিটিং করার মতো কোনো জীবনসঙ্গী তো তোমার নাই!', caught: false };
   }
 
   // Guaranteed heavy karma loss
@@ -338,7 +338,7 @@ export function cheatBranch(
     character.stats.happiness = clamp(character.stats.happiness - 25);
     character.reputation.fame = clamp(character.reputation.fame + 15); // scandalous notoriety
 
-    const caughtMsg = `You engaged in a reckless affair, but suspicious texts were discovered by ${rel.name}! A volcanic confrontation erupted in tears, shouting, and utter devastation.`;
+    const caughtMsg = `পরকীয়ার চক্করে ধরা খাইলা! ${rel.name} তোমার ফোনে অন্য কারো রোমান্টিক টেক্সট দেইখা পুরাই তাণ্ডব চালাইলো! কান্নাকাটি আর চিৎকারে মহল্লা মাথায় তুললো!`;
     character.history.push({ age: character.age, text: caughtMsg, tone: 'bad' });
 
     // If meter collapsed below 20, partner dumps / divorces immediately
@@ -346,7 +346,7 @@ export function cheatBranch(
       rel.relation = 'ex';
       rel.romanceStage = 'ex';
       character.flags = character.flags.filter((f) => f !== 'is_married');
-      const breakupMsg = `${rel.name} packed their bags, threw the house keys on the counter, and walked out of your life for good.`;
+      const breakupMsg = `${rel.name} তল্পিতল্পা গুটাইয়া মুখের ওপর চাবি মাইরা কইলো—"তোর মতো বেইমানের লগে এক ছাদের নিচে আমি আর এক সেকেন্ডও থাকুম না!" সম্পর্ক চিরতরে শেষ!`;
       character.history.push({ age: character.age, text: breakupMsg, tone: 'bad' });
     }
 
@@ -356,7 +356,7 @@ export function cheatBranch(
   // Not caught, but internal guilt and emotional detachment linger
   rel.meter = clamp(rel.meter - 15);
   character.stats.happiness = clamp(character.stats.happiness - 10);
-  const secretMsg = `You stepped out on ${rel.name} during an out-of-town weekend. You escaped undetected, but the gnawing guilt weighs heavily on your conscience.`;
+  const secretMsg = `চিপায় গিয়া পরকীয়া সারলা, আপাততঃ কেউ টের পায় নাই। তয় অন্তরে পাপবোধের খচখচানি কিছুতেই যাইতাছে না!`;
   character.history.push({ age: character.age, text: secretMsg, tone: 'neutral' });
 
   return { ok: true, text: secretMsg, caught: false };
@@ -371,7 +371,7 @@ export function breakupOrDivorce(
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.relation !== 'partner' && rel.relation !== 'spouse' && rel.relation !== 'dating')) {
-    return { ok: false, text: 'No active romantic partner found.' };
+    return { ok: false, text: 'ভেঙে দেওয়ার মতো কোনো সক্রিয় সম্পর্ক পাওয়া যায় নাই।' };
   }
 
   const wasSpouse = rel.relation === 'spouse';
@@ -395,12 +395,12 @@ export function breakupOrDivorce(
       familyTree.members = familyTree.members.filter((m) => m.id !== rel.id);
     }
 
-    const divorceMsg = `You and ${rel.name} finalized your divorce. After legal proceedings and an equitable settlement of ৳${settlement}, you parted ways.`;
+    const divorceMsg = `কাজী অফিসে গিয়া ${rel.name}-এর লগে তালাকের কাগজ সই করলা। দেনমোহর আর দেনা-পাওনা বাবদ ৳${settlement} পরিশোধ কইরা তোমরা আলাদা হইয়া গেলা।`;
     character.history.push({ age: character.age, text: divorceMsg, tone: 'bad' });
     return { ok: true, text: divorceMsg };
   }
 
-  const breakupMsg = `You and ${rel.name} decided to call it quits. You agreed it was for the best, though the silence at home feels strange.`;
+  const breakupMsg = `${rel.name}-এর লগে সম্পর্কের ইতি টানলা। দুইজনে একমত হইয়া আলাদা হইলা, তয় একলা একলা পুরান ঢাকার স্মৃতি মনটা উদাস কইরা দেয়।`;
   character.history.push({ age: character.age, text: breakupMsg, tone: 'neutral' });
   return { ok: true, text: breakupMsg };
 }

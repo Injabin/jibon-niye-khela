@@ -29,8 +29,8 @@ describe('Modern Martial reskin — stat keys and display labels', () => {
     character.money = 1234;
     const { container } = render(<StickyHeader character={character} compact={false} />);
 
-    expect(container.textContent).toContain('Martial Skill');
-    expect(container.textContent).toContain('Honor');
+    expect(container.textContent).toContain('বুদ্ধি');
+    expect(container.textContent).toContain('চেহারা');
 
     const names: Record<keyof Stats, string> = {
       health: 'Health',
@@ -48,7 +48,7 @@ describe('Modern Martial reskin — stat keys and display labels', () => {
     // The header still carries the Gate 1 summary contract.
     expect(container.querySelector('[data-testid="character-summary"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="money"]')).toBeTruthy();
-    expect(container.textContent).toMatch(/(\d+) years old/);
+    expect(container.textContent).toMatch(/(\d+) বছর বয়স/);
   });
 
   test('money formats with commas and no symbol, and rank derives deterministically', () => {

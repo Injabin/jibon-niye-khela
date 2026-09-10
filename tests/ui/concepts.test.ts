@@ -47,8 +47,10 @@ describe('Modern Martial reskin — shared concept lookup discipline', () => {
 
   test('the shared lookup itself is the single binding of stat display labels', async () => {
     const src = await readFile(resolve(process.cwd(), 'lib/theme/concepts.ts'), 'utf8');
-    expect(src).toContain('Martial Skill');
-    expect(src).toContain("label: 'Honor'");
+    expect(src).toContain('স্বাস্থ্য');
+    expect(src).toContain('সুখ');
+    expect(src).toContain('বুদ্ধি');
+    expect(src).toContain("label: 'চেহারা'");
     expect(src).toContain("key: 'smarts'");
     expect(src).toContain("key: 'looks'");
   });

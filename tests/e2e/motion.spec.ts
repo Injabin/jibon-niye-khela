@@ -58,7 +58,8 @@ test.describe('reduced-motion fallback (Gate 3)', () => {
 
   test('Settings reduced-motion toggle changes behaviour without an OS preference', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.goto('/');
+    await page.goto('/play?start=1');
+    await expect(page.getByTestId('character-summary')).toBeVisible();
 
     await expect
       .poll(() => page.evaluate(() => document.documentElement.dataset.reducedMotion))
