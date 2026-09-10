@@ -48,12 +48,17 @@ export async function resolveAllEvents(page: Page): Promise<void> {
             pendingEvents?: Array<{ choices?: Array<{ id?: string }> }>;
             currentEventIndex?: number;
             resolveCurrentChoice?: (choiceId: string) => unknown;
+            isGeneratingEvent?: boolean;
           };
         };
       }).__JNK_GAME_STORE__;
-      let guard = 20;
+      let guard = 60;
       const tick = () => {
         const s = store?.getState();
+        if (s?.isGeneratingEvent) {
+          requestAnimationFrame(tick);
+          return;
+        }
         if (guard-- <= 0 || !s || !s.pendingEvents || s.pendingEvents.length === 0) {
           return resolvePromise();
         }

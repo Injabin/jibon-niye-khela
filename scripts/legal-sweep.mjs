@@ -17,7 +17,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const IGNORE_DIRS = new Set(['node_modules', '.next', '.git', '.cache', '.lighthouse', 'docs']);
+const IGNORE_DIRS = new Set(['node_modules', '.next', '.git', '.cache', '.lighthouse', 'docs', 'test-results']);
 const IGNORE_EXT = new Set(['tsbuildinfo']);
 // The sweep tool itself describes what it guards against; allow it next to
 // the reference docs.

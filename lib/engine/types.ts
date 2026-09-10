@@ -142,6 +142,8 @@ export interface Character {
   statHistory: StatsHistoryPoint[];
   /** Recent event ids and the age they fired, used for the 15-age anti-repetition cooldown. */
   recentEventHistory?: Array<{ id: string; age: number }>;
+  /** Count of live Gemini AI calls used during this life (capped at 8 per life). */
+  aiCallsUsed?: number;
 }
 
 export type WealthTier = 'poor' | 'middle' | 'wealthy';
@@ -188,6 +190,8 @@ export interface LifeEventDef {
   /** Optional milestone sting fired when this event resolves (DESIGN.md §7). */
   moment?: MilestoneKind;
   choices: EventChoice[];
+  /** Origin of the event in the hybrid engine */
+  source?: 'gemini' | 'fallback';
   requiredFlags?: string[];
   antiFlags?: string[];
   tags?: string[];

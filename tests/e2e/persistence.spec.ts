@@ -37,7 +37,7 @@ test.describe('save persistence across reload (Gate 2)', () => {
     // Close the page entirely and open a fresh tab in a fresh context sharing storage.
     await page.close();
     const freshPage = await context.newPage();
-    await freshPage.goto('/');
+    await freshPage.goto('/play');
 
     await expect(freshPage.getByTestId('character-summary')).toBeVisible();
     const after = await readDisplayedState(freshPage);

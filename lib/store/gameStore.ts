@@ -23,6 +23,8 @@ import {
 } from '@/lib/engine/romance';
 import { achievementsStore } from '@/lib/store/achievementsStore';
 import { soundManager } from '@/lib/audio/SoundManager';
+import { fetchEventForYear } from '@/lib/ai/contentOrchestrator';
+import { getFallbackEvent } from '@/lib/ai/fallbackBank';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
 import {
@@ -77,6 +79,8 @@ export interface GameStoreState {
   familyTree: FamilyTree | null;
   /** Paused game state (Phase 10). */
   isPaused: boolean;
+  /** Whether the hybrid engine is currently requesting a Gemini event. */
+  isGeneratingEvent: boolean;
 }
 
 export interface GameStoreActions {
@@ -84,8 +88,10 @@ export interface GameStoreActions {
   hydrate(): void;
   /** Start a new life; an explicit seed is honoured (tests). Returns the seed used. */
   newGame(seed?: number): number;
-  /** Advance one year. No-op while a choice is pending or after death. */
+  /** Advance one year synchronously via fallback/engine. */
   ageUp(): boolean;
+  /** Advance one year asynchronously via the hybrid Gemini/fallback engine. */
+  ageUpAsync(): Promise<boolean>;
   /** Resolve the current pending event with the player's choice. */
   resolveCurrentChoice(choiceId: string): boolean;
   /**
@@ -158,6 +164,7 @@ const initialState: GameStoreState = {
   stingToken: 0,
   familyTree: null,
   isPaused: false,
+  isGeneratingEvent: false,
 };
 
 function toSaveState(s: GameStoreState, character: Character): SaveState {
@@ -294,10 +301,20 @@ export const useGameStore = create<GameStore>()((set, get) => {
           ? ageFamilyMembers(s.familyTree, result.character.age)
           : s.familyTree;
 
+      let events = [...result.firedEvents];
+      if (result.character.alive && events.length === 0) {
+        const fallback = getFallbackEvent({
+          age: result.character.age,
+          recentEventIds: (result.character.recentEventHistory ?? []).map((r) => r.id),
+          seed: s.seed + result.character.age,
+        });
+        events = [fallback];
+      }
+
       set({
         character: result.character,
         rngState: rng.getState(),
-        pendingEvents: [...result.firedEvents],
+        pendingEvents: events,
         currentEventIndex: 0,
         lastOutcomeTone: null,
         pendingSting: result.character.alive ? null : 'tombstone',
@@ -305,6 +322,83 @@ export const useGameStore = create<GameStore>()((set, get) => {
         message: null,
         error: null,
         familyTree,
+        isGeneratingEvent: false,
+      });
+      persist();
+      return true;
+    },
+
+    async ageUpAsync() {
+      const s = get();
+      if (!s.character || !s.character.alive || s.isPaused || s.isGeneratingEvent) return false;
+      if (s.pendingEvents.length > 0) return false;
+
+      const rng = makeRng(s.seed, s.rngState);
+      const character = structuredClone(s.character);
+      const result = ageUp(character, rng);
+
+      if (!result.character.alive) {
+        achievementsStore.getState().recordLife(result.character);
+      }
+
+      const familyTree =
+        s.familyTree && result.character.alive
+          ? ageFamilyMembers(s.familyTree, result.character.age)
+          : s.familyTree;
+
+      if (!result.character.alive) {
+        set({
+          character: result.character,
+          rngState: rng.getState(),
+          pendingEvents: [...result.firedEvents],
+          currentEventIndex: 0,
+          lastOutcomeTone: null,
+          pendingSting: 'tombstone',
+          stingToken: s.stingToken + 1,
+          message: null,
+          error: null,
+          familyTree,
+          isGeneratingEvent: false,
+        });
+        persist();
+        return true;
+      }
+
+      // 1. Advance age and stats synchronously so persistence is never stale
+      set({
+        character: result.character,
+        rngState: rng.getState(),
+        familyTree,
+        isGeneratingEvent: true,
+        error: null,
+      });
+      persist();
+
+      // 2. Fetch annual content event (Gemini if eligible, else fallback)
+      let eventToFire: LifeEventDef | null = null;
+      try {
+        const fetched = await fetchEventForYear(result.character, result.character.age);
+        eventToFire = fetched.event;
+        if (fetched.source === 'gemini') {
+          result.character.aiCallsUsed = (result.character.aiCallsUsed ?? 0) + 1;
+        }
+      } catch {
+        eventToFire = getFallbackEvent({
+          age: result.character.age,
+          recentEventIds: (result.character.recentEventHistory ?? []).map((r) => r.id),
+          seed: s.seed + result.character.age,
+        });
+      }
+
+      set({
+        character: result.character,
+        pendingEvents: eventToFire ? [eventToFire] : [...result.firedEvents],
+        currentEventIndex: 0,
+        lastOutcomeTone: null,
+        pendingSting: null,
+        message: null,
+        error: null,
+        isGeneratingEvent: false,
       });
       persist();
       return true;

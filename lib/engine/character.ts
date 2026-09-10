@@ -54,6 +54,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
     traits: [],
     flags: [],
     reputation: { fame: 35, karma: 55 },
+    aiCallsUsed: 0,
     education: {
       stage: 'none',
       enrolled: false,

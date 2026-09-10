@@ -83,7 +83,8 @@ export function GameHub() {
 
   const hydrate = useGameStore((s) => s.hydrate);
   const newGame = useGameStore((s) => s.newGame);
-  const ageUp = useGameStore((s) => s.ageUp);
+  const ageUpAsync = useGameStore((s) => s.ageUpAsync);
+  const isGeneratingEvent = useGameStore((s) => s.isGeneratingEvent);
   const resolveCurrentChoice = useGameStore((s) => s.resolveCurrentChoice);
   const exportToJson = useGameStore((s) => s.exportToJson);
   const importFromRaw = useGameStore((s) => s.importFromRaw);
@@ -194,13 +195,13 @@ export function GameHub() {
     if (!event.moment) playCue(toneCue[event.tone]);
   };
 
-  const onAgeUp = useCallback(() => {
-    const applied = ageUp();
+  const onAgeUp = useCallback(async () => {
+    const applied = await ageUpAsync();
     if (applied) {
       soundManager.play('age_up');
       hapticForSfx('age_up');
     }
-  }, [ageUp]);
+  }, [ageUpAsync]);
 
   const openActions = (initialTab: Tab = 'school') => {
     setActionsTab(initialTab);
@@ -233,7 +234,7 @@ export function GameHub() {
   const dead = Boolean(character && !character.alive && pendingEvents.length === 0);
   const currentEvent = pendingEvents.length > 0 ? pendingEvents[currentEventIndex] : null;
   const heirs = dead && character ? eligibleHeirs(character, familyTree) : [];
-  const canAgeUp = Boolean(character && character.alive && pendingEvents.length === 0);
+  const canAgeUp = Boolean(character && character.alive && pendingEvents.length === 0 && !isGeneratingEvent);
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
