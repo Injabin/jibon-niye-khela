@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Character, Relation, Relationship } from '@/lib/engine/types';
 import { RelationshipModal } from '@/components/game/RelationshipModal';
+import { NpcChips } from '@/components/game/NpcChips';
 import { formatMoney } from '@/lib/ui/money';
 import {
   Sparkles,
@@ -179,6 +180,12 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
                       <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium capitalize">
                         {rel.occupation ? `${rel.occupation} · ` : ''}{rel.relation}
                       </p>
+                      <NpcChips
+                        health={rel.health}
+                        happiness={rel.happiness}
+                        jobId={rel.jobId}
+                        lastMetAge={rel.lastMetAge}
+                      />
                     </div>
                   </div>
 

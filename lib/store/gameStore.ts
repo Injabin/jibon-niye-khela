@@ -981,6 +981,10 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = dateCandidateOrPartner(character, relationshipId, rng);
       if (result.ok) consumeBudget(character);
+      if (result.ok) {
+        const rel = character.relationships.find((r) => r.id === relationshipId);
+        if (rel) rel.lastMetAge = character.age;
+      }
 
       set({
         character,
@@ -1002,6 +1006,10 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = giveGiftToPartner(character, relationshipId, rng);
       if (result.ok) consumeBudget(character);
+      if (result.ok) {
+        const rel = character.relationships.find((r) => r.id === relationshipId);
+        if (rel) rel.lastMetAge = character.age;
+      }
 
       set({
         character,
@@ -1261,6 +1269,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
           break;
         default:
           return false;
+      }
+
+      if (result.ok) {
+        const rel = character.relationships.find((r) => r.id === relationshipId);
+        if (rel) rel.lastMetAge = character.age;
       }
 
       set({

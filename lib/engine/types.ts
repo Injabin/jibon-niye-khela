@@ -60,6 +60,13 @@ export interface Relationship {
   metAge: number;
   romanceStage?: 'crush' | 'dating' | 'partner' | 'fiancé' | 'spouse' | 'ex';
   occupation?: string;
+  /** NPC vitals (C): 0–100 meters that drift every year and can kill the NPC. */
+  health?: number;
+  happiness?: number;
+  /** Engine career id when the NPC holds a job (drives job-family context checks). */
+  jobId?: string;
+  /** Character age the last time the player interacted with this NPC. */
+  lastMetAge?: number;
 }
 
 export type EducationStage =

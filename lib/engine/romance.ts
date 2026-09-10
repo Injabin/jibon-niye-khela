@@ -225,8 +225,13 @@ export function askOutCandidate(
       alive: true,
       meter: rng.rangeInt(60, 75),
       metAge: character.age,
+      lastMetAge: character.age,
       romanceStage: relationRole,
       occupation: candidate.archetype,
+      // Vitals derived from the candidate's generated stats so no extra RNG
+      // draws perturb deterministic callers of askOutCandidate.
+      health: clamp(candidate.looks + 5, 55, 100),
+      happiness: clamp(candidate.smarts + 8, 55, 100),
     };
     character.relationships.push(targetRel);
   }
@@ -579,8 +584,11 @@ export function tryForBaby(
     alive: true,
     meter: 85,
     metAge: character.age,
+    lastMetAge: character.age,
     romanceStage: undefined,
     occupation: 'কোলের শিশু',
+    health: 95,
+    happiness: 80,
   };
 
   // Ensure no duplicate in relationships

@@ -302,6 +302,16 @@ export function giveChildAllowance(character: Character, relationshipId: string,
  * BitLife-style daily contacts that can be befriended or dated later.
  */
 
+/** Realistic working-class job ids handed to random coworkers (C, jobId). */
+const COWORKER_JOB_IDS = [
+  'job_retail',
+  'job_service',
+  'job_office',
+  'job_tech',
+  'job_trade',
+  'job_finance',
+] as const;
+
 function peerAge(character: Character, rng: RNG, spread: number): number {
   return Math.max(5, Math.min(100, character.age + rng.rangeInt(-spread, spread)));
 }
@@ -316,6 +326,10 @@ function addPeer(character: Character, rng: RNG, relation: 'classmate' | 'cowork
     alive: true,
     meter: rng.rangeInt(35, 60),
     metAge: character.age,
+    health: rng.rangeInt(70, 95),
+    happiness: rng.rangeInt(55, 90),
+    lastMetAge: character.age,
+    ...(relation === 'coworker' ? { jobId: rng.pick(COWORKER_JOB_IDS) } : {}),
   });
 }
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Relationship } from '@/lib/engine/types';
 import { useGameStore } from '@/lib/store/gameStore';
 import { Button } from '@/components/ui/Button';
+import { NpcChips } from '@/components/game/NpcChips';
 import {
   X,
   Heart,
@@ -114,9 +115,15 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                   {RELATION_LABELS[liveRel.relation] ?? liveRel.relation}
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+<p className="text-xs text-zinc-400 mt-0.5">
                 বয়স {liveRel.age} বছর {liveRel.occupation ? `· ${liveRel.occupation}` : ''}
               </p>
+              <NpcChips
+                health={liveRel.health}
+                happiness={liveRel.happiness}
+                jobId={liveRel.jobId}
+                lastMetAge={liveRel.lastMetAge}
+              />
             </div>
           </div>
 
