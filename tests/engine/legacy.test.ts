@@ -187,7 +187,7 @@ describe('birthChild and ageFamilyMembers', () => {
     const { character, tree } = parentAndTree(37);
     const withBaby = birthChild(tree, character, new RNG(41));
     const withDead = withChild(withBaby, 44, false, 'Old Aunt Blackwood');
-    const grown = ageFamilyMembers(withDead, 40);
+    const grown = ageFamilyMembers(withDead, 40, new RNG(42));
 
     expect(grown.members.find((m) => m.role === 'self')!.age).toBe(40);
     const baby = grown.members.find((m) => m.role === 'child' && m.age !== 44);
@@ -199,7 +199,7 @@ describe('birthChild and ageFamilyMembers', () => {
 describe('legacy store flow', () => {
   it('produces a serializable heir state via the engine path', () => {
     const { character, tree } = parentAndTree(43);
-    const prepared = ageFamilyMembers(withChild(tree, 20, true, `Declan ${character.surname}`), 60);
+    const prepared = ageFamilyMembers(withChild(tree, 20, true, `Declan ${character.surname}`), 60, new RNG(43));
     const [heir] = eligibleHeirs(character, prepared);
     const heirCharacter = createHeirCharacter(character, heir!, 1, new RNG(50));
     const heirTree = buildHeirFamilyTree(prepared, heirCharacter);

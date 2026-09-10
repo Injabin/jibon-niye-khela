@@ -243,7 +243,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
             )}
 
             {/* 2.5 CHILD-RAISING ACTIONS */}
-            {liveRel.relation === 'child' && (
+            {liveRel.relation === 'child' && liveRel.alive && (
               <div className="space-y-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-sky-400">সন্তান বড় করার কারবার</p>
                 <div className="grid grid-cols-2 gap-2">
@@ -284,7 +284,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
             )}
 
             {/* 2.6 CLASSMATE / COWORKER ACTIONS */}
-            {(liveRel.relation === 'classmate' || liveRel.relation === 'coworker') && (
+            {(liveRel.relation === 'classmate' || liveRel.relation === 'coworker') && liveRel.alive && (
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-teal-400">
                   {liveRel.relation === 'classmate' ? (
@@ -318,7 +318,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
             )}
 
             {/* 3. UNIVERSAL SOCIAL ACTIONS (For all alive non-ex or regular interactions) */}
-            {!isEx && (
+            {!isEx && liveRel.alive && (
               <div className="space-y-2">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">সামাজিক মেলামেশা</p>
                 <div className="grid grid-cols-2 gap-2">
@@ -356,7 +356,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                   </Button>
 
                   {/* Ask for money from parents, grandparents, spouse, or partner */}
-                  {['mother', 'father', 'grandparent', 'spouse', 'partner'].includes(liveRel.relation) && (
+                  {['mother', 'father', 'grandparent', 'spouse', 'partner'].includes(liveRel.relation) && liveRel.alive && (
                     <Button
                       variant="secondary"
                       onClick={() => interactWithPerson(liveRel.id, 'ask_money')}

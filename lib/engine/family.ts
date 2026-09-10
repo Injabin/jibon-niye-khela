@@ -219,15 +219,31 @@ export function birthChild(tree: FamilyTree, character: Character, rng: RNG): Fa
 }
 
 /**
- * Advance the household one year: the character's own member mirrors their
- * true age, and every other living member ages by exactly one year. Pure and
- * deterministic (no death rolls) — deaths are driven by the character.
+ * Age-based death probability for family members. Returns true if the
+ * member should die this year. Only applies to non-self members who are alive.
  */
-export function ageFamilyMembers(tree: FamilyTree, characterAge: number): FamilyTree {
+function shouldFamilyMemberDie(age: number, rng: RNG): boolean {
+  if (age < 70) return false;
+  // 3% per year from 70-84, 6% from 85-94, 10% from 95+
+  const chance = age < 85 ? 0.03 : age < 95 ? 0.06 : 0.10;
+  return rng.chance(chance);
+}
+
+/**
+ * Advance the household one year: the character's own member mirrors their
+ * true age, every other living member ages by exactly one year, and elderly
+ * family members may pass away. Deaths are rolled deterministically from the
+ * supplied RNG so saves remain reproducible.
+ */
+export function ageFamilyMembers(tree: FamilyTree, characterAge: number, rng: RNG): FamilyTree {
   const members = tree.members.map((member) => {
     if (member.role === 'self') return { ...member, age: characterAge };
     if (!member.alive) return member;
-    return { ...member, age: member.age + 1 };
+    const newAge = member.age + 1;
+    if (shouldFamilyMemberDie(newAge, rng)) {
+      return { ...member, age: newAge, alive: false };
+    }
+    return { ...member, age: newAge };
   });
   return { ...tree, members };
 }

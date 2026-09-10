@@ -84,6 +84,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
   const canSpend =
     (selected?.role ?? 'self') !== 'self' &&
     selected !== null &&
+    selected.alive &&
     selected.bond < BOND_MAX &&
     selected.lastSpentAge !== character.age &&
     character.alive;
@@ -426,7 +427,18 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                 </div>
               )}
 
-              {selected.role !== 'self' && (
+              {selected.role !== 'self' && !selected.alive && (
+                <div className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-center">
+                  <p className="text-xs text-rose-300 font-medium">
+                    উনি এহন আমাদের মাঝে নাই। ইন্নাল্লাহি ওয়া ইলাইহি রাজিউন।
+                  </p>
+                  <p className="text-[10px] text-rose-400/60 mt-1">
+                    খাতির: {selected.bond}% · চিরস্মৃতি রইলো।
+                  </p>
+                </div>
+              )}
+
+              {selected.role !== 'self' && selected.alive && (
                 <div className="mt-3 space-y-2">
                   {/* Primary spend time button (tests & standard action) */}
                   <Button

@@ -84,6 +84,28 @@ describe('age monotonicity (Gate 1 / Test 4)', () => {
   });
 });
 
+describe('relationship aging (Bug fix)', () => {
+  it('every living relationship ages by exactly one year per ageUp', () => {
+    const { character, rng } = createCharacter(700);
+    character.age = 20;
+    character.relationships.push(
+      { id: 'peer1', relation: 'classmate', name: 'Rahim Mia', age: 15, alive: true, meter: 50, metAge: 12 },
+      { id: 'peer2', relation: 'coworker', name: 'Karim Uddin', age: 30, alive: true, meter: 55, metAge: 22 },
+      { id: 'gone', relation: 'friend', name: 'Late Fulan', age: 44, alive: false, meter: 40, metAge: 20 },
+    );
+
+    ageUp(character, rng);
+
+    const peer1 = character.relationships.find((r) => r.id === 'peer1')!;
+    const peer2 = character.relationships.find((r) => r.id === 'peer2')!;
+    const gone = character.relationships.find((r) => r.id === 'gone')!;
+    expect(peer1.age).toBe(16);
+    expect(peer2.age).toBe(31);
+    // A dead relationship must never age.
+    expect(gone.age).toBe(44);
+  });
+});
+
 describe('character creation', () => {
   it('creates a newborn with parents and initial stats', () => {
     const { character } = createCharacter(16);

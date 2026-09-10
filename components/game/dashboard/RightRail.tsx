@@ -154,7 +154,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
           <p className="text-xs text-zinc-400 py-3 text-center">No current contacts.</p>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {livingRelationships.slice(0, 5).map((rel, index) => {
+            {livingRelationships.map((rel, index) => {
               const RelIcon = RELATION_ICONS[rel.relation] ?? Users;
               return (
                 <button

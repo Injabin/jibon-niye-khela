@@ -77,6 +77,32 @@ const ROLE_TO_RELATION: Partial<Record<FamilyRole, Relation>> = {
   child: 'child',
 };
 
+/** Mirrors family-tree deaths onto the character's relationship array. */
+function syncRelationshipDeaths(character: Character, tree: FamilyTree | null): void {
+  if (!tree) return;
+  const familyTreeRoleFor: Partial<Record<Relation, FamilyRole>> = {
+    mother: 'mother',
+    father: 'father',
+    sibling: 'sibling',
+    child: 'child',
+    spouse: 'spouse',
+    grandparent: 'grandparent',
+  };
+  for (const rel of character.relationships) {
+    const role = familyTreeRoleFor[rel.relation];
+    if (!role) continue;
+    const member = tree.members.find((m) => m.role === role && m.name === rel.name);
+    if (member && !member.alive && rel.alive) {
+      rel.alive = false;
+      character.history.push({
+        age: character.age,
+        text: `${rel.name} মারা গেছে। দোয়া করিলাম অর আত্মার মাগফিরাতের জন্য!`,
+        tone: 'bad',
+      });
+    }
+  }
+}
+
 export interface GameStoreState {
   character: Character | null;
   seed: number;
@@ -381,8 +407,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       const familyTree =
         s.familyTree && result.character.alive
-          ? ageFamilyMembers(s.familyTree, result.character.age)
+          ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
+      if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
 
       let events: LifeEventDef[] = [];
       if (result.character.alive) {
@@ -432,8 +459,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       const familyTree =
         s.familyTree && result.character.alive
-          ? ageFamilyMembers(s.familyTree, result.character.age)
+          ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
+      if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
 
       if (!result.character.alive) {
         set({
@@ -562,6 +590,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const member = tree.members.find((m) => m.id === memberId);
       if (!member) return false;
       if (member.role === 'self') return false;
+      if (!member.alive) return false;
       const characterAge = s.character.age;
       if (member.lastSpentAge === characterAge) return false;
       if (member.bond >= BOND_MAX) return false;

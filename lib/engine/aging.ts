@@ -61,6 +61,12 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
     looks: character.stats.looks,
   });
 
+  // Age every living relationship (children, partners, peers, friends) by
+  // exactly one year so the world stays consistent with the character's age.
+  for (const rel of character.relationships) {
+    if (rel.alive) rel.age = Math.max(0, rel.age + 1);
+  }
+
   rollToddlerTraits(character, rng);
   applyYearlyDecay(character);
   applyReputationDrift(character);

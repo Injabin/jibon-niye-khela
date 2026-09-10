@@ -73,7 +73,7 @@ describe('continueAsHeir (M5 #4)', () => {
     alive.newGame(103);
     const a = useGameStore.getState();
     const tree = a.familyTree!;
-    const grown = ageFamilyMembers(tree, 60);
+    const grown = ageFamilyMembers(tree, 60, new RNG(54));
     useGameStore.setState({ familyTree: grown });
     // The character is alive — legacy must not fire.
     expect(useGameStore.getState().continueAsHeir('any-id')).toBe(false);
