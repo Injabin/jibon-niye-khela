@@ -2197,7 +2197,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
         id: 'flood_wooden_boat',
         text: 'Pay a few coins to cross on a makeshift wooden dinghy with neighbor children',
         effects: { money: -2, happiness: 8, karma: 3 },
-        outcomeText: 'Felt like an intrepid explorer crossing the Amazon. Kept shoes completely dry.',
+        outcomeText: 'Felt like an intrepid explorer crossing a mighty jungle river. Kept shoes completely dry.',
         tone: 'good',
       },
       {

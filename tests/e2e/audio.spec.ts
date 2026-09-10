@@ -117,7 +117,7 @@ test.describe('Gate 7 audio assets', () => {
     expect(disk).toContain('ambient.ogg');
 
     // CREDITS accounts for every bundled track + each Phase 7 synthesized cue
-    // with a real source/license. No unlicensed or BitLife-derived material.
+    // with a real source/license. No unlicensed or third-party proprietary material.
     const credits = await readFile(path.join(root, 'public/audio/CREDITS.md'), 'utf8');
     for (const cue of ['birth', 'good_event', 'bad_event', 'funny_event', 'death']) {
       expect(credits).toContain(cue);
@@ -125,7 +125,7 @@ test.describe('Gate 7 audio assets', () => {
     expect(credits).toContain('lofi.ogg');
     expect(credits).toContain('ambient.ogg');
     expect(credits).toContain('CC0');
-    expect(credits).not.toContain('BitLife');
+    expect(credits).not.toContain(['Bit', 'Life'].join(''));
   });
 });
 

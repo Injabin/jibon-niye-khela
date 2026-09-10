@@ -136,7 +136,7 @@ test.describe('legacy / heir mode (M5 #4)', () => {
 
     // Their family tree still carries the late parent and now a sibling.
     await page.getByTestId('open-family-tree').click();
-    await expect(page.getByRole('button', { name: parentName })).toBeVisible();
+    await expect(page.getByRole('button', { name: parentName }).first()).toBeVisible();
     await expect(page.getByTestId('tree-node-sibling')).toBeVisible();
     await expect(page.getByTestId('tree-node-self')).toBeVisible();
     await page.getByTestId('family-tree-close').click();

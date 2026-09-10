@@ -25,6 +25,8 @@ export async function readDisplayedState(page: Page) {
 /** Start a fresh life (automatically waits for hydration + new-game button). */
 export async function startNewLife(page: Page): Promise<void> {
   await page.getByTestId('new-game').click();
+  await page.waitForFunction(() => typeof (window as unknown as { __JNK_GAME_STORE__?: unknown }).__JNK_GAME_STORE__ !== 'undefined');
+  await expect(page.getByTestId('character-summary')).toBeVisible({ timeout: 10_000 });
 }
 
 /**

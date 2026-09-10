@@ -90,7 +90,7 @@ async function readLifeSummary(page: Page) {
 test.describe('Final Gate A — three lives to divergent outcomes', () => {
   test('first-choice, last-choice and middle-choice lives produce different summaries', async ({ page }) => {
     const summaries: Awaited<ReturnType<typeof readLifeSummary>>[] = [];
-    await page.goto('/');
+    await page.goto('/play');
     for (const strategy of ['first', 'last', 'middle'] as const) {
       await startLife(page);
       await playUntilDeath(page, strategy);
@@ -121,7 +121,7 @@ test.describe('Final Gate A — three lives to divergent outcomes', () => {
 
 test.describe('Final Gate B — completely disabled effects are still playable', () => {
   test('with reduced motion + sfx off in Settings, a full life completes and renders cleanly', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/play');
 
     // Turn everything off through the real Settings UI, before starting a life.
     await page.getByTestId('open-settings').click();

@@ -87,6 +87,7 @@ test.describe('axe-core scan (Gate 6)', () => {
 /** Fabricate a deceased adult with two adult children (see legacy.spec for
  *  the same technique) so the death-screen summary + heir offer render. */
 async function patchDeadWithHeirs(page: Page): Promise<void> {
+  await page.waitForFunction(() => typeof (window as unknown as { __JNK_GAME_STORE__?: unknown }).__JNK_GAME_STORE__ !== 'undefined');
   await page.evaluate(() => {
     const store = (window as unknown as {
       __JNK_GAME_STORE__: {

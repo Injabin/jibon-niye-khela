@@ -72,8 +72,8 @@ test('one full life, keyboard-only, birth to death', async ({ page, browserName 
         return (store?.getState()?.pendingEvents?.length ?? 0) > 0;
       });
 
-      if (hasPendingEvent || (await page.getByTestId('event-card').isVisible().catch(() => false))) {
-        await expect(page.getByTestId('event-card')).toBeVisible({ timeout: 4000 });
+      if (hasPendingEvent || (await page.getByTestId('event-card').first().isVisible().catch(() => false))) {
+        await expect(page.getByTestId('event-card').first()).toBeVisible({ timeout: 4000 });
         const found = await tabTo((id) => id.startsWith('choice-'));
         expect(found, 'an event choice must be reachable by Tab').toBe(true);
         await activate();

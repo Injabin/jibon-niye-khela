@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLayoutTier } from '@/lib/hooks/useLayoutTier';
 import { soundManager } from '@/lib/audio/SoundManager';
@@ -28,7 +29,7 @@ import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
-import { Sparkles, AlertCircle, Sliders } from 'lucide-react';
+import { Sparkles, AlertCircle, Sliders, Settings } from 'lucide-react';
 
 // Lazy-loaded family tree
 const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
@@ -102,6 +103,8 @@ export function GameHub() {
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
   const layoutTier = useLayoutTier();
+  const router = useRouter();
+  const paramsHandled = useRef(false);
   const isMobile = layoutTier === 'mobile';
   const isTablet = layoutTier === 'tablet';
   const isDesktop = layoutTier === 'desktop';
@@ -204,15 +207,27 @@ export function GameHub() {
     setActionsOpen(true);
   };
 
-  const startFreshLife = () => {
+  const startFreshLife = useCallback(() => {
     const seed = newGame();
     playCue('birth');
     return seed;
-  };
+  }, [newGame]);
 
   const onContinueAsHeir = (heirId: string) => {
     if (continueAsHeir(heirId)) playCue('birth');
   };
+
+  useEffect(() => {
+    if (!isHydrated || paramsHandled.current) return;
+    if (typeof window === 'undefined') return;
+    paramsHandled.current = true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('start') === '1' && !character) {
+      startFreshLife();
+    } else if (params.get('custom') === '1') {
+      setTimeout(() => setCustomLifeOpen(true), 0);
+    }
+  }, [isHydrated, character, startFreshLife]);
 
   const noCharacter = !character;
   const dead = Boolean(character && !character.alive && pendingEvents.length === 0);
@@ -472,6 +487,15 @@ export function GameHub() {
                     <Sliders className="size-4" />
                     <span>Custom Life</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setSettingsOpen(true)}
+                    data-testid="open-settings"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  >
+                    <Settings className="size-4" />
+                    <span>Settings</span>
+                  </button>
                 </div>
               </motion.section>
             )}
@@ -610,6 +634,7 @@ export function GameHub() {
         onQuitToLanding={() => {
           setPaused(false);
           resetGame();
+          router.push('/');
         }}
       />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
