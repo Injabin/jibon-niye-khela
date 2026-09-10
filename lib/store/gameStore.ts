@@ -14,6 +14,14 @@ import { buildHeirFamilyTree, createHeirCharacter, eligibleHeirs, nextLifeSeed }
 import { buyAsset, sellAsset } from '@/lib/engine/events/categories/assets';
 import { applyForJob, quitJob, workOvertime, suckUpToBoss, askForRaise } from '@/lib/engine/events/categories/career';
 import { commitCrime } from '@/lib/engine/events/categories/crime';
+import {
+  prisonBail,
+  prisonEscape,
+  prisonFight,
+  prisonGoodBehavior,
+  prisonGym,
+  prisonLibrary,
+} from '@/lib/engine/prison';
 import { enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
@@ -168,6 +176,18 @@ export interface GameStoreActions {
   quitJob(): boolean;
   /** Active-menu crime action (DESIGN.md §5.6): attempt a crime. */
   commitCrime(crimeId: string): boolean;
+  /** Prison action (D — Phase 3.5): pay bail / plea-deal fine to walk out early. */
+  bailOut(): boolean;
+  /** Prison action (D — Phase 3.5): workout on the jail grounds. */
+  prisonGym(): boolean;
+  /** Prison action (D — Phase 3.5): read the jail library. */
+  prisonLibrary(): boolean;
+  /** Prison action (D — Phase 3.5): brawl inside the barracks. */
+  prisonFight(): boolean;
+  /** Prison action (D — Phase 3.5): good conduct; shaves a year, zero = parole. */
+  prisonGoodBehavior(): boolean;
+  /** Prison action (D — Phase 3.5): attempt a risky escape. */
+  prisonEscape(): boolean;
   /** Active-menu asset action (DESIGN.md §5.5): buy an asset kind. */
   buyAsset(kind: AssetKind, options?: { name?: string; price?: number }): boolean;
   /** Sell one owned asset by id. */
@@ -829,6 +849,48 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return runIdleAction((character, rng) => {
         const out = commitCrime(character, rng, crimeId);
         return { ok: true, text: out.text };
+      });
+    },
+
+    bailOut() {
+      return runIdleAction((character) => {
+        const out = prisonBail(character);
+        return { ok: out.ok, text: out.text };
+      });
+    },
+
+    prisonGym() {
+      return runIdleAction((character) => {
+        const out = prisonGym(character);
+        return { ok: out.ok, text: out.text };
+      });
+    },
+
+    prisonLibrary() {
+      return runIdleAction((character) => {
+        const out = prisonLibrary(character);
+        return { ok: out.ok, text: out.text };
+      });
+    },
+
+    prisonFight() {
+      return runIdleAction((character, rng) => {
+        const out = prisonFight(character, rng);
+        return { ok: out.ok, text: out.text };
+      });
+    },
+
+    prisonGoodBehavior() {
+      return runIdleAction((character, rng) => {
+        const out = prisonGoodBehavior(character, rng);
+        return { ok: out.ok, text: out.text };
+      });
+    },
+
+    prisonEscape() {
+      return runIdleAction((character, rng) => {
+        const out = prisonEscape(character, rng);
+        return { ok: out.ok, text: out.text };
       });
     },
 

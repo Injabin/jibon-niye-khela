@@ -481,12 +481,44 @@ function CrimeTab({
   onCommit: (crimeId: string) => boolean;
 }) {
   const inJail = character.flags.includes('in_jail');
+  const bailOut = useGameStore((s) => s.bailOut);
+  const prisonGym = useGameStore((s) => s.prisonGym);
+  const prisonLibrary = useGameStore((s) => s.prisonLibrary);
+  const prisonFight = useGameStore((s) => s.prisonFight);
+  const prisonGoodBehavior = useGameStore((s) => s.prisonGoodBehavior);
+  const prisonEscape = useGameStore((s) => s.prisonEscape);
+  const prisonActions = inJail
+    ? [
+        { id: 'prison-gym', label: 'জিমে কসরত (স্বাস্থ্য ও হিম্মত বাড়ে)', action: prisonGym },
+        { id: 'prison-library', label: 'জেল পুস্তকালয়ে পড়াশোনা (বুদ্ধি বাড়ে)', action: prisonLibrary },
+        { id: 'prison-fight', label: 'কয়েদির লগে ঝাঁঝা ঝাঁঝা (হিম্মত ±)', action: prisonFight },
+        { id: 'prison-good-behavior', label: 'সদাচরণ — প্যারোল/সাজা হ্রাস', action: prisonGoodBehavior },
+        { id: 'prison-escape', label: 'রাতের অন্ধকারে পালানোর ফন্দি (বিটার ঝুঁকি!)', action: prisonEscape },
+        { id: 'prison-bail', label: 'জামিন / আপস — টাকা দিয়া খালাস', action: bailOut },
+      ]
+    : [];
   return (
     <div className="space-y-3">
       {inJail && (
-        <p className="rounded-md border border-danger-border bg-danger/10 px-3 py-2 text-sm text-danger-text">
-          তুই এহন লাল দালানে (জেলে) বন্দি আছত — খালাস পাওয়ার আগে নতুন কোনো ধান্ধা করন যাইবো না।
-        </p>
+        <div className="space-y-2 rounded-md border border-danger-border bg-danger/10 p-3">
+          <p className="text-sm text-danger-text">
+            তুই এহন লাল দালানে (জেলে) বন্দি আছত — সাজা খাটা শেষে খালাস পাবি। সেল ছাড়া বাইরে নতুন কোনো ধান্ধা করন যাইবো না।
+          </p>
+          <ul className="space-y-1.5">
+            {prisonActions.map((item) => (
+              <li key={item.id}>
+                <Button
+                  variant={item.id === 'prison-escape' ? 'danger' : 'secondary'}
+                  onClick={() => item.action()}
+                  data-testid={item.id}
+                  className="w-full justify-start"
+                >
+                  {item.label}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       <ul className="space-y-2">
         {CRIMES.map((crime) => (

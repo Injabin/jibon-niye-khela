@@ -178,6 +178,19 @@ export const JOB_BOARD: readonly JobDef[] = [
 
 export const ALL_JOB_FLAGS: readonly string[] = JOB_BOARD.map((j) => j.flag);
 
+/**
+ * Jobs closed to anyone with a criminal record (D — Phase 3.5).
+ * Politics, law, military, and medicine are trust-gated: a record bars the
+ * door entirely; every other hire chance is also smeared by −15%.
+ */
+export const TRUST_BLOCKED_JOB_FLAGS: readonly string[] = ['job_politics', 'job_legal', 'job_military', 'job_medical'];
+
+export const TRUST_BLOCKED_JOB_IDS: readonly string[] = JOB_BOARD.filter((j) => TRUST_BLOCKED_JOB_FLAGS.includes(j.flag)).map((j) => j.id);
+
+export function hasCriminalRecord(character: Character): boolean {
+  return character.flags.includes('criminal_record');
+}
+
 /** Highest stage reached on the education arc; 'dropped' blocks high-or-better jobs. */
 function educationReached(character: Character): EducationStage {
   return character.education.stage;
@@ -197,6 +210,7 @@ const REACHED_ORDER: Record<EducationStage, number> = {
 
 export function isJobEligible(job: JobDef, character: Character): boolean {
   if (character.age < job.minAge) return false;
+  if (hasCriminalRecord(character) && TRUST_BLOCKED_JOB_FLAGS.includes(job.flag)) return false;
   const req = job.requires;
   if (req) {
     if (req.education) {
@@ -238,10 +252,14 @@ export function applyForJob(
     return { hired: false, text: 'এমন কোনো চাকরি দুনিয়ায় নাই!', tone: 'neutral' };
   }
   if (!isJobEligible(job, character)) {
+    if (hasCriminalRecord(character) && TRUST_BLOCKED_JOB_FLAGS.includes(job.flag)) {
+      return { hired: false, text: `${job.title} পদের জন্য দরকার পুলিশি সনদ (character certificate)। ঝামেলার পাতায় নাম থাকার কারণে দরজা বন্ধ — এহন খিদমতে তাক লাগলো।`, tone: 'bad' };
+    }
     return { hired: false, text: `${job.title} পদের জন্য প্রয়োজনীয় যোগ্যতা তোমার এখনও হয় নাই।`, tone: 'neutral' };
   }
 
   let chance = 0.45 + (character.stats.smarts - 50) * 0.004 + (character.stats.looks - 50) * 0.002;
+  if (hasCriminalRecord(character)) chance -= 0.15;
   if (job.requires?.trait && character.traits.includes(job.requires.trait)) chance += 0.1;
   if (job.requires?.major && character.flags.includes(job.requires.major)) chance += 0.1;
   const hireChance = Math.min(0.98, Math.max(0.15, chance));
