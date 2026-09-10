@@ -128,13 +128,14 @@ export async function fetchEventForYear(
   // 1. Check rationing eligibility
   const eligible = isEligibleForGemini(character, targetAge);
 
-  if (!eligible) {
+if (!eligible) {
     const fallback = getFallbackEvent({
       age: targetAge,
       recentEventIds: recentIds,
-preferredTone: targetTone,
+      preferredTone: targetTone,
       seed: lifeEventSeed,
       religion: character.religion,
+      character,
     });
     return { event: fallback, source: 'fallback' };
   }
@@ -229,12 +230,13 @@ preferredTone: targetTone,
         setRpmCooldown(30_000);
       }
 
-      // Seamless fallback on failure
+// Seamless fallback on failure
       const fallback = getFallbackEvent({
         age: targetAge,
         recentEventIds: recentIds,
         preferredTone: targetTone,
         seed: lifeEventSeed,
+        character,
       });
       return { event: fallback, source: 'fallback' };
     }
@@ -251,17 +253,19 @@ preferredTone: targetTone,
       preferredTone: targetTone,
       seed: lifeEventSeed,
       religion: character.religion,
+      character,
     });
     return { event: fallback, source: 'fallback' };
   } catch {
-    // Network failure / fetch abort -> short cooldown + fallback
+// Network failure / fetch abort -> short cooldown + fallback
     setRpmCooldown(30_000);
-const fallback = getFallbackEvent({
+    const fallback = getFallbackEvent({
       age: targetAge,
       recentEventIds: recentIds,
       preferredTone: targetTone,
       seed: lifeEventSeed,
       religion: character.religion,
+      character,
     });
     return { event: fallback, source: 'fallback' };
   }

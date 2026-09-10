@@ -444,7 +444,7 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
     ],
   },
   {
-    id: 'adult_gold_necklace_anniversary',
+id: 'adult_gold_necklace_anniversary',
     text: 'তাঁতীবাজারের বিখ্যাত স্বর্ণালঙ্কার দোকান থেকে স্ত্রীর জন্য ২২ ক্যারেটের সীতা হার কিনতে গেলি!',
     minAge: 36,
     maxAge: 55,
@@ -452,6 +452,7 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
     tone: 'good',
     category: 'adult',
     source: 'fallback',
+    requiredFlags: ['has_spouse'],
     choices: [
       {
         id: 'buy_certified_gold',

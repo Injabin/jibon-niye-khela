@@ -5,7 +5,8 @@
  * ensuring the game is 100% playable standalone without internet or during Gemini API outages.
  */
 
-import type { LifeEventDef, Religion, Tone } from '@/lib/engine/types';
+import type { Character, LifeEventDef, Religion, Tone } from '@/lib/engine/types';
+import { getCharacterFlags } from '@/lib/engine/traits';
 import { INFANT_FALLBACK_EVENTS } from '@/content/bangla/fallback-events/infant';
 import { CHILD_FALLBACK_EVENTS } from '@/content/bangla/fallback-events/child';
 import { TEEN_FALLBACK_EVENTS } from '@/content/bangla/fallback-events/teen';
@@ -29,19 +30,49 @@ export interface FallbackFilter {
   seed?: number;
   /** Hard religion isolation: when set, events tagged for the opposite faith are never selectable. */
   religion?: Religion;
+  /** Full character context: when set, requiredFlags/antiFlags are evaluated against the
+   *  character's traits + flags so fallback events stay state-appropriate (spouse-only,
+   *  job-gated, crime-gated, etc.) exactly like the engine registry. */
+  character?: Character;
 }
 
 /**
- * Religion isolation for the fallback bank: an event gated to one faith is only
- * drawable by a character of that faith. When no religion is supplied (generic
- * callers) every event stays eligible, preserving existing behaviour.
+ * Context isolation for the fallback bank. An event gated by flags is only
+ * drawable when the caller's context satisfies it: religion keeps its hard
+ * isolation (opposite faith is never selectable), and full flag gating kicks in
+ * whenever a character is supplied. Callers that pass neither context (generic
+ * callers and existing tests) keep every event eligible, preserving legacy
+ * behaviour.
  */
-function religionAllowed(event: LifeEventDef, religion?: Religion): boolean {
-  if (!religion) return true;
+export function isFallbackEventContextEligible(
+  event: LifeEventDef,
+  context: Pick<FallbackFilter, 'religion' | 'character'>,
+): boolean {
+  const { religion, character } = context;
   const requirements = event.requiredFlags ?? [];
-  if (requirements.includes('religion_hindu') && religion !== 'hinduism') return false;
-  if (requirements.includes('religion_muslim') && religion !== 'islam') return false;
+
+  if (religion) {
+    if (requirements.includes('religion_hindu') && religion !== 'hinduism') return false;
+    if (requirements.includes('religion_muslim') && religion !== 'islam') return false;
+  }
+
+  if (character) {
+    const flags = new Set(getCharacterFlags(character));
+    if (requirements.length > 0 && !requirements.every((flag) => flags.has(flag))) return false;
+    const forbids = event.antiFlags ?? [];
+    if (forbids.some((flag) => flags.has(flag))) return false;
+  }
+
   return true;
+}
+
+function contextAllowed(event: LifeEventDef, filter: FallbackFilter): boolean {
+  return isFallbackEventContextEligible(
+    event,
+    filter.religion || filter.character
+      ? { religion: filter.religion, character: filter.character }
+      : { religion: undefined, character: undefined },
+  );
 }
 
 /**
@@ -49,10 +80,11 @@ function religionAllowed(event: LifeEventDef, religion?: Religion): boolean {
  * excluding recently seen event IDs to prevent immediate repeats.
  */
 export function getFallbackEvent(filter: FallbackFilter): LifeEventDef {
-  const { age, recentEventIds = [], preferredTone, seed = 42, religion } = filter;
+  const { age, recentEventIds = [], preferredTone, seed = 42, ...context } = filter;
   const recentSet = new Set(recentEventIds);
 
-  const ageEligible = (e: LifeEventDef) => e.minAge <= age && e.maxAge >= age && religionAllowed(e, religion);
+  const ageEligible = (e: LifeEventDef) =>
+    e.minAge <= age && e.maxAge >= age && contextAllowed(e, { ...context, age });
 
   // 1. Direct age match strictly excluding all recent events
   let candidates = ALL_FALLBACK_EVENTS.filter(
@@ -85,10 +117,10 @@ export function getFallbackEvent(filter: FallbackFilter): LifeEventDef {
     candidates = ALL_FALLBACK_EVENTS.filter((e) => ageEligible(e) || Math.abs(e.minAge - age) <= 5);
   }
 
-  // 6. Absolute fallback (religion isolation still holds so the wrong faith's
-  //    holiday can never surface to the wrong character).
+  // 6. Absolute fallback (context isolation still holds so a gated event can
+  //    never surface to a character that does not satisfy its requirements).
   if (candidates.length === 0) {
-    candidates = ALL_FALLBACK_EVENTS.filter((e) => religionAllowed(e, religion));
+    candidates = ALL_FALLBACK_EVENTS.filter((e) => contextAllowed(e, { ...context, age }));
   }
 
   // 7. Prefer target tone if available

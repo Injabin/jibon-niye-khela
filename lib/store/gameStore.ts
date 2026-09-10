@@ -276,6 +276,25 @@ function toSaveState(s: GameStoreState, character: Character): SaveState {
   return defaultSaveState(s.seed, s.rngState, character, s.pendingEvents, s.currentEventIndex, s.familyTree);
 }
 
+/**
+ * Context-first pipeline helper (B). When the engine draws no events for a
+ * year, derive a single context-aware fallback event (flags are evaluated
+ * against the character's traits + flags), appending it to recentEventHistory.
+ */
+export function selectYearFallbacks(character: Character, seed: number): LifeEventDef[] {
+  const fallback = getFallbackEvent({
+    age: character.age,
+    recentEventIds: (character.recentEventHistory ?? []).map((r) => r.id),
+    seed,
+    character,
+  });
+  if (!character.recentEventHistory) character.recentEventHistory = [];
+  if (!character.recentEventHistory.some((r) => r.id === fallback.id)) {
+    character.recentEventHistory.push({ id: fallback.id, age: character.age });
+  }
+  return [fallback];
+}
+
 export const useGameStore = create<GameStore>()((set, get) => {
   function persist(): void {
     const s = get();
@@ -448,20 +467,16 @@ export const useGameStore = create<GameStore>()((set, get) => {
           : s.familyTree;
       if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
 
+      // Context-first pipeline (B): engine-drawn events outrank the fallback on
+      // the sync path too. Engine events were already recorded in
+      // recentEventHistory by drawYearlyEvents, so only the fallback branch
+      // needs extra bookkeeping (handled by selectYearFallbacks).
       let events: LifeEventDef[] = [];
       if (result.character.alive) {
-        const fallback = getFallbackEvent({
-          age: result.character.age,
-          recentEventIds: (result.character.recentEventHistory ?? []).map((r) => r.id),
-          seed: s.seed + result.character.age,
-        });
-        events = [fallback];
-      }
-      if (result.character.alive && events[0]) {
-        if (!result.character.recentEventHistory) result.character.recentEventHistory = [];
-        if (!result.character.recentEventHistory.some((r) => r.id === events[0].id)) {
-          result.character.recentEventHistory.push({ id: events[0].id, age: result.character.age });
-        }
+        events =
+          result.firedEvents.length > 0
+            ? result.firedEvents
+            : selectYearFallbacks(result.character, s.seed + result.character.age);
       }
 
       set({
@@ -518,7 +533,27 @@ export const useGameStore = create<GameStore>()((set, get) => {
         return true;
       }
 
-      // 1. Advance age and stats synchronously so persistence is never stale
+      // 1. Context events first (B): engine-drawn events outrank Gemini for this
+      //    year. No AI call, no spinner, and the events were already appended to
+      //    recentEventHistory by drawYearlyEvents.
+      if (result.firedEvents.length > 0) {
+        set({
+          character: result.character,
+          rngState: rng.getState(),
+          familyTree,
+          pendingEvents: result.firedEvents,
+          currentEventIndex: 0,
+          lastOutcomeTone: null,
+          pendingSting: null,
+          message: null,
+          error: null,
+          isGeneratingEvent: false,
+        });
+        persist();
+        return true;
+      }
+
+      // 2. Advance age and stats synchronously so persistence is never stale
       set({
         character: result.character,
         rngState: rng.getState(),
@@ -528,7 +563,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       });
       persist();
 
-      // 2. Fetch annual content event (Gemini if eligible, else fallback)
+      // 3. Fetch annual content event (Gemini if eligible, else fallback)
       let eventToFire: LifeEventDef | null = null;
       try {
         const fetched = await fetchEventForYear(result.character, result.character.age);
@@ -541,6 +576,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           age: result.character.age,
           recentEventIds: (result.character.recentEventHistory ?? []).map((r) => r.id),
           seed: s.seed + result.character.age,
+          character: result.character,
         });
       }
 

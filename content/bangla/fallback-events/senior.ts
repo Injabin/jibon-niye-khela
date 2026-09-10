@@ -106,7 +106,7 @@ export const SENIOR_FALLBACK_EVENTS: readonly LifeEventDef[] = [
     ],
   },
   {
-    id: 'senior_golden_anniversary',
+id: 'senior_golden_anniversary',
     text: 'স্ত্রীর সাথে দাম্পত্য জীবনের ৫০ বছর পূর্ণ হইলো! নাতি-নাতনিরা কেক নিয়া পুরা বাড়ি সাজাইছে!',
     minAge: 68,
     maxAge: 92,
@@ -114,6 +114,7 @@ export const SENIOR_FALLBACK_EVENTS: readonly LifeEventDef[] = [
     tone: 'good',
     category: 'senior',
     source: 'fallback',
+    requiredFlags: ['has_spouse'],
     choices: [
       {
         id: 'gift_gold_bangle',
