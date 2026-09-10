@@ -677,5 +677,38 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
       },
     ],
   },
+  {
+    id: 'ad_job_vs_business',
+    text: 'চাকরির প্যারা নাকি নবাবপুরের ফুটানি: বাপজানে কইতাছে, "কয়দিন আর ফকিরি হালতে চলবি? নবাবপুরের দোকানে বইসা যা!" এদিকে তোর মনে কর্পোরেট কোম্পানিতে চাকরি কইরা গলায় টাই বাইন্ধা ফুটানি মারার শখ।',
+    minAge: 25,
+    maxAge: 55,
+    weight: 9,
+    tone: 'neutral',
+    category: 'adult',
+    source: 'fallback',
+    choices: [
+      {
+        id: 'job_vs_biz_nawabpur_godi',
+        text: 'বাপের লগে দোকানে বইসা গদিতে রাজত্ব করুম — ট্যাকা আর ট্যাকা!',
+        outcomeText: 'গদিতে বইসা ক্যাশ বাক্স সামলালি, দিনশেষে ট্যাকার গদি, কিন্তু সারাডা দিন তেল-কালি আর ঘাম!',
+        tone: 'good',
+        effects: { money: 20, happiness: -5 },
+      },
+      {
+        id: 'job_vs_biz_corporate_tie',
+        text: 'সিভি হাতে নিয়া কর্পোরেট মাইঙ্কা চিপায় দৌড়ের উপর থাকুম!',
+        outcomeText: 'টাই বাইন্ধা এসির বাতাস তো খাইতে আছোস, কিন্তু বসের ঝাড়ি খাইতে খাইতে চান্দি গরম!',
+        tone: 'bad',
+        effects: { smarts: 10, health: -10 },
+      },
+      {
+        id: 'job_vs_biz_chill_bike',
+        text: 'কোনোটাই না, বাপের ট্যাকা উড়াইয়া বাইক নিয়া চিল মারুম!',
+        outcomeText: 'বাপজানে ধইরা ঘর থিকা বাইর কইরা দিলো! রাস্তায় রাস্তায় চা আর বিড়ি ফুঁইকা দিন শেষ!',
+        tone: 'funny',
+        effects: { happiness: 15, karma: -20, money: -10 },
+      },
+    ],
+  },
 ];
 

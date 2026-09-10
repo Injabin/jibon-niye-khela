@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Local Curated Fallback Bank for the Dhakaiya Bangla Edition
  *
  * Provides a resilient, hand-authored library of authentic Dhakaiya life events
@@ -37,34 +37,55 @@ export function getFallbackEvent(filter: FallbackFilter): LifeEventDef {
   const { age, recentEventIds = [], preferredTone, seed = 42 } = filter;
   const recentSet = new Set(recentEventIds);
 
-  // 1. Direct age match excluding recent
+  // 1. Direct age match strictly excluding all recent events
   let candidates = ALL_FALLBACK_EVENTS.filter(
     (e) => e.minAge <= age && e.maxAge >= age && !recentSet.has(e.id),
   );
 
-  // 2. If all direct candidates were recently seen, relax anti-repeat
+  // 2. If stage candidate pool was exhausted, exclude the last 15 seen events
+  if (candidates.length === 0) {
+    const last15 = new Set(recentEventIds.slice(-15));
+    candidates = ALL_FALLBACK_EVENTS.filter(
+      (e) => e.minAge <= age && e.maxAge >= age && !last15.has(e.id),
+    );
+  }
+
+  // 3. Fallback: exclude at least the last 3 seen events (never repeat immediately)
+  if (candidates.length === 0) {
+    const last3 = new Set(recentEventIds.slice(-3));
+    candidates = ALL_FALLBACK_EVENTS.filter(
+      (e) => e.minAge <= age && e.maxAge >= age && !last3.has(e.id),
+    );
+  }
+
+  // 4. Fallback: any candidate for current age
   if (candidates.length === 0) {
     candidates = ALL_FALLBACK_EVENTS.filter((e) => e.minAge <= age && e.maxAge >= age);
   }
 
-  // 3. If still empty, find nearest life stage
+  // 5. If still empty, find nearest life stage
   if (candidates.length === 0) {
     candidates = ALL_FALLBACK_EVENTS.filter((e) => Math.abs(e.minAge - age) <= 5);
   }
 
-  // 4. Absolute fallback
+  // 6. Absolute fallback
   if (candidates.length === 0) {
     candidates = [...ALL_FALLBACK_EVENTS];
   }
 
-  // 5. Prefer target tone if available
+  // 7. Prefer target tone if available
   if (preferredTone) {
     const toneMatches = candidates.filter((e) => e.tone === preferredTone);
     if (toneMatches.length > 0) candidates = toneMatches;
   }
 
-  // Deterministic index selection using seed + age
-  const idx = Math.abs((seed * 31 + age * 17) % candidates.length);
+  // High-avalanche 32-bit hash mixer: guarantees uniform pseudo-random index
+  // without periodic modulo collisions or harmonic resonance across consecutive years
+  let h = ((seed ^ 0xdeadbeef) + (age * 0x45d9f3b)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b);
+  h = (h ^ (h >>> 16)) >>> 0;
+  const idx = h % candidates.length;
   const selected = candidates[idx] ?? candidates[0];
 
   return {

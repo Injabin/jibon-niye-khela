@@ -310,6 +310,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
         });
         events = [fallback];
       }
+      if (result.character.alive && events[0]) {
+        if (!result.character.recentEventHistory) result.character.recentEventHistory = [];
+        if (!result.character.recentEventHistory.some((r) => r.id === events[0].id)) {
+          result.character.recentEventHistory.push({ id: events[0].id, age: result.character.age });
+        }
+      }
 
       set({
         character: result.character,
@@ -388,6 +394,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
           recentEventIds: (result.character.recentEventHistory ?? []).map((r) => r.id),
           seed: s.seed + result.character.age,
         });
+      }
+
+      if (result.character.alive && eventToFire) {
+        if (!result.character.recentEventHistory) result.character.recentEventHistory = [];
+        if (!result.character.recentEventHistory.some((r) => r.id === eventToFire!.id)) {
+          result.character.recentEventHistory.push({ id: eventToFire.id, age: result.character.age });
+        }
       }
 
       set({

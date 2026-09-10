@@ -4,6 +4,7 @@ import { createCharacter } from '@/lib/engine/character';
 import { drawYearlyEventsFrom, EVENT_COOLDOWN_YEARS, getEligibleEventsFrom } from '@/lib/engine/events/registry';
 import { renderTemplate, hasTemplate } from '@/lib/engine/events/template';
 import { RNG } from '@/lib/engine/rng';
+import { getFallbackEvent } from '@/lib/ai/fallbackBank';
 
 describe('Anti-Repetition Engine (Gate 9 / Additional_plus_improved_plan.md)', () => {
   it('EVENT_COOLDOWN_YEARS is configured to 15 years', () => {
@@ -88,5 +89,32 @@ describe('Dynamic Text Templating (Gate 9 / Additional_plus_improved_plan.md)', 
 
     // Should pick more than 1 option across 20 distinct seeds
     expect(results.size).toBeGreaterThan(1);
+  });
+});
+
+describe('Fallback Bank Anti-Repetition (Dhakaiya Bangla)', () => {
+  it('does not repeat events across consecutive years during childhood (ages 6-12)', () => {
+    for (let baseSeed = 100; baseSeed <= 120; baseSeed++) {
+      const recentEventIds: string[] = [];
+      const seenIds = new Set<string>();
+
+      for (let age = 6; age <= 12; age++) {
+        const event = getFallbackEvent({
+          age,
+          recentEventIds,
+          seed: baseSeed + age,
+        });
+
+        expect(
+          recentEventIds.includes(event.id),
+          `Fallback event ${event.id} repeated at age ${age} for seed ${baseSeed}`
+        ).toBe(false);
+
+        recentEventIds.push(event.id);
+        seenIds.add(event.id);
+      }
+
+      expect(seenIds.size).toBe(7);
+    }
   });
 });

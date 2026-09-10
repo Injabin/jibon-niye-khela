@@ -110,4 +110,11 @@ export function resolveEventChoice(character: Character, event: LifeEventDef, ch
     text: `${event.text} ${choice.outcomeText}`.trim(),
     tone: choice.tone,
   });
+
+  if (!character.recentEventHistory) {
+    character.recentEventHistory = [];
+  }
+  if (!character.recentEventHistory.some((r) => r.id === event.id && r.age === character.age)) {
+    character.recentEventHistory.push({ id: event.id, age: character.age });
+  }
 }
