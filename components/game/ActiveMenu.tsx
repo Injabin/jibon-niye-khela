@@ -130,6 +130,9 @@ export function ActiveMenu({
               <div>
                 <h2 className="text-base font-bold tracking-tight text-white">হাতেকলমে জীবনের ধান্ধা</h2>
                 <p className="text-xs text-zinc-400">পড়াশোনা, চাকরি, সম্পদ, রোমান্স ও যাবতীয় কারবার</p>
+                <p className="mt-0.5 text-[11px] font-semibold text-primary">
+                  এই বছরে বাকি কাজ: {Math.max(0, 3 - (character.activityBudgetUsed ?? 0))}টা / ৩টা
+                </p>
               </div>
               <Button variant="secondary" onClick={onClose} data-testid="close-actions">
                 বন্ধ করো

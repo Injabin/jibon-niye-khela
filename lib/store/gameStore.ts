@@ -1,5 +1,11 @@
 import { create } from 'zustand';
 import { ageUp, checkForDeath } from '@/lib/engine/aging';
+import {
+  ACTIVITY_BUDGET_EXCEEDED_MESSAGE,
+  applyLeisureTradeoff,
+  canSpendAction,
+  spendAction,
+} from '@/lib/engine/activity';
 import { createCharacter } from '@/lib/engine/character';
 import { resolveEventChoice } from '@/lib/engine/events/registry';
 import { BOND_MAX, BOND_PER_VISIT, ageFamilyMembers, birthChild, generateFamilyTree, relationLabel } from '@/lib/engine/family';
@@ -298,14 +304,24 @@ export const useGameStore = create<GameStore>()((set, get) => {
    */
   function runIdleAction(
     op: (character: Character, rng: RNG) => { ok: boolean; text: string; tone?: Tone },
+    opts?: { leisure?: boolean },
   ): boolean {
     const s = get();
     if (!s.character || !s.character.alive || s.isPaused) return false;
     if (s.pendingEvents.length > 0) return false;
+    if (!canSpendAction(s.character)) {
+      set({ message: ACTIVITY_BUDGET_EXCEEDED_MESSAGE, error: null });
+      return false;
+    }
 
     const rng = makeRng(s.seed, s.rngState);
     const character = structuredClone(s.character);
     const result = op(character, rng);
+
+    if (result.ok) {
+      spendAction(character);
+      if (opts?.leisure) applyLeisureTradeoff(character);
+    }
 
     // Guaranteed timeline logging for EVERY idle action
     const lastHistory = character.history[character.history.length - 1];
@@ -320,6 +336,27 @@ export const useGameStore = create<GameStore>()((set, get) => {
     set({ character, rngState: rng.getState(), message: result.text, error: null });
     persist();
     return result.ok;
+  }
+
+  /**
+   * Budget gate for the bespoke menu actions that bypass runIdleAction
+   * (romance + school + career extras). Mirrors runIdleAction's guards and
+   * refuses once the year's 3 actions are spent.
+   */
+  function assertBudgetAvailable(): boolean {
+    const s = get();
+    if (!s.character || !s.character.alive) return false;
+    if (s.pendingEvents.length > 0) return false;
+    if (!canSpendAction(s.character)) {
+      set({ message: ACTIVITY_BUDGET_EXCEEDED_MESSAGE, error: null });
+      return false;
+    }
+    return true;
+  }
+
+  /** Record one spent action slot after a bespoke action succeeded. */
+  function consumeBudget(character: Character): void {
+    character.activityBudgetUsed = (character.activityBudgetUsed ?? 0) + 1;
   }
 
   return {
@@ -791,10 +828,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = askOutCandidate(character, candidate, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -810,10 +849,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = makeOfficialPartner(character, relationshipId, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -829,11 +870,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
       const result = proposeMarriage(character, familyTree, relationshipId, rng, style);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -852,10 +895,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = cheatBranch(character, relationshipId, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -871,11 +916,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
       const result = breakupOrDivorce(character, familyTree, relationshipId, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -892,10 +939,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = dateCandidateOrPartner(character, relationshipId, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -911,10 +960,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = giveGiftToPartner(character, relationshipId, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -930,11 +981,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const familyTree = s.familyTree ? structuredClone(s.familyTree) : null;
       const result = tryForBaby(character, familyTree, relationshipId, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -953,9 +1006,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const character = structuredClone(s.character);
       const result = studyHarder(character);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -970,9 +1025,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const character = structuredClone(s.character);
       const result = hireTutor(character);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -987,9 +1044,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const character = structuredClone(s.character);
       const result = dropOutOfSchool(character);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -1004,10 +1063,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = skipClass(character, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -1023,10 +1084,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = joinDebateClub(character, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -1042,9 +1105,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const character = structuredClone(s.character);
       const result = workOvertime(character);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -1059,10 +1124,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = suckUpToBoss(character, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -1078,10 +1145,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const s = get();
       if (!s.character || !s.character.alive) return false;
       if (s.pendingEvents.length > 0) return false;
+      if (!assertBudgetAvailable()) return false;
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
       const result = askForRaise(character, rng);
+      if (result.ok) consumeBudget(character);
 
       set({
         character,
@@ -1210,7 +1279,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character.stats.happiness = Math.min(100, character.stats.happiness + 6);
         const text = `চকবাজারের নামকরা কবিরাজ সাবের কাছে গেলা। ঝাঁড়ফুক দিয়া খাঁটি তুলসী পাতা আর মধু মাখা গাছের শিকড় খাওয়াইয়া দিলো। শরীর চাঙ্গা হইলো! (+${heal} স্বাস্থ্য, −৳${cost})`;
         return { ok: true, text, tone: 'good' };
-      });
+      }, { leisure: true });
     },
 
     doGymWorkout() {
@@ -1227,7 +1296,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character.stats.happiness = Math.min(100, character.stats.happiness + 5);
         const text = `আর্মানিটোলার সনাতন আখড়ায় ও জিমে গিয়া ডাম্বেল আর বুক ডন মারলা! মাসল ফুললো, চর্বি ঝইড়া চেহারা খোলতাই হইলো! (+${healthGain} স্বাস্থ্য, +${looksGain} চেহারা, −৳${cost})`;
         return { ok: true, text, tone: 'good' };
-      });
+      }, { leisure: true });
     },
 
     watchMovie() {
@@ -1240,7 +1309,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character.stats.happiness = Math.min(100, character.stats.happiness + 16);
         const text = `মধুমিতা সিনেমা হলে গিয়া টিকিটের লগে গরম পপকর্ন নিয়া ফুল অ্যাকশন সিনেমা দেখলা! হলের দর্শকদের শিষ আর তালির লগে মনটা পুরাই ফুরফুরে হইয়া গেল! (+১৬ সুখ, −৳${cost})`;
         return { ok: true, text, tone: 'good' };
-      });
+      }, { leisure: true });
     },
 
     prayOrWorship() {
@@ -1281,7 +1350,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           text = `চকবাজারের মোড়ে ভ্যানে কইরা বাকরখানি আর ঝালমুড়ি বেইচা ভালোই লাভ হইলো! নগদ ৳${earned} লাভ করলা! (+৳${earned})`;
         }
         return { ok: true, text, tone: 'good' };
-      });
+      }, { leisure: true });
     },
 
     exportToJson() {

@@ -77,6 +77,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
     flags: [religion === 'islam' ? 'religion_muslim' : 'religion_hindu'],
     reputation: { fame: 35, karma: 55 },
     aiCallsUsed: 0,
+    activityBudgetUsed: 0,
     education: {
       stage: 'none',
       enrolled: false,

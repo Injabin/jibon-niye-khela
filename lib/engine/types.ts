@@ -169,6 +169,8 @@ export interface Character {
   recentEventHistory?: Array<{ id: string; age: number }>;
   /** Count of live Gemini AI calls used during this life (capped at 8 per life). */
   aiCallsUsed?: number;
+  /** ActiveMenu actions spent this calendar year (cap = ACTIVITY_BUDGET_PER_YEAR). */
+  activityBudgetUsed?: number;
 }
 
 export type WealthTier = 'poor' | 'middle' | 'wealthy';

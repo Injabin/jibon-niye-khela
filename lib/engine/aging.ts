@@ -3,6 +3,7 @@ import { applyYearlyDecay, oldAgeDeathChance } from './stats';
 import { applyReputationDrift } from './reputation';
 import { tickSystems } from './events/categories';
 import { rollToddlerTraits } from './traits';
+import { resetActivityBudget } from './activity';
 import { drawYearlyEvents, resolveEventChoice } from './events/registry';
 import { createCharacter } from './character';
 import type { AgeUpResult, Character, LifeEventDef } from './types';
@@ -53,6 +54,7 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
   }
 
   character.age += 1;
+  resetActivityBudget(character);
   character.statHistory.push({
     age: character.age,
     health: character.stats.health,
