@@ -6,6 +6,7 @@ import { STAT_META, type StatKey } from '@/lib/theme/concepts';
 import { rankForLife } from '@/lib/ui/rank';
 import { formatMoney } from '@/lib/ui/money';
 import type { Asset, Character } from '@/lib/engine/types';
+import { isPeerRelation } from '@/lib/engine/relationships';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
 import { Avatar } from '@/components/avatar/Avatar';
 import { StatBar } from './StatBar';
@@ -142,13 +143,13 @@ export function ProfileSheet({
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                     Lineage & Circle
                   </span>
-                  <span className="text-[10px] text-zinc-500">{character.relationships.length} members</span>
+                  <span className="text-[10px] text-zinc-500">{character.relationships.filter((r) => !isPeerRelation(r.relation)).length} members</span>
                 </div>
                 <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-200">
-                  {character.relationships.length === 0 ? (
+                  {character.relationships.filter((r) => !isPeerRelation(r.relation)).length === 0 ? (
                     <li className="text-zinc-500">No kindred found yet.</li>
                   ) : (
-                    character.relationships.map((r) => (
+                    character.relationships.filter((r) => !isPeerRelation(r.relation)).map((r) => (
                       <li key={r.id} className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/[0.03]">
                         <span className="font-medium text-white">{r.name}</span>
                         <span className="capitalize text-zinc-400 text-[11px]">{r.relation}</span>

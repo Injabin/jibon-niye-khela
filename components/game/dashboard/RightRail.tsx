@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Character, Relation, Relationship } from '@/lib/engine/types';
+import { isPeerRelation } from '@/lib/engine/relationships';
 import { RelationshipModal } from '@/components/game/RelationshipModal';
 import { NpcChips } from '@/components/game/NpcChips';
 import { formatMoney } from '@/lib/ui/money';
@@ -21,8 +22,6 @@ import {
   Flame,
   HeartHandshake,
   HeartCrack,
-  GraduationCap,
-  Briefcase,
 } from 'lucide-react';
 
 interface RightRailProps {
@@ -42,8 +41,6 @@ const RELATION_ICONS: Partial<Record<Relation, React.ComponentType<{ className?:
   sibling: Users,
   friend: Sparkles,
   grandparent: Users,
-  classmate: GraduationCap,
-  coworker: Briefcase,
 };
 
 const ASSET_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -67,9 +64,11 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
     );
   }
 
-  // Defensive deduplication to ensure unique entries by ID
+  // Defensive deduplication to ensure unique entries by ID. Classmates and
+  // coworkers surface under ActiveMenu (study & job sections), not the
+  // classic relationship rail, so they are excluded here.
   const livingRelationships = Array.from(
-    new Map(character.relationships.filter((r) => r.alive).map((r) => [r.id, r])).values()
+    new Map(character.relationships.filter((r) => r.alive && !isPeerRelation(r.relation)).map((r) => [r.id, r])).values()
   );
 
   return (

@@ -18,6 +18,9 @@ import {
   seedCoworkers,
   befriendPeer,
   askOutPeer,
+  isPeerRelation,
+  nonPeerRelationships,
+  peerRelationships,
 } from '@/lib/engine/relationships';
 import {
   generateDatingPool,
@@ -420,5 +423,52 @@ describe('Peer Seeding & Upgrade (Classmates / Coworkers)', () => {
     expect(result.ok).toBe(false);
     expect(character.stats.happiness).toBeLessThan(100);
     expect(coworker.relation).toBe('coworker');
+  });
+});
+
+describe('Peer vs classic relationship surfaces (G)', () => {
+  it('isPeerRelation accepts only classmate and coworker', () => {
+    const { character } = createCharacter(30001);
+    const mother = {
+      id: 'm1', relation: 'mother' as const, name: 'A', age: 30, alive: true, meter: 60, metAge: 0,
+    };
+    const peer = {
+      id: 'c1', relation: 'classmate' as const, name: 'B', age: 14, alive: true, meter: 50, metAge: 12,
+    };
+    character.relationships.push(mother, peer);
+    expect(isPeerRelation('classmate')).toBe(true);
+    expect(isPeerRelation('coworker')).toBe(true);
+    expect(isPeerRelation('mother')).toBe(false);
+    expect(isPeerRelation('friend')).toBe(false);
+  });
+
+  it('nonPeerRelationships keeps family/romance/friends and drops classmates & coworkers', () => {
+    const { character } = createCharacter(30002);
+    character.relationships.push(
+      { id: 'm', relation: 'mother', name: 'Ammu', age: 40, alive: true, meter: 80, metAge: 0 },
+      { id: 's', relation: 'spouse', name: 'Begum', age: 25, alive: true, meter: 90, metAge: 22 },
+      { id: 'f', relation: 'friend', name: 'Rahim', age: 24, alive: true, meter: 60, metAge: 10 },
+      { id: 'c1', relation: 'classmate', name: 'Karan', age: 13, alive: true, meter: 55, metAge: 12 },
+      { id: 'c2', relation: 'coworker', name: 'Siraj', age: 30, alive: true, meter: 40, metAge: 25 },
+    );
+    const rail = nonPeerRelationships(character);
+    expect(rail.some((r) => r.relation === 'mother')).toBe(true);
+    expect(rail.some((r) => r.relation === 'spouse')).toBe(true);
+    expect(rail.some((r) => r.relation === 'friend')).toBe(true);
+    expect(rail.some((r) => r.relation === 'classmate' || r.relation === 'coworker')).toBe(false);
+    expect(peerRelationships(character, 'classmate').map((r) => r.id)).toEqual(['c1']);
+    expect(peerRelationships(character, 'coworker').map((r) => r.id)).toEqual(['c2']);
+  });
+
+  it('peerRelationships only returns living peers of the requested kind', () => {
+    const { character } = createCharacter(30003);
+    character.relationships.push(
+      { id: 'a', relation: 'classmate', name: 'A', age: 12, alive: true, meter: 50, metAge: 11 },
+      { id: 'b', relation: 'classmate', name: 'B', age: 12, alive: false, meter: 50, metAge: 11 },
+      { id: 'c', relation: 'coworker', name: 'C', age: 30, alive: true, meter: 40, metAge: 25 },
+    );
+    expect(peerRelationships(character, 'classmate').map((r) => r.id)).toEqual(['a']);
+    expect(peerRelationships(character, 'coworker').map((r) => r.id)).toEqual(['c']);
+    expect(peerRelationships(character, 'classmate').every((r) => r.alive)).toBe(true);
   });
 });

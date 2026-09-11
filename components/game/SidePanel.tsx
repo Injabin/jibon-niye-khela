@@ -1,6 +1,7 @@
 'use client';
 
 import type { Character } from '@/lib/engine/types';
+import { isPeerRelation } from '@/lib/engine/relationships';
 import { formatMoney } from '@/lib/ui/money';
 
 /**
@@ -66,11 +67,11 @@ export function SidePanel({
         </div>
       )}
 
-      {character.relationships.length > 0 && (
+      {character.relationships.some((r) => !isPeerRelation(r.relation)) && (
         <div>
           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-text-muted">Relationships</p>
           <div className="flex flex-col gap-1">
-            {character.relationships.slice(0, 4).map((rel) => (
+            {character.relationships.filter((r) => !isPeerRelation(r.relation)).slice(0, 4).map((rel) => (
               <div key={rel.id} className="flex items-center justify-between text-sm">
                 <span className="truncate capitalize text-text-muted">{rel.relation}</span>
                 <span className="ml-2 shrink-0 truncate font-medium text-text">{rel.name}</span>

@@ -7,6 +7,7 @@ import { getJobBoard, careerTitle } from '@/lib/engine/events/categories/career'
 import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { getFinance, LOAN_KIND_LABELS, netWorth, QUICK_BANK_AMOUNT } from '@/lib/engine/finance';
+import { peerRelationships, type PeerRelation } from '@/lib/engine/relationships';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
@@ -249,6 +250,86 @@ const RELATION_LABELS: Record<string, string> = {
   spouse: 'বউ / স্বামী',
 };
 
+const COWORKER_KIND_LABELS: Record<string, string> = {
+  job_retail: 'দোকান-পসারে চাকরি',
+  job_service: 'সার্ভিসের কাম',
+  job_office: 'অফিসের কেরানি',
+  job_tech: 'আইটি / টেক',
+  job_trade: 'কারবারের ঠেক',
+  job_finance: 'ব্যাংক-ফাইন্যান্স',
+};
+
+/**
+ * BitLife-style peer cohort: classmates (study tab) and coworkers (job tab)
+ * shown under হাতেকলমে জীবনের ধান্ধা instead of the classic relationship rail.
+ * Inline actions reuse the shared interactWithPerson engine sink.
+ */
+function PeerCohort({ character, kind }: { character: Character; kind: PeerRelation }) {
+  const interactWithPerson = useGameStore((s) => s.interactWithPerson);
+  const peers = peerRelationships(character, kind);
+  if (peers.length === 0) return null;
+
+  const label = kind === 'classmate' ? 'সহপাঠীরা' : 'সহকর্মীরা';
+  const hint =
+    kind === 'classmate'
+      ? 'স্কুল-কলেজের দৈনন্দিন সাথী — খাতির গড়লে এরা পরে পাকা বন্ধু হইতে পারে'
+      : 'কাজের জায়গার মানুষ — সাথে তাল মিলাইলে জীবন আর রুজি দুইই সহজ';
+
+  return (
+    <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4" data-testid={`peer-cohort-${kind}`}>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{label}</p>
+        <p className="text-[11px] text-zinc-500">{hint}</p>
+      </div>
+      <div className="space-y-2.5">
+        {peers.map((peer) => (
+          <div
+            key={peer.id}
+            className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 space-y-2"
+            data-testid={`peer-card-${peer.id}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-white">{peer.name}</p>
+                <p className="text-[11px] text-zinc-400">
+                  বয়স {peer.age}
+                  {kind === 'coworker' && peer.jobId
+                    ? ` · ${COWORKER_KIND_LABELS[peer.jobId] ?? peer.jobId}`
+                    : ''}
+                  {peer.relation !== kind ? ` · ${peer.relation}` : ''}
+                </p>
+              </div>
+              <div className="shrink-0 text-right">
+                <span className="block text-[10px] uppercase tracking-wider text-zinc-400">খাতির</span>
+                <span className="font-mono text-xs font-bold text-emerald-400">{peer.meter}%</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'chat')} data-testid={`peer-${peer.id}-chat`}>
+                আড্ডা মারা
+              </Button>
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'spend_time')} data-testid={`peer-${peer.id}-hangout`}>
+                লগে ঘুরা
+              </Button>
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'gift')} data-testid={`peer-${peer.id}-gift`}>
+                তোহফা দেও (৳৩০০)
+              </Button>
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'befriend')} data-testid={`peer-${peer.id}-befriend`}>
+                বন্ধু বানাও
+              </Button>
+              {character.age >= 16 && (
+                <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'ask_out_peer')} data-testid={`peer-${peer.id}-askout`}>
+                  প্রেমের প্রস্তাব
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SchoolTab({
   character,
   onEnroll,
@@ -326,6 +407,8 @@ function SchoolTab({
           </div>
         </div>
       )}
+
+      <PeerCohort character={character} kind="classmate" />
     </div>
   );
 }
@@ -428,6 +511,8 @@ function CareerTab({
           ))}
         </ul>
       )}
+
+      <PeerCohort character={character} kind="coworker" />
     </div>
   );
 }

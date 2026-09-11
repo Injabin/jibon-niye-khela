@@ -10,6 +10,24 @@ export interface RelationshipActionResult {
   tone: Tone;
 }
 
+export const PEER_RELATIONS = ['classmate', 'coworker'] as const;
+export type PeerRelation = (typeof PEER_RELATIONS)[number];
+
+/** School/job peers are surfaced under ActiveMenu, not the classic relationship side. */
+export function isPeerRelation(relation: string): boolean {
+  return relation === 'classmate' || relation === 'coworker';
+}
+
+/** Relationships shown on the classic relationship surfaces (family, romance, friends). */
+export function nonPeerRelationships(character: Character): Character['relationships'] {
+  return character.relationships.filter((r) => !isPeerRelation(r.relation));
+}
+
+/** Living peers of a given kind (classmates or coworkers) for the ActiveMenu sections. */
+export function peerRelationships(character: Character, kind: PeerRelation): Character['relationships'] {
+  return character.relationships.filter((r) => r.relation === kind && r.alive);
+}
+
 /**
  * Universal interaction engine for any person in character.relationships:
  * Parents, Siblings, Children, Friends, Partners, Spouses, Exes.
