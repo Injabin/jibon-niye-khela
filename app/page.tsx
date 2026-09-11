@@ -1,15 +1,11 @@
-import { GameHub } from '@/components/game/GameHub';
+import { LandingPage } from '@/components/marketing/LandingPage';
+
+export const metadata = {
+  title: 'জীবন নিয়া খেলা — ঢাকাইয়া লাইফ সিমুলেশন',
+  description:
+    'চয়েস-চালিত ঢাকাইয়া লাইফ সিমুলেশন। ভাগ্য বানাও, সম্পর্ক পোষাও, আর আস্তে আস্তে নিজের বংশ ধরে বাঁচো। ব্রাউজারে সম্পূর্ণ ফ্রি, সব সময়।',
+};
 
 export default function Home() {
-  return (
-    <main className="flex flex-1 flex-col px-6">
-      <header className="mx-auto w-full max-w-xl pt-8 text-center">
-        <p className="text-sm font-medium uppercase tracking-widest text-primary">
-          Jibon Niye Khela
-        </p>
-        <p className="mt-1 text-sm text-text-muted">Play one whole life, one year at a time.</p>
-      </header>
-      <GameHub />
-    </main>
-  );
+  return <LandingPage />;
 }

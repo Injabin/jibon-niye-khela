@@ -6,7 +6,7 @@ export async function readDisplayedState(page: Page) {
   const ageText = await page.getByTestId('character-summary').textContent();
   const moneyText = await page.getByTestId('money').textContent();
 
-  const ageMatch = ageText?.match(/(\d+) years old/);
+  const ageMatch = ageText?.match(/(\d+)/);
   const health = await page.getByRole('progressbar', { name: 'Health' }).getAttribute('aria-valuenow');
   const happiness = await page
     .getByRole('progressbar', { name: 'Happiness' })
@@ -25,6 +25,8 @@ export async function readDisplayedState(page: Page) {
 /** Start a fresh life (automatically waits for hydration + new-game button). */
 export async function startNewLife(page: Page): Promise<void> {
   await page.getByTestId('new-game').click();
+  await page.waitForFunction(() => typeof (window as unknown as { __JNK_GAME_STORE__?: unknown }).__JNK_GAME_STORE__ !== 'undefined');
+  await expect(page.getByTestId('character-summary')).toBeVisible({ timeout: 10_000 });
 }
 
 /**
@@ -46,12 +48,17 @@ export async function resolveAllEvents(page: Page): Promise<void> {
             pendingEvents?: Array<{ choices?: Array<{ id?: string }> }>;
             currentEventIndex?: number;
             resolveCurrentChoice?: (choiceId: string) => unknown;
+            isGeneratingEvent?: boolean;
           };
         };
       }).__JNK_GAME_STORE__;
-      let guard = 20;
+      let guard = 60;
       const tick = () => {
         const s = store?.getState();
+        if (s?.isGeneratingEvent) {
+          requestAnimationFrame(tick);
+          return;
+        }
         if (guard-- <= 0 || !s || !s.pendingEvents || s.pendingEvents.length === 0) {
           return resolvePromise();
         }

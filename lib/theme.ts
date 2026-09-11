@@ -34,12 +34,48 @@ export const colors = {
   warning: "var(--color-warning)",
   info: "var(--color-info)",
 
-  // Event tone colors (DESIGN.md §6 point 1)
+  // Event tone colors — fills (DESIGN.md §6 point 1, UI-DESIGN.md §2.3)
   tone: {
     good: "var(--color-tone-good)",
     bad: "var(--color-tone-bad)",
     neutral: "var(--color-tone-neutral)",
     funny: "var(--color-tone-funny)",
+  },
+
+  // Event tone TEXT variants — always the 4.5:1-compliant pairing
+  // (gold/crimson are fill-only tokens; see globals.css header comment).
+  toneText: {
+    good: "var(--color-tone-text-good)",
+    bad: "var(--color-tone-text-bad)",
+    neutral: "var(--color-tone-text-neutral)",
+    funny: "var(--color-tone-text-funny)",
+  },
+
+  // Stat concept colors — bound once, used everywhere (UI-DESIGN.md §1.1)
+  stat: {
+    health: "var(--color-stat-health)",
+    happiness: "var(--color-stat-happiness)",
+    martial: "var(--color-stat-martial)",
+    honor: "var(--color-stat-honor)",
+  },
+
+  wealth: "var(--color-wealth)",
+  wealthText: "var(--color-wealth-text)",
+
+  // Family-tree node colors (role-bound fills, UI-DESIGN.md §1.1 carry-over)
+  tree: {
+    self: "var(--color-tree-self)",
+    mother: "var(--color-tree-mother)",
+    father: "var(--color-tree-father)",
+    grandparent: "var(--color-tree-grandparent)",
+    sibling: "var(--color-tree-sibling)",
+    spouse: "var(--color-tree-spouse)",
+    child: "var(--color-tree-child)",
+    deceased: "var(--color-tree-deceased)",
+    textOnFill: "var(--color-tree-text-on-fill)",
+    stroke: "var(--color-tree-stroke)",
+    selected: "var(--color-tree-selected)",
+    edge: "var(--color-tree-edge)",
   },
 } as const;
 

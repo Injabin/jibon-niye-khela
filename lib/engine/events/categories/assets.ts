@@ -36,12 +36,12 @@ const DEFAULT_PRICE: Record<AssetKind, number> = {
 };
 
 const NAMES: Record<AssetKind, readonly string[]> = {
-  car: ['a sun-faded hatchback', 'a second-hand compact', 'a sporty coupe', 'a trusty sedan'],
-  home: ['a two-bedroom flat', 'a starter house', 'a fixer-upper', 'a suburban bungalow'],
-  jewelry: ['a gold chain', 'a watch', 'an heirloom ring', 'a set of cufflinks'],
-  collectible: ['a boxed action figure', 'a first-edition comic', 'a vintage poster', 'a signed program'],
-  stock: ['“blue sky” tech shares', 'quiet utility shares', 'a dividend-paying fund'],
-  crypto: ['a volatile coin', 'a meme-adjacent token', 'a mining basket'],
+  car: ['সেকেন্ডহ্যান্ড রানার মোটরবাইক', 'টয়োটা করোলা নোয়া গাড়ি', 'ইয়ামাহা এফজেডএস বাইক', 'চকচকে হোন্ডা সিভিক'],
+  home: ['নাজিরাবাজারের ২ রুমের ফ্ল্যাট', 'পুরান ঢাকার ছাদওয়ালা দোতলা বাড়ি', 'ধানমন্ডির বিলাসবহুল ফ্ল্যাট', 'কেরানীগঞ্জের পৈতৃক ভিটা'],
+  jewelry: ['তাঁতিবাজারের খাঁটি সোনার চেইন', 'রূপার কারুকাজ করা ব্রেসলেট', 'সোনার নেকলেস', 'বিয়ের আংটি'],
+  collectible: ['পুরান ঢাকার ঐতিহ্যবাহী কাঁসার থালা', 'ভিক্টোরিয়ান আমলের কয়েন কালেকশন', 'সাকরাইনের ভিন্টেজ ঘুড়ি কালেকশন', '১৯৭১ সালের ঐতিহাসিক পোস্টার'],
+  stock: ['মতিঝিল স্টক এক্সচেঞ্জের ব্লু-চিপ শেয়ার', 'পাওয়ার ও গ্রিড কোম্পানির বন্ড', 'বড় ওষুধ কোম্পানির লভ্যাংশ শেয়ার'],
+  crypto: ['উদ্বায়ী বিটকয়েন ও অল্টকয়েন', 'উরাধুরা মেমকয়েন', 'ডিজিটাল ক্রিপ্টো পোর্টফোলিও'],
 };
 
 function hasFlag(character: Character, flag: string): boolean {
@@ -97,12 +97,12 @@ export function buyAsset(
   kind: AssetKind,
   options: { name?: string; price?: number } = {},
 ): BuyAssetResult {
-  if (!character.alive) return { bought: false, text: 'You cannot make purchases now.', tone: 'bad' };
+  if (!character.alive) return { bought: false, text: 'মারাই গেছো, কেনাকাটায় নামবা? কবরস্থানের জমির খাতা তো তোমার নামে পুরান!', tone: 'bad' };
   const price = Math.max(0, Math.round(options.price ?? DEFAULT_PRICE[kind]));
 
   const speculative = kind === 'stock' || kind === 'crypto';
   if (speculative && character.money < price) {
-    return { bought: false, text: 'The markets only take cash — and the cash is not there.', tone: 'neutral' };
+    return { bought: false, text: 'শেয়ার-ক্রিপ্টোর হিসাব জোড়া লাগে, মাগার পকেটের ট্যাকা বেজোড়! আগে দেনা ভাঙো, তারপর বাজারে নামো!', tone: 'neutral' };
   }
 
   applyStatEffects(character, { money: -price });
@@ -115,18 +115,20 @@ export function buyAsset(
   const leveraged = character.money < 0;
   if (leveraged) setFlag(character, 'has_debt');
 
+  const assetName = options.name ?? NAMES[kind][0];
+
   return {
     bought: true,
     text: leveraged
-      ? `You take ${NAMES[kind][0]} home on credit. The bank smiles; your future self takes notes.`
-      : `You buy ${options.name ?? rng.pick(NAMES[kind])} outright.`,
+      ? `তুমি কিস্তিতে ও ঋণে ${assetName} কিনলা। ব্যাংক হাসতাছে, আর তোমার কপালে চিন্তার ভাঁজ!`
+      : `এক্কেরে নগদ ট্যাকা দিয়া ${assetName} কিনলা! পুরাই জমিদারী ভাব!`,
     tone: leveraged ? 'neutral' : 'good',
   };
 }
 
 export function sellAsset(character: Character, rng: RNG, assetId: string): SellAssetResult {
   const index = character.assets.findIndex((a) => a.id === assetId);
-  if (index === -1) return { sold: false, proceeds: 0, text: 'You do not own that.', tone: 'neutral' };
+  if (index === -1) return { sold: false, proceeds: 0, text: 'ওই জিনিস তো তুমি চুরিও করো নাই — বিক্রি করবা কী? আগে কিনে নাও মিয়া!', tone: 'neutral' };
   const [asset] = character.assets.splice(index, 1);
   applyStatEffects(character, { money: asset.value });
   if (character.money >= 0) removeFlag(character, 'has_debt');
@@ -140,7 +142,7 @@ export function sellAsset(character: Character, rng: RNG, assetId: string): Sell
   ) {
     removeFlag(character, 'has_investment');
   }
-  return { sold: true, proceeds: asset.value, text: `You sell ${asset.name} for ${asset.value.toLocaleString()} coins.`, tone: 'good' };
+  return { sold: true, proceeds: asset.value, text: `${asset.name} বেইচা দিলা, হাতে আইলো ৳${asset.value.toLocaleString()}!`, tone: 'good' };
 }
 
 /**
@@ -159,6 +161,6 @@ export function tickAssets(character: Character, rng: RNG): AssetOutcome | null 
     setFlag(character, 'has_debt');
   }
   return windfall
-    ? { text: 'One of your assets jumps in value — the market smiles on you this year.', tone: 'good' }
+    ? { text: 'তোমার সম্পত্তির দাম বাজারে হু হু কইরা বাইড়া গেল—এই বছর কপাল পুরাই খুলছে!', tone: 'good' }
     : null;
 }

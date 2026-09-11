@@ -120,52 +120,52 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             data-testid="settings-panel"
             role="dialog"
             aria-modal="true"
-            aria-label="Settings"
+            aria-label="সেটিংস"
             onKeyDown={trapKeyDown}
             tabIndex={-1}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight text-text">Settings</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-text">সেটিংস</h2>
               <Button variant="secondary" onClick={onClose} data-testid="close-settings">
-                Close
+                বন্ধ করো
               </Button>
             </div>
 
             <SwitchRow
-              label="Sound effects"
-              hint="Clicks, stat ticks and event cues"
+              label="শব্দ-প্রভাব"
+              hint="ক্লিক, পরিসংখ্যানের ঢক-ঠক আর ঘটনার আওয়াজ"
               checked={sfxEnabled}
               onChange={setSfxEnabled}
               testId="settings-sfx-toggle"
             />
             <SwitchRow
-              label="Music"
-              hint="Ambient mood tracks per life stage"
+              label="মিউজিক"
+              hint="বয়স বাড়লে যে ২টা মেজাজ-গান বদলায়"
               checked={musicEnabled}
               onChange={setMusicEnabled}
               testId="settings-music-toggle"
             />
             <SliderRow
-              label="Effects volume"
+              label="শব্দ-প্রভাবের ভলিউম"
               value={sfxVolume}
               onChange={setSfxVolume}
               testId="settings-sfx-volume"
             />
             <SliderRow
-              label="Music volume"
+              label="মিউজিকের ভলিউম"
               value={musicVolume}
               onChange={setMusicVolume}
               testId="settings-music-volume"
             />
 
             <div className="mt-4 border-t border-border pt-3">
-              <span className="text-sm font-medium text-text">Reduce motion</span>
-              <Fieldset label="Motion level">
+              <span className="text-sm font-medium text-text">মোশন কমানো</span>
+              <Fieldset label="মোশনের মাত্রা">
                 {(
                   [
-                    ['system', 'Follow device'],
-                    ['reduced', 'Reduced'],
-                    ['full', 'Full'],
+                    ['system', 'ডিভাইসের সাথে'],
+                    ['reduced', 'কম'],
+                    ['full', 'পুরা'],
                   ] as const
                 ).map(([mode, label]) => (
                   <label
@@ -207,7 +207,7 @@ function SystemMotionHint({ mode }: { mode: string }) {
   if (mode !== 'system') return null;
   return (
     <p className="mt-2 text-xs text-text-muted" data-testid="settings-system-motion-hint">
-      Currently following your device&apos;s reduced-motion setting.
+      খালি তোমার ডিভাইসের কম মোশন সেটিংটাই ফলো করতাছে।
     </p>
   );
 }

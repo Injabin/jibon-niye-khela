@@ -3,13 +3,29 @@ import { applyStatEffects } from '../stats';
 import { getCharacterFlags } from '../traits';
 import type { RNG } from '../rng';
 import type { Character, LifeEventDef } from '../types';
+import { renderTemplate } from './template';
 
 const MAX_YEARLY_EVENTS = 3;
+export const EVENT_COOLDOWN_YEARS = 15;
 
 function isEventEligible(event: LifeEventDef, character: Character, flags: Set<string>): boolean {
   if (character.age < event.minAge || character.age > event.maxAge) return false;
   if (event.requiredFlags && !event.requiredFlags.every((flag) => flags.has(flag))) return false;
   if (event.antiFlags && event.antiFlags.some((flag) => flags.has(flag))) return false;
+
+  // Anti-repetition: exclude if fired within the last 15 years (except universal events)
+  if (event.category !== 'universal' && character.recentEventHistory) {
+    for (let i = character.recentEventHistory.length - 1; i >= 0; i--) {
+      const recent = character.recentEventHistory[i];
+      if (recent.id === event.id) {
+        if (character.age - recent.age < EVENT_COOLDOWN_YEARS) {
+          return false;
+        }
+        break;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -56,7 +72,22 @@ export function drawYearlyEventsFrom(
 
   for (let i = 0; i < count && pool.length > 0; i++) {
     const picked = pickWeighted(pool, rng);
-    drawn.push(picked);
+    const rendered: LifeEventDef = {
+      ...picked,
+      text: renderTemplate(picked.text, rng),
+      choices: picked.choices.map((c) => ({
+        ...c,
+        text: renderTemplate(c.text, rng),
+        outcomeText: renderTemplate(c.outcomeText, rng),
+      })),
+    };
+    drawn.push(rendered);
+
+    if (!character.recentEventHistory) {
+      character.recentEventHistory = [];
+    }
+    character.recentEventHistory.push({ id: picked.id, age: character.age });
+
     pool.splice(pool.indexOf(picked), 1);
   }
 
@@ -79,4 +110,11 @@ export function resolveEventChoice(character: Character, event: LifeEventDef, ch
     text: `${event.text} ${choice.outcomeText}`.trim(),
     tone: choice.tone,
   });
+
+  if (!character.recentEventHistory) {
+    character.recentEventHistory = [];
+  }
+  if (!character.recentEventHistory.some((r) => r.id === event.id && r.age === character.age)) {
+    character.recentEventHistory.push({ id: event.id, age: character.age });
+  }
 }

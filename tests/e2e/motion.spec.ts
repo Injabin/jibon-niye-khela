@@ -9,6 +9,9 @@ import { readFile, unlink } from 'node:fs/promises';
  *  - full-motion transitions genuinely run (and are captured as evidence)
  */
 
+// Gate 3 evidence is recorded even for passing runs.
+test.use({ trace: 'on' });
+
 async function audioSnapshot(page: import('@playwright/test').Page) {
   return page.evaluate(() => {
     const probe = window.__JNK_AUDIO__;
@@ -55,7 +58,8 @@ test.describe('reduced-motion fallback (Gate 3)', () => {
 
   test('Settings reduced-motion toggle changes behaviour without an OS preference', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.goto('/');
+    await page.goto('/play?start=1');
+    await expect(page.getByTestId('character-summary')).toBeVisible();
 
     await expect
       .poll(() => page.evaluate(() => document.documentElement.dataset.reducedMotion))

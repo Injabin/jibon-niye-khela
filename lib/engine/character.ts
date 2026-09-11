@@ -1,7 +1,15 @@
-import { FEMALE_NAMES, MALE_NAMES, SURNAMES } from '@/content/names';
+import {
+  HINDU_FEMALE_NAMES,
+  HINDU_MALE_NAMES,
+  HINDU_SURNAMES,
+  MUSLIM_FEMALE_NAMES,
+  MUSLIM_MALE_NAMES,
+  MUSLIM_SURNAMES,
+} from '@/content/names';
 import { RNG } from './rng';
+import { defaultFinance } from './finance';
 import { clamp } from './stats';
-import type { Character, CreateCharacterResult, Gender } from './types';
+import type { Character, CreateCharacterResult, CustomCharacterOptions, Gender, Religion } from './types';
 
 export function generateId(rng: RNG): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,23 +24,31 @@ function rollGender(rng: RNG): Gender {
   return rng.chance(0.5) ? 'male' : 'female';
 }
 
-function generateFirstName(gender: Gender, rng: RNG): string {
-  return gender === 'male' ? rng.pick(MALE_NAMES) : rng.pick(FEMALE_NAMES);
-}
-
-export function createCharacter(seed: number): CreateCharacterResult {
+export function createCharacter(seed: number, options?: CustomCharacterOptions): CreateCharacterResult {
   const rng = new RNG(seed);
-  const gender = rollGender(rng);
-  const name = generateFirstName(gender, rng);
-  const surname = rng.pick(SURNAMES);
+  const gender = options?.gender ?? rollGender(rng);
+  const religion: Religion = options?.religion ?? (rng.chance(0.85) ? 'islam' : 'hinduism');
 
-  const motherName = `${rng.pick(FEMALE_NAMES)} ${surname}`;
-  const fatherName = `${rng.pick(MALE_NAMES)} ${surname}`;
+  let name: string;
+  let surname: string;
+  let motherName: string;
+  let fatherName: string;
+
+  if (religion === 'islam') {
+    name = options?.name ?? (gender === 'male' ? rng.pick(MUSLIM_MALE_NAMES) : rng.pick(MUSLIM_FEMALE_NAMES));
+    surname = options?.surname ?? rng.pick(MUSLIM_SURNAMES);
+    motherName = `${rng.pick(MUSLIM_FEMALE_NAMES)} ${surname}`;
+    fatherName = `${rng.pick(MUSLIM_MALE_NAMES)} ${surname}`;
+  } else {
+    name = options?.name ?? (gender === 'male' ? rng.pick(HINDU_MALE_NAMES) : rng.pick(HINDU_FEMALE_NAMES));
+    surname = options?.surname ?? rng.pick(HINDU_SURNAMES);
+    motherName = `${rng.pick(HINDU_FEMALE_NAMES)} ${surname}`;
+    fatherName = `${rng.pick(HINDU_MALE_NAMES)} ${surname}`;
+  }
 
   const motherLooks = rng.rangeInt(45, 90);
   const fatherLooks = rng.rangeInt(45, 90);
-
-  const birthYear = rng.rangeInt(1998, 2010);
+  const birthYear = options?.birthYear ?? rng.rangeInt(1998, 2010);
 
   const stats = {
     health: rng.rangeInt(65, 100),
@@ -41,19 +57,28 @@ export function createCharacter(seed: number): CreateCharacterResult {
     looks: clamp(Math.round((motherLooks + fatherLooks) / 2) + rng.rangeInt(-10, 10)),
   };
 
+  const birthBlessing = religion === 'islam'
+    ? 'পাড়ার মুরব্বিরা কইলো—"মাশাল্লাহ, এক্কেরে চাঁদের টুকরা, তয় চিল্লাচিল্লি দেখলে মনে হয় আস্ত সাইরেন!"'
+    : 'পাড়ার মুরব্বিরা উলুধ্বনি দিয়া কইলো—"ভগবানের কী লীলা, ফুটফুটে একখান পরীর লাহান বাচ্চা, তয় চিল্লাচিল্লিতে পুরা বাড়ি কাঁপাইতাছে!"';
+
+  const birthText = `${birthYear} সালে পুরান ঢাকায় ${name} ${surname} নামে তোমার জন্ম হইলো! ${birthBlessing}`;
+
   const character: Character = {
     id: generateId(rng),
     name,
     surname,
     gender,
+    religion,
     birthYear,
     stats,
     money: 30,
     age: 0,
     alive: true,
     traits: [],
-    flags: [],
+    flags: [religion === 'islam' ? 'religion_muslim' : 'religion_hindu'],
     reputation: { fame: 35, karma: 55 },
+    aiCallsUsed: 0,
+    activityBudgetUsed: 0,
     education: {
       stage: 'none',
       enrolled: false,
@@ -61,8 +86,9 @@ export function createCharacter(seed: number): CreateCharacterResult {
       major: '',
       graduated: false,
     },
-    career: { jobId: null, performance: 50, yearsAtJob: 0 },
+    career: { jobId: null, performance: 50, yearsAtJob: 0, tier: 0 },
     assets: [],
+    finance: defaultFinance(),
     relationships: [
       {
         id: generateId(rng),
@@ -72,6 +98,9 @@ export function createCharacter(seed: number): CreateCharacterResult {
         alive: true,
         meter: 80,
         metAge: 0,
+        health: rng.rangeInt(72, 92),
+        happiness: rng.rangeInt(60, 88),
+        lastMetAge: 0,
       },
       {
         id: generateId(rng),
@@ -81,13 +110,16 @@ export function createCharacter(seed: number): CreateCharacterResult {
         alive: true,
         meter: 78,
         metAge: 0,
+        health: rng.rangeInt(70, 90),
+        happiness: rng.rangeInt(58, 86),
+        lastMetAge: 0,
       },
     ],
     criminalRecord: [],
     history: [
       {
         age: 0,
-        text: `You were born in ${birthYear} as ${name} ${surname}. Relatives compare you to a potato with eyelashes.`,
+        text: birthText,
         tone: 'funny',
       },
     ],
@@ -100,7 +132,63 @@ export function createCharacter(seed: number): CreateCharacterResult {
         looks: stats.looks,
       },
     ],
+    recentEventHistory: [],
   };
+
+  // Apply custom life overrides if requested
+  if (options) {
+    if (options.gender) character.gender = options.gender;
+    if (options.religion) {
+      character.religion = options.religion;
+      character.flags = character.flags.filter((f) => f !== 'religion_muslim' && f !== 'religion_hindu');
+      character.flags.push(options.religion === 'islam' ? 'religion_muslim' : 'religion_hindu');
+    }
+    if (options.name) character.name = options.name;
+    if (options.surname) {
+      character.surname = options.surname;
+      // Update parental surnames to match
+      const mother = character.relationships.find((r) => r.relation === 'mother');
+      if (mother) mother.name = `${mother.name.split(' ')[0]} ${options.surname}`;
+      const father = character.relationships.find((r) => r.relation === 'father');
+      if (father) father.name = `${father.name.split(' ')[0]} ${options.surname}`;
+    }
+    if (options.birthYear !== undefined) character.birthYear = options.birthYear;
+
+    character.history[0] = {
+      age: 0,
+      text: `${character.birthYear} সালে পুরান ঢাকায় ${character.name} ${character.surname} নামে তোমার জন্ম হইলো! ${
+        character.religion === 'islam'
+          ? 'পাড়ার মুরব্বিরা কইলো—"মাশাল্লাহ, এক্কেরে চাঁদের টুকরা, তয় চিল্লাচিল্লি দেখলে মনে হয় আস্ত সাইরেন!"'
+          : 'পাড়ার মুরব্বিরা উলুধ্বনি দিয়া কইলো—"ভগবানের কী লীলা, ফুটফুটে একখান পরীর লাহান বাচ্চা, তয় চিল্লাচিল্লিতে পুরা বাড়ি কাঁপাইতাছে!"'
+      }`,
+      tone: 'funny',
+    };
+
+    if (options.wealthTier === 'poor') {
+      character.money = 10;
+      character.reputation.karma = clamp(character.reputation.karma + 15);
+      character.stats.happiness = clamp(character.stats.happiness - 10);
+      character.stats.health = clamp(character.stats.health - 5);
+    } else if (options.wealthTier === 'wealthy') {
+      character.money = 2500;
+      character.stats.happiness = clamp(character.stats.happiness + 10);
+      character.stats.looks = clamp(character.stats.looks + 5);
+    } else if (options.wealthTier === 'middle') {
+      character.money = 250;
+    }
+
+    if (options.startingTraits && options.startingTraits.length > 0) {
+      character.traits = [...new Set(options.startingTraits.slice(0, 2))];
+    }
+
+    character.statHistory[0] = {
+      age: 0,
+      health: character.stats.health,
+      happiness: character.stats.happiness,
+      smarts: character.stats.smarts,
+      looks: character.stats.looks,
+    };
+  }
 
   return { character, rng };
 }

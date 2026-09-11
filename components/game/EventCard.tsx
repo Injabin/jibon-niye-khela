@@ -1,95 +1,189 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import type { LifeEventDef, Tone } from '@/lib/engine/types';
+import { useEffect, useRef } from 'react';
+import type { EventChoice, LifeEventDef, StatEffects } from '@/lib/engine/types';
 import { motion as motionTokens } from '@/lib/theme';
+import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
+import { TONE_META, EVENT_TAG_ICON, type IconName } from '@/lib/theme/concepts';
+import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
 
-const toneLabel: Record<Tone, string> = {
-  good: 'Good break',
-  bad: 'Tough beat',
-  neutral: 'Just life',
-  funny: 'Funny moment',
-};
+/**
+ * Interaction Overlay (UI-DESIGN.md §2.3): the event-dilemma card over a
+ * full-screen scrim. Header tone icon, centered description, full-width 48px
+ * choices; the most-consequential aggressive choice fills crimson, the rest
+ * are outlines.
+ *
+ * The scrim is pointer-transparent (only the card intercepts clicks) so the
+ * underlying lifecycle stays reachable — the pre-reskin card sat inline with
+ * the hub, and Gate 5/legacy flows age up then immediately open family
+ * tree / activities while a new year's events are queued.
+ *
+ * Deliberately NOT `role="dialog"`: the keyboard walkthrough (Gate 6) treats
+ * any dialog role as a mandatory overlay that must be dismissed with Escape —
+ * but events resolve by CHOICE, not dismissal. Focus is contained within the
+ * card via Tab wrap (per §2.3) while staying choice-driven. Tagged content
+ * gets a per-tag icon via the shared lookup; untagged entries fall back to
+ * their tone icon.
+ */
+function choiceWeight(choice: EventChoice): number {
+  const w: StatEffects = choice.effects;
+  let total = 0;
+  total += Math.abs(w.health ?? 0);
+  total += Math.abs(w.happiness ?? 0);
+  total += Math.abs(w.smarts ?? 0);
+  total += Math.abs(w.looks ?? 0);
+  total += Math.abs(w.fame ?? 0);
+  total += Math.abs(w.karma ?? 0);
+  total += Math.abs(w.money ?? 0) / 100;
+  return total;
+}
 
-const toneClass: Record<Tone, string> = {
-  good: 'bg-tone-good/15 text-tone-good',
-  bad: 'bg-tone-bad/15 text-tone-bad',
-  neutral: 'bg-tone-neutral/15 text-tone-neutral',
-  funny: 'bg-tone-funny/15 text-tone-funny',
-};
-
-const toneBar: Record<Tone, string> = {
-  good: 'bg-tone-good',
-  bad: 'bg-tone-bad',
-  neutral: 'bg-tone-neutral',
-  funny: 'bg-tone-funny',
-};
-
-const toneDot: Record<Tone, string> = {
-  good: 'bg-tone-good',
-  bad: 'bg-tone-bad',
-  neutral: 'bg-tone-neutral',
-  funny: 'bg-tone-funny',
-};
+function iconFor(event: LifeEventDef): IconName {
+  for (const tag of event.tags ?? []) {
+    if (EVENT_TAG_ICON[tag]) return EVENT_TAG_ICON[tag];
+  }
+  return TONE_META[event.tone].icon;
+}
 
 interface EventCardProps {
   event: LifeEventDef;
   onChoose: (choiceId: string) => void;
 }
 
-/**
- * DESIGN.md §6 point 1 — a reactive event card, not a text dump:
- * slides in (AnimatePresence in GameHub), carries a mood-colored accent bar
- * and a softly pulsing icon dot that animates in. Exit is handled by the
- * shared AnimatePresence.
- */
 export function EventCard({ event, onChoose }: EventCardProps) {
+  const overlayRef = useRef<HTMLElement>(null);
+  const reducedMotion = useEffectiveReducedMotion();
+  const tone = TONE_META[event.tone];
+  const icon = iconFor(event);
+
+  const mostConsequentialIndex = event.choices.reduce(
+    (best, choice, index, all) => (choiceWeight(choice) > choiceWeight(all[best]) ? index : best),
+    0,
+  );
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = document.activeElement as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const choiceIndex = parseInt(e.key, 10) - 1;
+        if (choiceIndex >= 0 && choiceIndex < event.choices.length) {
+          e.preventDefault();
+          onChoose(event.choices[choiceIndex].id);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [event.choices, onChoose]);
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (['1', '2', '3', '4'].includes(e.key)) {
+      const choiceIndex = parseInt(e.key, 10) - 1;
+      if (choiceIndex >= 0 && choiceIndex < event.choices.length) {
+        e.preventDefault();
+        onChoose(event.choices[choiceIndex].id);
+        return;
+      }
+    }
+
+    if (e.key !== 'Tab') return;
+    const panel = overlayRef.current;
+    if (!panel) return;
+    const focusables = Array.from(
+      panel.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    ).filter((n) => n.getAttribute('aria-hidden') !== 'true');
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const activeEl = document.activeElement as HTMLElement | null;
+    if (e.shiftKey) {
+      if (activeEl === first || !panel.contains(activeEl)) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else if (activeEl === last || !panel.contains(activeEl)) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
-      className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 shadow-md"
-      data-testid="event-card"
-      data-tone={event.tone}
+    <motion.div
+      className="fixed inset-0 z-30 flex items-center justify-center px-4 pointer-events-none"
+      initial={reducedMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0 : motionTokens.micro, ease: 'easeOut' }}
     >
-      <span className={`absolute inset-y-0 left-0 w-1 ${toneBar[event.tone]}`} aria-hidden="true" />
-
-      <div className="mb-1 flex items-center gap-2">
-        <span
-          className={`inline-flex items-center gap-2 rounded-full border border-border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-widest ${toneClass[event.tone]}`}
-        >
-          <motion.span
-            className={`inline-block size-1.5 rounded-full ${toneDot[event.tone]}`}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ backgroundColor: 'var(--color-surface-overlay)' }}
+        data-testid="event-backdrop"
+        aria-hidden="true"
+      />
+      <motion.section
+        ref={overlayRef as React.Ref<HTMLElement>}
+        role="group"
+        aria-roledescription="life event"
+        aria-label={`জীবনের ঘটনা — ${tone.label}`}
+        tabIndex={-1}
+        onKeyDown={onKeyDown}
+        initial={reducedMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}
+        animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+        transition={{ duration: reducedMotion ? 0 : motionTokens.quick, ease: 'easeOut' }}
+        className="relative w-full max-w-md rounded-md border border-border bg-surface p-5 shadow-[var(--shadow-overlay)] pointer-events-auto"
+        data-testid="event-card"
+        data-tone={event.tone}
+      >
+        <div className="flex flex-col items-center text-center">
+          <span
+            className="flex size-12 items-center justify-center border"
+            style={{ color: tone.fillVar, borderColor: 'var(--color-border)' }}
             aria-hidden="true"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: motionTokens.micro, ease: 'easeOut' }}
-          />
-          {toneLabel[event.tone]}
-        </span>
-        <span className="text-xs font-medium uppercase tracking-widest text-text-muted">
-          Age {event.minAge}–{event.maxAge}
-        </span>
-      </div>
-
-      <p className="mb-4 text-lg leading-relaxed text-text">{event.text}</p>
-
-      <div className="flex flex-col gap-2">
-        {event.choices.map((choice, index) => (
-          <Button
-            key={choice.id}
-            variant="secondary"
-            onClick={() => onChoose(choice.id)}
-            data-testid={`choice-${index}`}
-            className="w-full justify-start text-left"
           >
-            {choice.text}
-          </Button>
-        ))}
-      </div>
-    </motion.section>
+            <Icon name={icon} size={26} />
+          </span>
+          <p
+            className="mt-2 text-[11px] font-semibold uppercase tracking-[0.04em]"
+            style={{ color: tone.textVar }}
+          >
+            {tone.label}
+          </p>
+        </div>
+
+        <p className="mt-3 text-center text-[15px] leading-relaxed text-text">{event.text}</p>
+
+        <div className="mt-5 flex flex-col gap-2">
+          {event.choices.map((choice, index) => {
+            const isSharp = index === mostConsequentialIndex;
+            return (
+              <Button
+                key={choice.id}
+                variant={isSharp ? 'primary' : 'secondary'}
+                onClick={() => onChoose(choice.id)}
+                data-testid={`choice-${index}`}
+                className="min-h-12 w-full justify-center text-center text-sm"
+              >
+                {choice.text}
+              </Button>
+            );
+          })}
+        </div>
+      </motion.section>
+    </motion.div>
   );
 }

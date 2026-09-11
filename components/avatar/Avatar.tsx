@@ -4,9 +4,20 @@ import { useMemo } from 'react';
 import { avatarVisualsFor } from '@/lib/avatar/palette';
 import { expressionForTone } from '@/lib/engine/moments';
 import { lifeStageForAge } from '@/lib/engine/life';
+import type { LifeStage } from '@/lib/engine/life';
 import type { Character } from '@/lib/engine/types';
 import { useGameStore } from '@/lib/store/gameStore';
 import { ExpressionOverlay } from './ExpressionOverlay';
+
+const STAGE_LABELS: Record<LifeStage, string> = {
+  infant: 'শিশু',
+  child: 'ছোলা',
+  teen: 'কিশোর',
+  'young-adult': 'তরুণ',
+  adult: 'সাবালক',
+  'middle-aged': 'মধ্যবয়সী',
+  senior: 'বুড়া',
+};
 
 const VIEW_W = 140;
 const VIEW_H = 170;
@@ -23,7 +34,13 @@ const HEAD_BASE_R = 30;
  * (`lastOutcomeTone`, DESIGN.md §6 point 1); `ExpressionOverlay` is keyed so
  * its animation restarts for each new outcome.
  */
-export function Avatar({ character }: { character: Character }) {
+export function Avatar({
+  character,
+  className = 'h-44 w-36',
+}: {
+  character: Character;
+  className?: string;
+}) {
   const lastOutcomeTone = useGameStore((s) => s.lastOutcomeTone);
 
   const stage = lifeStageForAge(character.age);
@@ -60,17 +77,17 @@ export function Avatar({ character }: { character: Character }) {
 
   return (
     <div
-      className="relative h-44 w-36 shrink-0"
+      className={`relative shrink-0 flex items-center justify-center ${className}`}
       data-testid="avatar"
       data-stage={stage}
       data-gender={character.gender}
       data-dead={dead ? 'true' : 'false'}
       role="img"
-      aria-label={`${character.name} ${character.surname}, ${stage} stage`}
+      aria-label={`${character.name} ${character.surname}, ${STAGE_LABELS[stage]}`}
     >
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        className="h-full w-full"
+        className="h-full w-full object-contain"
         aria-hidden
         style={dead ? { opacity: 0.72, filter: 'grayscale(0.85)' } : undefined}
       >

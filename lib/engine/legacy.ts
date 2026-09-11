@@ -11,6 +11,7 @@
 
 import { generateId } from './character';
 import { BOND_MAX, type FamilyMember, type FamilyTree, type FamilyRole } from './family';
+import { defaultFinance, liquidateEstate } from './finance';
 import { MONEY_MAX } from './stats';
 import type { RNG } from './rng';
 import type { Character, Stats, StatsHistoryPoint } from './types';
@@ -57,8 +58,14 @@ export function createHeirCharacter(
   rng: RNG,
 ): Character {
   const age = heir.age;
-  const firstName = heir.name.split(' ')[0];
-  const share = Math.max(0, Math.floor(parent.money / Math.max(1, heirsCount)));
+  let firstName = heir.name;
+  if (parent.surname && firstName.endsWith(` ${parent.surname}`)) {
+    firstName = firstName.slice(0, -parent.surname.length - 1);
+  } else if (firstName.includes(' ')) {
+    const lastSpace = firstName.lastIndexOf(' ');
+    firstName = firstName.slice(0, lastSpace);
+  }
+  const share = Math.max(0, Math.floor(liquidateEstate(parent) / Math.max(1, heirsCount)));
   const inheritance = Math.min(MAX_INHERITANCE, share);
 
   const stats: Stats = {
@@ -85,11 +92,13 @@ export function createHeirCharacter(
     age,
     alive: true,
     traits,
-    flags: [],
+    flags: [(parent.religion ?? 'islam') === 'hinduism' ? 'religion_hindu' : 'religion_muslim'],
+    religion: parent.religion ?? 'islam',
     reputation: { fame: 0, karma: inheritedKarma },
     education: { stage, enrolled: false, gpa: 3.0, major: '', graduated: false },
-    career: { jobId: null, performance: 50, yearsAtJob: 0 },
+    career: { jobId: null, performance: 50, yearsAtJob: 0, tier: 0 },
     assets: [],
+    finance: defaultFinance(),
     relationships: [],
     criminalRecord: [],
     history: [
@@ -125,7 +134,9 @@ export function createHeirCharacter(
  */
 export function buildHeirFamilyTree(tree: FamilyTree, heir: Character): FamilyTree {
   const oldSelf = tree.members.find((m) => m.role === 'self');
-  const heirMember = tree.members.find((m) => m.role === 'child' && m.name === `${heir.name} ${heir.surname}`);
+  const heirMember = tree.members.find(
+    (m) => m.role === 'child' && (m.name === `${heir.name} ${heir.surname}` || m.name === heir.name),
+  );
   if (!oldSelf || !heirMember) {
     throw new Error('Cannot build a heir family tree without the late self and the chosen child');
   }

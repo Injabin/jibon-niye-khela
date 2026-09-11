@@ -10,6 +10,7 @@ import {
 } from '@/lib/engine/events/registry';
 import { CHILDHOOD_EVENTS } from '@/content/events/childhood';
 import { TEEN_EVENTS } from '@/content/events/teen';
+import { ALL_FALLBACK_EVENTS, getFallbackEvent } from '@/lib/ai/fallbackBank';
 import type { Character, LifeEventDef } from '@/lib/engine/types';
 
 function atAge(seed: number, age: number): Character {
@@ -198,5 +199,63 @@ describe('resolveEventChoice applies effects and logs history', () => {
   it('throws on an unknown choice id', () => {
     const { character } = createCharacter(8);
     expect(() => resolveEventChoice(character, EV, 'nope')).toThrow();
+  });
+});
+
+describe('Religion Isolation (Fallback Bank & contentOrchestrator)', () => {
+  const hinduFlaggedEvents = ALL_FALLBACK_EVENTS.filter(
+    (e) => e.requiredFlags?.includes('religion_hindu'),
+  );
+  const muslimFlaggedEvents = ALL_FALLBACK_EVENTS.filter(
+    (e) => e.requiredFlags?.includes('religion_muslim'),
+  );
+
+  it('has religion-flagged content in the fallback bank', () => {
+    expect(hinduFlaggedEvents.length).toBeGreaterThanOrEqual(2);
+    expect(muslimFlaggedEvents.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('a Muslim character never receives a Hindu-only fallback event', () => {
+    for (const event of hinduFlaggedEvents) {
+      const eligible = getFallbackEvent({
+        age: event.minAge,
+        religion: 'islam',
+        seed: 12345,
+      });
+      expect(eligible.id).not.toBe(event.id);
+    }
+  });
+
+  it('a Hindu character never receives a Muslim-only fallback event', () => {
+    for (const event of muslimFlaggedEvents) {
+      const eligible = getFallbackEvent({
+        age: event.minAge,
+        religion: 'hinduism',
+        seed: 12345,
+      });
+      expect(eligible.id).not.toBe(event.id);
+    }
+  });
+
+  it('ageUp across a full Muslim life never fires a Hindu-flagged event', () => {
+    const { character, rng } = createCharacter(9999, { religion: 'islam' });
+    const hinduIds = new Set(hinduFlaggedEvents.map((e) => e.id));
+    for (let i = 0; i < 60 && character.alive; i++) {
+      const { firedEvents } = ageUp(character, rng);
+      for (const evt of firedEvents) {
+        expect(hinduIds.has(evt.id), `Muslim char received Hindu event: ${evt.id}`).toBe(false);
+      }
+    }
+  });
+
+  it('ageUp across a full Hindu life never fires a Muslim-flagged event', () => {
+    const { character, rng } = createCharacter(8888, { religion: 'hinduism' });
+    const muslimIds = new Set(muslimFlaggedEvents.map((e) => e.id));
+    for (let i = 0; i < 60 && character.alive; i++) {
+      const { firedEvents } = ageUp(character, rng);
+      for (const evt of firedEvents) {
+        expect(muslimIds.has(evt.id), `Hindu char received Muslim event: ${evt.id}`).toBe(false);
+      }
+    }
   });
 });

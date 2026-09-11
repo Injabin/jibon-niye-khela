@@ -70,6 +70,25 @@ describe('spendTimeWith (M4 #3 bond interaction)', () => {
     expect(useGameStore.getState().spendTimeWith(mother.id)).toBe(false);
   });
 
+  it('refuses bond gain for a deceased member while the character is alive', () => {
+    useGameStore.getState().newGame(8);
+    const tree = useGameStore.getState().familyTree!;
+    const grandparent = tree.members.find((m) => m.role === 'grandparent')!;
+    // Mark the grandparent dead but keep the character alive.
+    useGameStore.setState((s) => ({
+      familyTree: s.familyTree && {
+        ...s.familyTree,
+        members: s.familyTree.members.map((m) =>
+          m.id === grandparent.id ? { ...m, alive: false } : m,
+        ),
+      },
+    }));
+    expect(useGameStore.getState().spendTimeWith(grandparent.id)).toBe(false);
+    // Bond must be untouched.
+    const after = useGameStore.getState().familyTree!.members.find((m) => m.id === grandparent.id)!;
+    expect(after.bond).toBe(grandparent.bond);
+  });
+
   it('persists the raised bond into the exported save', () => {
     useGameStore.getState().newGame(8);
     const mother = useGameStore.getState().familyTree!.members.find((m) => m.role === 'mother')!;

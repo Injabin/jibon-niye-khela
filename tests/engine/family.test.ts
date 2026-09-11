@@ -122,13 +122,13 @@ describe('bond constants and labels', () => {
 
   it('labels roles for the relationship panel', () => {
     const member = (role: FamilyMember['role']) => ({ id: 'x', name: 'X', gender: 'female', role, age: 40, alive: true, bond: 50, metAge: 0, lastSpentAge: 0 } as FamilyMember);
-    expect(relationLabel(member('self'))).toBe('You');
-    expect(relationLabel(member('mother'))).toBe('Mother');
-    expect(relationLabel(member('father'))).toBe('Father');
-    expect(relationLabel(member('grandparent'))).toBe('Grandmother');
-    expect(relationLabel(member('spouse'))).toBe('Spouse');
-    expect(relationLabel({ ...member('grandparent'), gender: 'male' })).toBe('Grandfather');
-    expect(relationLabel(member('child'))).toBe('Child');
-    expect(relationLabel(member('sibling'))).toBe('Sister');
+    expect(relationLabel(member('self'))).toBe('তুমি');
+    expect(relationLabel(member('mother'))).toBe('আম্মা');
+    expect(relationLabel(member('father'))).toBe('আব্বা');
+    expect(relationLabel(member('grandparent'))).toBe('দাদী / নানী');
+    expect(relationLabel(member('spouse'))).toBe('বউ (স্ত্রী)');
+    expect(relationLabel({ ...member('grandparent'), gender: 'male' })).toBe('দাদা / নানা');
+    expect(relationLabel(member('child'))).toBe('মেয়ে');
+    expect(relationLabel(member('sibling'))).toBe('বোন');
   });
 });

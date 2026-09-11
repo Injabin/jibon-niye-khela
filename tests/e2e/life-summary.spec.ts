@@ -107,11 +107,11 @@ test.describe('life summary (M5 #3)', () => {
 
     // Ribbons: this life earned several; the chips render with their names.
     const ribbons = page.getByTestId('life-ribbons');
-    await expect(ribbons).toContainText('The Long View');
-    await expect(ribbons).toContainText('Cap and Gown');
-    await expect(ribbons).toContainText('Serious Money');
-    await expect(ribbons).toContainText('Household Name');
-    await expect(ribbons).toContainText('Rehabilitation Story');
+await expect(ribbons).toContainText('দীর্ঘায়ু বাবাজি');
+await expect(ribbons).toContainText('টুপি-গাউন পরা পণ্ডিত');
+await expect(ribbons).toContainText('ট্যাকা-পাগলা ধনকুবের');
+await expect(ribbons).toContainText('মহল্লার চেনা-জানা নাম');
+await expect(ribbons).toContainText('ঘুরে দাঁড়ানোর গল্প');
 
     // Export: a real canvas PNG downloads with a valid signature and size.
     const downloadPromise = page.waitForEvent('download');

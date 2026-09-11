@@ -11,6 +11,7 @@
 
 import type { RNG } from '@/lib/engine/rng';
 import { applyStatEffects } from '@/lib/engine/stats';
+import { seedCoworkers } from '@/lib/engine/relationships';
 import type { Character, EducationStage, Tone } from '@/lib/engine/types';
 
 export interface JobDef {
@@ -51,12 +52,12 @@ export interface CareerOutcome {
  * Education = the highest stage that must have been reached on the arc.
  */
 export const JOB_BOARD: readonly JobDef[] = [
-  { id: 'fastfood', title: 'Fast-food server', minAge: 16, flag: 'job_service', salary: [120, 260] },
-  { id: 'retail_clerk', title: 'Department-store clerk', minAge: 16, flag: 'job_retail', salary: [140, 320] },
-  { id: 'hustle_delivery', title: 'Delivery courier', minAge: 16, flag: 'job_service', requires: { minSmarts: 30 }, salary: [180, 460] },
+  { id: 'fastfood', title: 'কাচ্চির সহকারী বাবুর্চি', minAge: 16, flag: 'job_service', salary: [120, 260] },
+  { id: 'retail_clerk', title: 'চকবাজারের পাইকারি সেলসম্যান', minAge: 16, flag: 'job_retail', salary: [140, 320] },
+  { id: 'hustle_delivery', title: 'পাঠাও / ফুড ডেলিভারি রাইডার', minAge: 16, flag: 'job_service', requires: { minSmarts: 30 }, salary: [180, 460] },
   {
     id: 'entertainer',
-    title: 'Street performer',
+    title: 'রাস্তার ম্যাজিশিয়ান ও পারফর্মার',
     minAge: 16,
     flag: 'job_entertainer',
     requires: { minLooks: 55 },
@@ -64,7 +65,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'warehouse',
-    title: 'Warehouse worker',
+    title: 'সদরঘাটের গুদাম শ্রমিক',
     minAge: 18,
     flag: 'job_trade',
     requires: { education: 'middle' },
@@ -72,7 +73,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'construction_app',
-    title: 'Construction worker',
+    title: 'নির্মাণ শ্রমিক ও রাজমিস্ত্রি',
     minAge: 18,
     flag: 'job_trade',
     requires: { education: 'middle' },
@@ -80,7 +81,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'office_admin',
-    title: 'Office assistant',
+    title: 'মতিঝিলের অফিস সহকারী',
     minAge: 18,
     flag: 'job_office',
     requires: { education: 'high' },
@@ -88,7 +89,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'tech_support',
-    title: 'Tech support rep',
+    title: 'নবাবপুরের ইলেকট্রনিক্স মিস্ত্রি',
     minAge: 18,
     flag: 'job_tech',
     requires: { education: 'high', minSmarts: 55 },
@@ -96,7 +97,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'nurse',
-    title: 'Nurse',
+    title: 'মিটফোর্ড হাসপাতালের নার্স',
     minAge: 19,
     flag: 'job_medical',
     requires: { education: 'vocational', minSmarts: 55 },
@@ -104,14 +105,14 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'soldier',
-    title: 'Military recruit',
+    title: 'সেনাবাহিনীর রিক্রুট',
     minAge: 18,
     flag: 'job_military',
     salary: [330, 850],
   },
   {
     id: 'illustrator',
-    title: 'Freelance illustrator',
+    title: 'নীলক্ষেতের গ্রাফিক্স ডিজাইনার',
     minAge: 18,
     flag: 'job_art',
     requires: { minSmarts: 50 },
@@ -119,7 +120,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'side_business',
-    title: 'Side-business owner',
+    title: 'বাকরখানি ও মিষ্টির ব্যবসা',
     minAge: 18,
     flag: 'job_business',
     requires: { minSmarts: 45 },
@@ -127,7 +128,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'pro_athlete',
-    title: 'Pro athlete',
+    title: 'পেশাদার ফুটবলার / ক্রিকেটার',
     minAge: 18,
     flag: 'job_sports',
     requires: { trait: 'hobby_sport', minLooks: 60 },
@@ -135,7 +136,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'programmer',
-    title: 'Software developer',
+    title: 'সফটওয়্যার ডেভেলপার',
     minAge: 22,
     flag: 'job_tech',
     requires: { education: 'undergraduate', minSmarts: 60 },
@@ -143,7 +144,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'accountant',
-    title: 'Accountant',
+    title: 'হিসাবরক্ষক (অ্যাকাউন্ট্যান্ট)',
     minAge: 22,
     flag: 'job_finance',
     requires: { education: 'undergraduate', major: 'major_business', minSmarts: 60 },
@@ -151,7 +152,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'lawyer',
-    title: 'Associate lawyer',
+    title: 'জজ কোর্টের শিক্ষানবিস উকিল',
     minAge: 24,
     flag: 'job_legal',
     requires: { education: 'undergraduate', major: 'major_law', minSmarts: 70 },
@@ -159,7 +160,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'doctor',
-    title: 'Doctor',
+    title: 'বিশেষজ্ঞ এমবিবিএস ডাক্তার',
     minAge: 26,
     flag: 'job_medical',
     requires: { education: 'undergraduate', major: 'major_medicine', minSmarts: 75 },
@@ -167,7 +168,7 @@ export const JOB_BOARD: readonly JobDef[] = [
   },
   {
     id: 'politician',
-    title: 'Local councillor',
+    title: 'ওয়ার্ড কাউন্সিলর',
     minAge: 30,
     flag: 'job_politics',
     requires: { education: 'undergraduate', minSmarts: 70 },
@@ -176,6 +177,19 @@ export const JOB_BOARD: readonly JobDef[] = [
 ];
 
 export const ALL_JOB_FLAGS: readonly string[] = JOB_BOARD.map((j) => j.flag);
+
+/**
+ * Jobs closed to anyone with a criminal record (D — Phase 3.5).
+ * Politics, law, military, and medicine are trust-gated: a record bars the
+ * door entirely; every other hire chance is also smeared by −15%.
+ */
+export const TRUST_BLOCKED_JOB_FLAGS: readonly string[] = ['job_politics', 'job_legal', 'job_military', 'job_medical'];
+
+export const TRUST_BLOCKED_JOB_IDS: readonly string[] = JOB_BOARD.filter((j) => TRUST_BLOCKED_JOB_FLAGS.includes(j.flag)).map((j) => j.id);
+
+export function hasCriminalRecord(character: Character): boolean {
+  return character.flags.includes('criminal_record');
+}
 
 /** Highest stage reached on the education arc; 'dropped' blocks high-or-better jobs. */
 function educationReached(character: Character): EducationStage {
@@ -196,6 +210,7 @@ const REACHED_ORDER: Record<EducationStage, number> = {
 
 export function isJobEligible(job: JobDef, character: Character): boolean {
   if (character.age < job.minAge) return false;
+  if (hasCriminalRecord(character) && TRUST_BLOCKED_JOB_FLAGS.includes(job.flag)) return false;
   const req = job.requires;
   if (req) {
     if (req.education) {
@@ -206,21 +221,70 @@ export function isJobEligible(job: JobDef, character: Character): boolean {
     }
     if (req.minSmarts != null && character.stats.smarts < req.minSmarts) return false;
     if (req.minLooks != null && character.stats.looks < req.minLooks) return false;
-    if (req.trait && !character.traits.includes(req.trait)) return false;
+    // A requirement can be satisfied by a trait ~or~ the equivalent flag
+    // (E — Phase 3.5: pro_athlete wants hobby_sport, but a HSC-runner flag
+    // must earn the same seat).
+    if (req.trait && !character.traits.includes(req.trait) && !character.flags.includes(req.trait)) return false;
     if (req.major && !character.flags.includes(req.major)) return false;
   }
   return true;
 }
 
+export interface CareerLadderDef {
+  jobId: string;
+  /** A title per tier — tier 0 = freshly hired. */
+  titles: readonly [string, string, string];
+  /** Salary multiplier per tier applied on top of base annual salary. */
+  scales: readonly [number, number, number];
+  /** Whether each promoted year grinds the fame meter (pain/sports/politics). */
+  fameFeed: boolean;
+}
+
+/**
+ * Career tier ladders (E — Phase 3.5, DESIGN.md §5.4). Advancing up the ladder
+ * is real — a promotion bumps `career.tier` (and therefore the salary), so the
+ * "বেতন বাড়লো / পদোন্নতি" lines in the UI stop being a lie.
+ */
+export const CAREER_LADDERS: readonly CareerLadderDef[] = [
+  { jobId: 'doctor', titles: ['জুনিয়র হাউস-স্টাফ ডাক্তার', 'এমবিবিএস রেজিস্টার্ড ডাক্তার', 'সিনিয়র বিশেষজ্ঞ / কনসালট্যান্ট'], scales: [1, 1.45, 2.1], fameFeed: false },
+  { jobId: 'lawyer', titles: ['জুনিয়র অ্যাডভোকেট', 'সিনিয়র অ্যাডভোকেট', 'সিনিয়র আইনজীবী / আদালত জজ'], scales: [1, 1.4, 2.0], fameFeed: false },
+  { jobId: 'politician', titles: ['ওয়ার্ড কাউন্সিলর', 'উপজেলা / থানা চেয়ারম্যান', 'এমপি / মন্ত্রী'], scales: [1, 1.7, 2.9], fameFeed: true },
+  { jobId: 'soldier', titles: ['নতুন রিক্রুট', 'সিপাহী / হাবিলদার', 'অফিসার / মেজর'], scales: [1, 1.3, 1.9], fameFeed: true },
+  { jobId: 'pro_athlete', titles: ['ক্লাব লেভেল খেলোয়াড়', 'জাতীয় দলের সদস্য', 'আন্তর্জাতিক সুপারস্টার'], scales: [1, 1.6, 2.5], fameFeed: true },
+  { jobId: 'entertainer', titles: ['নবীন শিল্পী', 'প্রখ্যাত শিল্পী', 'সুপারস্টার'], scales: [1, 1.7, 2.6], fameFeed: true },
+  { jobId: 'programmer', titles: ['জুনিয়র ডেভেলপার', 'সিনিয়র ডেভেলপার', 'টেক লিড / আর্কিটেক্ট'], scales: [1, 1.4, 2.0], fameFeed: false },
+  { jobId: 'side_business', titles: ['ছোট্ট পসার', 'ব্যবসা-বিস্তার', 'ব্যবসার সাম্রাজ্য'], scales: [1, 1.5, 2.2], fameFeed: false },
+  { jobId: 'nurse', titles: ['নার্সিং অ্যাটেনডেন্ট', 'রেজিস্টার্ড নার্স', 'সিনিয়র / হেড নার্স'], scales: [1, 1.35, 1.85], fameFeed: false },
+];
+
+const LADDER_BY_JOB = new Map(CAREER_LADDERS.map((l) => [l.jobId, l]));
+
+export function careerLadder(jobId: string): CareerLadderDef | undefined {
+  return LADDER_BY_JOB.get(jobId);
+}
+
+/** Current tier title (or the plain job title when the job has no ladder). */
+export function careerTitle(character: Character): string {
+  const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
+  if (!job) return 'বেকার';
+  const ladder = careerLadder(job.id);
+  if (!ladder) return job.title;
+  const tier = Math.min(character.career.tier ?? 0, ladder.titles.length - 1);
+  return ladder.titles[tier];
+}
+
+/** Salary with the tier multiplier baked in (E — Phase 3.5). */
+export function annualSalary(job: JobDef, performance: number, tier = 0): number {
+  const mid = (job.salary[0] + job.salary[1]) / 2;
+  const base = Math.round(mid * (0.5 + performance / 100));
+  const ladder = careerLadder(job.id);
+  const scale = ladder ? ladder.scales[Math.min(tier, ladder.scales.length - 1)] : 1;
+  return Math.round(base * scale);
+}
+
 /** The board a player sees at this age/state — drives the future Careers menu. */
 export function getJobBoard(character: Character): readonly JobDef[] {
   return JOB_BOARD.filter((job) => isJobEligible(job, character));
-}
-
-/** Annual salary implied by the current job + performance (mid ± perf factor). */
-export function annualSalary(job: JobDef, performance: number): number {
-  const mid = (job.salary[0] + job.salary[1]) / 2;
-  return Math.round(mid * (0.5 + performance / 100));
 }
 
 export function applyForJob(
@@ -230,17 +294,21 @@ export function applyForJob(
   reasonOverride?: string,
 ): JobApplicationResult {
   if (!character.alive) {
-    return { hired: false, text: 'You cannot job-hunt now.', tone: 'bad' };
+    return { hired: false, text: 'তুমি তো মারা গেছো! চাকরি খুঁজতে গেলে জব বোর্ডে তোর নাম কবর-পাথরে লেখা থাকবো!', tone: 'bad' };
   }
   const job = JOB_BOARD.find((j) => j.id === jobId);
   if (!job) {
-    return { hired: false, text: 'No such job exists in this world.', tone: 'neutral' };
+    return { hired: false, text: 'ঐ নামে চাকরির অস্তিত্বই নাই মিয়া — জব বোর্ডে তো খালি মজুরি-মার গল্পের পাতা!', tone: 'neutral' };
   }
   if (!isJobEligible(job, character)) {
-    return { hired: false, text: `You do not meet the requirements for ${job.title}.`, tone: 'neutral' };
+    if (hasCriminalRecord(character) && TRUST_BLOCKED_JOB_FLAGS.includes(job.flag)) {
+      return { hired: false, text: `${job.title} পদের জন্য দরকার পুলিশি সনদ (character certificate)। ঝামেলার পাতায় নাম থাকার কারণে দরজা বন্ধ — এহন খিদমতে তাক লাগলো।`, tone: 'bad' };
+    }
+    return { hired: false, text: `${job.title} পদের পাল্লায় তোমার যোগ্যতার ওজন কম পড়লো — আগে সিভিতে কুঁড়ি জমাইয়া তারপর আবেদনে নামো!`, tone: 'neutral' };
   }
 
   let chance = 0.45 + (character.stats.smarts - 50) * 0.004 + (character.stats.looks - 50) * 0.002;
+  if (hasCriminalRecord(character)) chance -= 0.15;
   if (job.requires?.trait && character.traits.includes(job.requires.trait)) chance += 0.1;
   if (job.requires?.major && character.flags.includes(job.requires.major)) chance += 0.1;
   const hireChance = Math.min(0.98, Math.max(0.15, chance));
@@ -257,22 +325,106 @@ export function applyForJob(
       hired: true,
       jobId: job.id,
       title: job.title,
-      text: reasonOverride ?? `${job.title} hires you. The first payday looms with quiet promise. (≈${pay} coins / year)`,
+      text: reasonOverride ?? `${job.title} পদে তোমার চাকরি হইয়া গেল! মালিক খুশি হইয়া কইলো—"মন দিয়া কাম করবা, ফাঁকিবাজি সহ্য করুম না!" (বছরে আয় ≈৳${pay.toLocaleString()})`,
       tone: 'good',
     };
   }
-  return { hired: false, text: `${job.title} turns you down — politely, heroically.`, tone: 'neutral' };
+
+  const rejectLines = [
+    `${job.title} পদের ইন্টারভিউতে তোমারে দেইখা মালিক মুখ ভেটকাইয়া কইলো—"তোমার সিভিতে তো কাজের চেয়ে চাপাবাজি বেশি, ভাগো এহন থিকা!"`,
+    `${job.title} পদের ইন্টারভিউয়ার কইলো—"মামা, এহন কোনো লোক লাগবো না, অন্য কোথাও লাইন মারো!"`,
+    `${job.title} পদের ভাইভায় কঠিন সব প্যাঁচানো প্রশ্ন কইরা তোমারে নাকচ কইরা দিল!`,
+    `${job.title} পদের ম্যানেজমেন্ট জানাইলো যে বসের শালার ঘরের শালা অলরেডি এই চাকরি পাইয়া গেছে!`,
+  ];
+  return { hired: false, text: rng.pick(rejectLines), tone: 'neutral' };
+}
+
+/** Works overtime to boost job performance at the cost of health and happiness. */
+export function workOvertime(character: Character): { ok: boolean; text: string } {
+  if (!character.career.jobId) {
+    return { ok: false, text: 'তোমার তো কোনো চাকরিই নাই, ওভারটাইম কার লাইগা খাটবা?' };
+  }
+  const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
+  const title = job?.title ?? 'কর্মস্থলে';
+
+  character.career.performance = Math.min(100, character.career.performance + 15);
+  character.stats.health = Math.max(0, character.stats.health - 5);
+  character.stats.happiness = Math.max(0, character.stats.happiness - 5);
+
+  const msg = `${title} কাজে রাত-দিন এক কইরা অতিরিক্ত ওভারটাইম খাটলা। বসের চোখে তোমার পারফরম্যান্স বাড়লো, তয় শরীলের অবস্থা কাহিল!`;
+  character.history.push({ age: character.age, text: msg, tone: 'neutral' });
+  return { ok: true, text: msg };
+}
+
+/** Sucks up to the boss for career favors and relationship boost. */
+export function suckUpToBoss(character: Character, rng: RNG): { ok: boolean; text: string } {
+  if (!character.career.jobId) {
+    return { ok: false, text: 'কোনো বসের অস্তিত্বই নাই, তেল মারবা কারে?' };
+  }
+
+  const roll = rng.next();
+  if (roll > 0.35) {
+    character.career.performance = Math.min(100, character.career.performance + 10);
+    character.stats.happiness = Math.min(100, character.stats.happiness + 5);
+    const msg = `বসরে চা-সিঙ্গারা খাওয়াইয়া মুখে মধু ঢাইলা তেল মারলা। বস একগাল হাইসা কইলো—"তোর মতো কাজের পোলাই তো দরকার!"`;
+    character.history.push({ age: character.age, text: msg, tone: 'good' });
+    return { ok: true, text: msg };
+  }
+
+  character.career.performance = Math.max(0, character.career.performance - 5);
+  character.stats.happiness = Math.max(0, character.stats.happiness - 8);
+  const failMsg = `বস তোমার চাটুকারিতা ধইরা ফালাইয়া খ্যাঁক কইরা উঠলো—"চুদুর বুদুর বাদ দিয়া নিজের টেবিলে গিয়া কাম কর, তেল মারা বন্ধ কর!"`;
+  character.history.push({ age: character.age, text: failMsg, tone: 'bad' });
+  return { ok: false, text: failMsg };
+}
+
+/** Asks for a salary raise based on performance and tenure. */
+export function askForRaise(character: Character, rng: RNG): { ok: boolean; text: string } {
+  if (!character.career.jobId) {
+    return { ok: false, text: 'চাকরি ছাড়া বেতন বাড়ানোর কথা ভাবাও পাপ!' };
+  }
+
+  const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
+  if (!job) return { ok: false, text: 'বেতন বাড়াইবার কথা ভাবতে তো আগে কোনো চাকরিই লাগবে — খালি হাত নিয়া ফাঁকা দেয়ালে কইছো!' };
+
+  if (character.career.yearsAtJob < 1) {
+    return { ok: false, text: 'চাকরিতে জয়েন কইরাই বেতন বাড়ানোর আবদার? মালিক তো খেদাইয়া দিবো!' };
+  }
+
+  if (character.career.performance < 55) {
+    character.career.performance = Math.max(0, character.career.performance - 10);
+    character.stats.happiness = Math.max(0, character.stats.happiness - 10);
+    const scoldMsg = `মালিক তোমারে দেইখা চোখ রাঙাইয়া কইলো—"কাজে ফাঁকিবাজি মারোস, আবার বেতন বাড়াইতে আইছস? বেয়াদব!"`;
+    character.history.push({ age: character.age, text: scoldMsg, tone: 'bad' });
+    return { ok: false, text: scoldMsg };
+  }
+
+  const approved = character.career.performance >= 75 ? true : rng.chance(0.5);
+  if (approved) {
+    const boost = rng.rangeInt(15, 25);
+    const bonusMoney = Math.round(((job.salary[0] + job.salary[1]) / 2) * (boost / 100));
+    character.money += bonusMoney;
+    character.stats.happiness = Math.min(100, character.stats.happiness + 15);
+    const successMsg = `মালিক তোমার মেহনত দেইখা বেতন ${boost}% বাড়াইয়া দিল লগে ৳${bonusMoney.toLocaleString()} বোনাস দিলো! খুশিতে বুক ভইরা গেল!`;
+    character.history.push({ age: character.age, text: successMsg, tone: 'good' });
+    return { ok: true, text: successMsg };
+  }
+
+  character.stats.happiness = Math.max(0, character.stats.happiness - 5);
+  const rejectMsg = `বস গম্ভীর হইয়া কইলো—"মার্কেটে মন্দা চলতাছে মামা, এহন এক পয়সাও বাড়ানো সম্ভব না, পরের বছর দেখুম।"`;
+  character.history.push({ age: character.age, text: rejectMsg, tone: 'neutral' });
+  return { ok: false, text: rejectMsg };
 }
 
 export function quitJob(character: Character): CareerOutcome & { quit: boolean } {
   if (!character.career.jobId) {
-    return { quit: false, text: 'You have no job to leave.', tone: 'neutral' };
+    return { quit: false, text: 'তোমার তো কোনো চাকরিই নাই, ছাড়বা কী?', tone: 'neutral' };
   }
   const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
   character.career = { jobId: null, performance: 50, yearsAtJob: 0 };
   if (job) character.flags = character.flags.filter((f) => f !== job.flag);
   if (!character.flags.includes('unemployed')) character.flags.push('unemployed');
-  return { quit: true, text: 'You hand in your notice. Employment, briefly, becomes a rumour.', tone: 'neutral' };
+  return { quit: true, text: 'চাকরিতে ইস্তফা দিয়া দিলা! বসরে কইয়া আসলা—"আমারে দিয়া আর এই গোলামি হইবো না!" এহন তুমি স্বাধীন বেহুদা মানুষ!', tone: 'neutral' };
 }
 
 /**
@@ -286,7 +438,8 @@ export function tickCareer(character: Character, rng: RNG): CareerOutcome | null
   if (!job) return null;
 
   character.career.yearsAtJob += 1;
-  const pay = annualSalary(job, character.career.performance);
+  if (character.career.yearsAtJob === 1) seedCoworkers(character, rng, 3);
+  const pay = annualSalary(job, character.career.performance, character.career.tier ?? 0);
   applyStatEffects(character, { money: pay });
 
   const nextPerf = Math.max(0, Math.min(100, character.career.performance + rng.rangeInt(-5, 5)));
@@ -296,15 +449,24 @@ export function tickCareer(character: Character, rng: RNG): CareerOutcome | null
   else if (nextPerf <= 25) character.flags.push('perf_low');
 
   if (nextPerf >= 75 && rng.chance(0.3)) {
+    const ladder = careerLadder(job.id);
+    const maxTier = ladder ? ladder.titles.length - 1 : 0;
+    const nextTier = Math.min(maxTier, (character.career.tier ?? 0) + 1);
+    character.career.tier = nextTier;
     character.career.performance = 62;
-    return { text: `Your work at ${job.title} pays off — promotion. The new title fits like a nice coat.`, tone: 'good' };
+    const tierTitle = careerTitle(character);
+    const text = `${tierTitle} পদে পদোন্নতি (promotion) হইলো! মালিক খুশি হইয়া মাইনে উলটাইয়া বাড়াইয়া দিল!`;
+    if (ladder?.fameFeed && nextTier > 0) {
+      applyStatEffects(character, { fame: 12 + (nextTier - 1) * 6 });
+    }
+    return { text, tone: 'good' };
   }
 
   if (nextPerf <= 28 && character.career.yearsAtJob >= 1 && rng.chance(0.28)) {
     character.career = { jobId: null, performance: 50, yearsAtJob: 0 };
     character.flags = character.flags.filter((f) => f !== job.flag);
     if (!character.flags.includes('unemployed')) character.flags.push('unemployed');
-    return { text: `The ${job.title} job ends — the firm calls it "restructuring". You call it a lunch invite.`, tone: 'bad' };
+    return { text: `${job.title} চাকরি থেইকা তোমারে খেদাইয়া দিল! মালিক কইলো—"অফিসে বইসা খালি ফাপড় মারলে কম্পানি চলবো না!"`, tone: 'bad' };
   }
 
   return null;

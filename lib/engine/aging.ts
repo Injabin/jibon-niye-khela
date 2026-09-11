@@ -1,11 +1,13 @@
 import type { RNG } from './rng';
 import { applyYearlyDecay, oldAgeDeathChance } from './stats';
+import { clamp } from './stats';
 import { applyReputationDrift } from './reputation';
 import { tickSystems } from './events/categories';
 import { rollToddlerTraits } from './traits';
+import { resetActivityBudget } from './activity';
 import { drawYearlyEvents, resolveEventChoice } from './events/registry';
 import { createCharacter } from './character';
-import type { AgeUpResult, Character, LifeEventDef } from './types';
+import type { AgeUpResult, Character, LifeEventDef, Relation } from './types';
 
 export const UPPER_AGE_BOUND = 130;
 
@@ -42,6 +44,58 @@ export function checkForDeath(character: Character, rng: RNG): void {
 }
 
 /**
+ * Family-owned relations: their life/death is driven by the family tree
+ * (ageFamilyMembers + syncRelationshipDeaths), so non-family aging skips them
+ * to avoid double death rolls.
+ */
+const FAMILY_RELATIONS = new Set<Relation>([
+  'mother',
+  'father',
+  'sibling',
+  'grandparent',
+  'spouse',
+  'child',
+]);
+
+export function npcDeathChance(age: number): number {
+  if (age >= 95) return 0.25;
+  if (age >= 85) return 0.1;
+  if (age >= 70) return 0.04;
+  if (age >= 50) return 0.008;
+  return 0.0015; // rare accidents for the young and middle-aged
+}
+
+/**
+ * C: annual NPC aging for non-family contacts (friends, crushes, dating
+ * partners, exes, classmates, coworkers). Meters cool passively, vitals drift,
+ * and each NPC carries a small yearly death risk. Runs after the year's events
+ * are drawn so the character's event stream is never perturbed.
+ */
+export function ageNonFamilyNpcs(character: Character, rng: RNG): void {
+  for (const rel of character.relationships) {
+    if (!rel.alive || FAMILY_RELATIONS.has(rel.relation)) continue;
+
+    rel.meter = Math.max(25, rel.meter - 1);
+    if (rel.health !== undefined) {
+      rel.health = clamp(rel.health + rng.rangeInt(-2, 0), 0, 100);
+    }
+    if (rel.happiness !== undefined) {
+      rel.happiness = clamp(rel.happiness + rng.rangeInt(-2, 2), 0, 100);
+    }
+
+    if (rng.chance(npcDeathChance(rel.age))) {
+      rel.alive = false;
+      const label = rel.relation === 'friend' ? 'পাক্কা দোস্ত' : rel.relation;
+      character.history.push({
+        age: character.age,
+        text: `${rel.name}-র (${label}) মৃত্যুর খবরে মন খারাপ হইলো। ধারেকারে আর কেউ নাই।`,
+        tone: 'bad',
+      });
+    }
+  }
+}
+
+/**
  * Advance one year. A character already dead is a no-op (Gate 1/Test 3).
  * While alive, age strictly increments by exactly 1 per call (Gate 1/Test 4).
  * Drawn events are returned unresolved so the caller (UI or headless sim)
@@ -53,6 +107,7 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
   }
 
   character.age += 1;
+  resetActivityBudget(character);
   character.statHistory.push({
     age: character.age,
     health: character.stats.health,
@@ -60,6 +115,12 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
     smarts: character.stats.smarts,
     looks: character.stats.looks,
   });
+
+  // Age every living relationship (children, partners, peers, friends) by
+  // exactly one year so the world stays consistent with the character's age.
+  for (const rel of character.relationships) {
+    if (rel.alive) rel.age = Math.max(0, rel.age + 1);
+  }
 
   rollToddlerTraits(character, rng);
   applyYearlyDecay(character);
@@ -74,6 +135,11 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
     for (const event of drawn) {
       firedEvents.push(event);
     }
+  }
+
+  // C: NPCs age after the character's yearly events are drawn (non-family only).
+  if (character.alive) {
+    ageNonFamilyNpcs(character, rng);
   }
 
   return { character, firedEvents };

@@ -53,7 +53,7 @@ describe('achievements / ribbons (DESIGN.md §5.9)', () => {
   });
 
   it('ribbonById resolves known ids and misses unknown ones', () => {
-    expect(ribbonById('scholar')?.name).toBe('Cap and Gown');
+    expect(ribbonById('scholar')?.name).toBe('টুপি-গাউন পরা পণ্ডিত');
     expect(ribbonById('not-a-ribbon')).toBeUndefined();
   });
 });

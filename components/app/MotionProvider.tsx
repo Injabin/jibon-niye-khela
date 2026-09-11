@@ -7,7 +7,16 @@ import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion
 
 declare global {
   interface Window {
-    __JNK_AUDIO__?: { snapshot: () => { contextStarted: boolean; everPlayed: boolean; muted: boolean } };
+    __JNK_AUDIO__?: {
+      snapshot: () => {
+        contextStarted: boolean;
+        everPlayed: boolean;
+        muted: boolean;
+        activeArc: 'early' | 'late' | null;
+        sfxPlays: readonly string[];
+        musicPlays: readonly string[];
+      };
+    };
   }
 }
 

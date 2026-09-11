@@ -11,6 +11,7 @@ import { FEMALE_NAMES, MALE_NAMES } from '@/content/names';
 import type { Character, Gender } from './types';
 import { generateId } from './character';
 import { RNG } from './rng';
+import { clamp } from './stats';
 
 /** Relationship kind to the active character, used for the panel + labels. */
 export type FamilyRole = 'self' | 'mother' | 'father' | 'grandparent' | 'sibling' | 'spouse' | 'child';
@@ -28,6 +29,11 @@ export interface FamilyMember {
   metAge: number;
   /** Character age the last time "spend time" raised the bond (once per year). */
   lastSpentAge: number;
+  /** NPC vitals (C): 0–100 meters that drift every year. */
+  health?: number;
+  happiness?: number;
+  /** Engine career id when the member holds a job (drives job-family context). */
+  jobId?: string;
 }
 
 export interface FamilyEdge {
@@ -87,6 +93,8 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     bond: BOND_MAX,
     metAge: 0,
     lastSpentAge: 0,
+    health: character.stats.health,
+    happiness: character.stats.happiness,
   };
 
   const motherAge = character.age + rollAge([24, 34], rng);
@@ -98,10 +106,12 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     gender: 'female',
     role: 'mother',
     age: motherAge,
-    alive: rollAlive(motherAge, rng),
+    alive: true,
     bond: rng.rangeInt(72, 88),
     metAge: 0,
     lastSpentAge: -1,
+    health: rng.rangeInt(70, 92),
+    happiness: rng.rangeInt(60, 88),
   };
 
   const father: FamilyMember = {
@@ -110,10 +120,12 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     gender: 'male',
     role: 'father',
     age: fatherAge,
-    alive: rollAlive(fatherAge, rng),
+    alive: true,
     bond: rng.rangeInt(68, 86),
     metAge: 0,
     lastSpentAge: -1,
+    health: rng.rangeInt(68, 90),
+    happiness: rng.rangeInt(58, 86),
   };
 
   const grandmotherAge = character.age + rollAge([48, 62], rng);
@@ -129,6 +141,8 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     bond: rng.rangeInt(52, 74),
     metAge: 0,
     lastSpentAge: -1,
+    health: rng.rangeInt(55, 82),
+    happiness: rng.rangeInt(50, 80),
   };
 
   const grandfather: FamilyMember = {
@@ -141,6 +155,8 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     bond: rng.rangeInt(48, 72),
     metAge: 0,
     lastSpentAge: -1,
+    health: rng.rangeInt(52, 80),
+    happiness: rng.rangeInt(48, 78),
   };
 
   const members = [self, mother, father, grandmother, grandfather];
@@ -210,6 +226,8 @@ export function birthChild(tree: FamilyTree, character: Character, rng: RNG): Fa
     bond: 60,
     metAge: character.age,
     lastSpentAge: -1,
+    health: 95,
+    happiness: rng.rangeInt(70, 90),
   };
   return {
     selfId: tree.selfId,
@@ -219,35 +237,63 @@ export function birthChild(tree: FamilyTree, character: Character, rng: RNG): Fa
 }
 
 /**
- * Advance the household one year: the character's own member mirrors their
- * true age, and every other living member ages by exactly one year. Pure and
- * deterministic (no death rolls) — deaths are driven by the character.
+ * Age-based death probability for family members. Returns true if the
+ * member should die this year. Only applies to non-self members who are alive.
  */
-export function ageFamilyMembers(tree: FamilyTree, characterAge: number): FamilyTree {
+function shouldFamilyMemberDie(age: number, rng: RNG): boolean {
+  if (age < 70) return false;
+  // 3% per year from 70-84, 6% from 85-94, 10% from 95+
+  const chance = age < 85 ? 0.03 : age < 95 ? 0.06 : 0.10;
+  return rng.chance(chance);
+}
+
+/**
+ * Advance the household one year: the character's own member mirrors their
+ * true age, every other living member ages by exactly one year, and elderly
+ * family members may pass away. Deaths are rolled deterministically from the
+ * supplied RNG so saves remain reproducible.
+ */
+export function ageFamilyMembers(tree: FamilyTree, characterAge: number, rng: RNG): FamilyTree {
   const members = tree.members.map((member) => {
     if (member.role === 'self') return { ...member, age: characterAge };
     if (!member.alive) return member;
-    return { ...member, age: member.age + 1 };
+    const newAge = member.age + 1;
+    if (shouldFamilyMemberDie(newAge, rng)) {
+      return { ...member, age: newAge, alive: false };
+    }
+    // Passive bond decay (C): relationships cool a little when not tended.
+    const decayedBond = Math.max(30, member.bond - 1);
+    return {
+      ...member,
+      age: newAge,
+      bond: decayedBond,
+      ...(member.health !== undefined && member.happiness !== undefined
+        ? {
+            health: clamp(member.health + rng.rangeInt(-3, 1), 0, 100),
+            happiness: clamp(member.happiness + rng.rangeInt(-2, 2), 0, 100),
+          }
+        : {}),
+    };
   });
   return { ...tree, members };
 }
 
-/** Human label for a member in the panel (e.g. "Mother", "Grandmother"). */
+/** Human label for a member in the panel (e.g. "আম্মা", "আব্বা", "দাদী"). */
 export function relationLabel(member: FamilyMember): string {
   switch (member.role) {
     case 'self':
-      return 'You';
+      return 'তুমি';
     case 'mother':
-      return 'Mother';
+      return 'আম্মা';
     case 'father':
-      return 'Father';
+      return 'আব্বা';
     case 'grandparent':
-      return member.gender === 'female' ? 'Grandmother' : 'Grandfather';
+      return member.gender === 'female' ? 'দাদী / নানী' : 'দাদা / নানা';
     case 'sibling':
-      return member.gender === 'female' ? 'Sister' : 'Brother';
+      return member.gender === 'female' ? 'বোন' : 'ভাই';
     case 'spouse':
-      return 'Spouse';
+      return member.gender === 'female' ? 'বউ (স্ত্রী)' : 'স্বামী (জামাই)';
     case 'child':
-      return 'Child';
+      return member.gender === 'female' ? 'মেয়ে' : 'ছেলে';
   }
 }

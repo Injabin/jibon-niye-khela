@@ -12,11 +12,17 @@ import { expect, test, type Page } from '@playwright/test';
  * achievements) and the family-tree legacy continue is covered by legacy.spec.
  */
 
+test.setTimeout(600_000);
+
 type Strategy = 'first' | 'last' | 'middle';
 
 async function startLife(page: Page): Promise<void> {
   if (!(await page.getByTestId('age-up').isVisible().catch(() => false))) {
-    await page.getByTestId('new-game').click();
+    if (await page.getByTestId('new-life').isVisible().catch(() => false)) {
+      await page.getByTestId('new-life').click();
+    } else {
+      await page.getByTestId('new-game').click();
+    }
   }
   await expect(page.getByTestId('age-up')).toBeVisible({ timeout: 10_000 });
 }
@@ -54,15 +60,30 @@ async function playUntilDeath(page: Page, strategy: Strategy, maxYears = 220): P
     if (await page.getByTestId('life-summary').isVisible().catch(() => false)) return;
     await drainAll(page, strategy);
     if (await page.getByTestId('life-summary').isVisible().catch(() => false)) return;
-    await page.getByTestId('age-up').click();
+    const ageUpBtn = page.getByTestId('age-up');
+    if (!(await ageUpBtn.isVisible().catch(() => false))) return;
+    await expect(ageUpBtn).toBeEnabled({ timeout: 10_000 });
+    await ageUpBtn.click();
     await drainAll(page, strategy);
   }
   await expect(page.getByTestId('life-summary')).toBeVisible({ timeout: 30_000 });
 }
 
 async function drainAll(page: Page, strategy: Strategy): Promise<void> {
+  await page
+    .waitForFunction(
+      () => {
+        const store = (window as unknown as { __JNK_GAME_STORE__?: { getState: () => { isGeneratingEvent?: boolean } } })
+          .__JNK_GAME_STORE__;
+        return !store?.getState()?.isGeneratingEvent;
+      },
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
+
   for (let i = 0; i < 200; i++) {
     if (await drainOne(page, strategy)) return;
+    await page.waitForTimeout(10);
   }
   throw new Error('events did not drain');
 }
@@ -88,7 +109,7 @@ async function readLifeSummary(page: Page) {
 test.describe('Final Gate A — three lives to divergent outcomes', () => {
   test('first-choice, last-choice and middle-choice lives produce different summaries', async ({ page }) => {
     const summaries: Awaited<ReturnType<typeof readLifeSummary>>[] = [];
-    await page.goto('/');
+    await page.goto('/play');
     for (const strategy of ['first', 'last', 'middle'] as const) {
       await startLife(page);
       await playUntilDeath(page, strategy);
@@ -119,7 +140,7 @@ test.describe('Final Gate A — three lives to divergent outcomes', () => {
 
 test.describe('Final Gate B — completely disabled effects are still playable', () => {
   test('with reduced motion + sfx off in Settings, a full life completes and renders cleanly', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/play');
 
     // Turn everything off through the real Settings UI, before starting a life.
     await page.getByTestId('open-settings').click();

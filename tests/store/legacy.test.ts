@@ -46,7 +46,7 @@ describe('continueAsHeir (M5 #4)', () => {
     expect(s.character!.name).not.toBe('');
     expect(s.character!.surname).toBe(before.character!.surname);
     expect(s.character!.money).toBe(60_000);
-    expect(s.character!.flags).toEqual([]);
+    expect(s.character!.flags).toContain('religion_muslim');
     expect(s.pendingEvents).toEqual([]);
     expect(s.seed).not.toBe(before.seed);
     expect(s.rngState).toBe(s.seed >>> 0);
@@ -73,7 +73,7 @@ describe('continueAsHeir (M5 #4)', () => {
     alive.newGame(103);
     const a = useGameStore.getState();
     const tree = a.familyTree!;
-    const grown = ageFamilyMembers(tree, 60);
+    const grown = ageFamilyMembers(tree, 60, new RNG(54));
     useGameStore.setState({ familyTree: grown });
     // The character is alive — legacy must not fire.
     expect(useGameStore.getState().continueAsHeir('any-id')).toBe(false);

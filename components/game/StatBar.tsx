@@ -3,13 +3,16 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { motion as motionTokens } from '@/lib/theme';
+import { STAT_META, type StatKey } from '@/lib/theme/concepts';
+import { Icon } from '@/components/ui/Icon';
 
 /**
- * DESIGN.md §6 point 3 — "stat bars that fight back":
- * fills animate, drops shake + flash red while the number ticks down, rises
- * glow gold. Js timings come straight from the theme tokens; reduced-motion
- * (system or Settings) turns every animation instant via MotionConfig and the
- * dataset flag.
+ * DESIGN.md §6 point 3 — "stat bars that fight back", reskinned under
+ * "Modern Martial" (§0 mapping): fills animate, drops shake + flash, rises
+ * glow. A stat carries a DISPLAY label (e.g. "Martial Skill") and an ENGINE
+ * key (`smarts`) — the engine key drives the progressbar accessible name
+ * (`Health/Happiness/Smarts/Looks`, required by helpers.ts) and the
+ * `stat-<key>` testid, while `label` is what the player sees.
  */
 
 function useAnimatedNumber(target: number) {
@@ -47,11 +50,14 @@ function useAnimatedNumber(target: number) {
 interface StatBarProps {
   label: string;
   value: number;
+  /** Engine key for the accessible name + testid (not the display label). */
+  statKey: StatKey;
 }
 
-export function StatBar({ label, value }: StatBarProps) {
+export function StatBar({ label, value, statKey }: StatBarProps) {
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
   const display = useAnimatedNumber(clamped);
+  const meta = STAT_META[statKey];
 
   const prevValue = useRef(value);
   const [pulse, setPulse] = useState<'up' | 'down' | null>(null);
@@ -73,28 +79,32 @@ export function StatBar({ label, value }: StatBarProps) {
   const flashOpacity = pulse === 'down' ? 0.45 : pulse === 'up' ? 0.3 : 0;
 
   return (
-    <div className="flex items-center gap-3" data-testid={`stat-${label.toLowerCase()}`}>
-      <span className="w-24 shrink-0 text-sm text-text-muted">{label}</span>
+    <div className="flex items-center gap-3" data-testid={`stat-${statKey}`}>
+      <span className="flex w-28 shrink-0 items-center gap-1.5 text-sm text-text-muted">
+        <Icon name={meta.icon} size={14} className="shrink-0" styleColor={meta.fillVar} />
+        <span className="truncate">{label}</span>
+      </span>
 
       <motion.div
-        className="relative h-3 flex-1 overflow-hidden rounded-full bg-border"
+        className="relative h-3 flex-1 overflow-hidden rounded-md bg-border"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={label}
+        aria-label={meta.readable}
         animate={{ x: shakeX }}
         transition={{ duration: motionTokens.micro, ease: 'easeInOut' }}
       >
         <motion.div
-          className="h-3 rounded-full bg-primary"
-          data-testid={`stat-fill-${label.toLowerCase()}`}
+          className="h-3 rounded-md"
+          style={{ backgroundColor: meta.fillVar }}
+          data-testid={`stat-fill-${statKey}`}
           animate={{ width: `${clamped}%` }}
           transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
         />
         <motion.div
           key={pulseCount}
-          className="pointer-events-none absolute inset-0 rounded-full"
+          className="pointer-events-none absolute inset-0 rounded-md"
           aria-hidden="true"
           initial={{ opacity: 0 }}
           animate={{ opacity: flashOpacity }}
@@ -103,7 +113,10 @@ export function StatBar({ label, value }: StatBarProps) {
         />
       </motion.div>
 
-      <span className="w-8 shrink-0 text-right text-sm tabular-nums text-text">{display}</span>
+      <span className="w-8 shrink-0 text-right text-sm font-bold tabular-nums text-text">{display}</span>
     </div>
   );
 }
+
+export type { StatKey };
+export { STAT_META };

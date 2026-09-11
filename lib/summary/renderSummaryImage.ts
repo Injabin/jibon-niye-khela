@@ -35,8 +35,8 @@ const METRIC_COLOR: Record<Metric, string> = {
 const METRIC_LABEL: Record<Metric, string> = {
   health: 'Health',
   happiness: 'Happiness',
-  smarts: 'Smarts',
-  looks: 'Looks',
+  smarts: 'Martial Skill',
+  looks: 'Honor',
 };
 
 export interface SummaryPostcardInput {
@@ -221,7 +221,7 @@ export function renderSummaryPostcard({ character, ribbons }: SummaryPostcardInp
   ctx.fillText('year old', CANVAS_WIDTH - 72, 130);
   ctx.fillStyle = PALETTE.money;
   ctx.font = '700 34px ui-monospace, monospace';
-  ctx.fillText(`Net worth: $ ${character.money.toLocaleString('en-US')}`, CANVAS_WIDTH - 72, 182);
+  ctx.fillText(`Net worth: ${character.money.toLocaleString('en-US')} coins`, CANVAS_WIDTH - 72, 182);
   ctx.restore();
 
   ctx.save();

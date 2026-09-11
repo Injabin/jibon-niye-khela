@@ -27,14 +27,14 @@ export interface CrimeDef {
 
 /** Abstracted crime ladder — flavor, not how-to (DESIGN.md §5.6, §11). */
 export const CRIMES: readonly CrimeDef[] = [
-  { id: 'shoplift', label: 'shoplifting', tier: 'petty', reward: [20, 80], sentence: [0, 1], risk: 0.2 },
-  { id: 'vandalism', label: 'vandalism', tier: 'petty', reward: [30, 120], sentence: [0, 1], risk: 0.25 },
-  { id: 'pickpocket', label: 'pickpocketing', tier: 'petty', reward: [40, 150], sentence: [0, 2], risk: 0.3 },
-  { id: 'auto_theft', label: 'grand theft auto', tier: 'grand', reward: [500, 2_000], sentence: [1, 3], risk: 0.45 },
-  { id: 'burglary', label: 'burglary', tier: 'grand', reward: [800, 3_000], sentence: [1, 4], risk: 0.5 },
-  { id: 'fraud', label: 'fraud', tier: 'grand', reward: [1_000, 5_000], sentence: [2, 5], risk: 0.4 },
-  { id: 'heist', label: 'a heist', tier: 'organized', reward: [5_000, 20_000], sentence: [3, 7], risk: 0.65 },
-  { id: 'racket', label: 'a racket', tier: 'organized', reward: [10_000, 30_000], sentence: [4, 8], risk: 0.6 },
+  { id: 'shoplift', label: 'দোকানে ছিঁচকে চুরি', tier: 'petty', reward: [20, 80], sentence: [0, 1], risk: 0.2 },
+  { id: 'vandalism', label: 'বাসে হাফ পাস নিয়া গ্যাঞ্জাম', tier: 'petty', reward: [30, 120], sentence: [0, 1], risk: 0.25 },
+  { id: 'pickpocket', label: 'সদরঘাটের চিপা গলিতে পকেটমারি', tier: 'petty', reward: [40, 150], sentence: [0, 2], risk: 0.3 },
+  { id: 'auto_theft', label: 'মোটরবাইক ও রিকশার পার্টস চুরি', tier: 'grand', reward: [500, 2_000], sentence: [1, 3], risk: 0.45 },
+  { id: 'burglary', label: 'চকবাজারের গুদামে সিঁধেল চুরি', tier: 'grand', reward: [800, 3_000], sentence: [1, 4], risk: 0.5 },
+  { id: 'fraud', label: 'নকল দলিলের জমি জালিয়াতি', tier: 'grand', reward: [1_000, 5_000], sentence: [2, 5], risk: 0.4 },
+  { id: 'heist', label: 'তাঁতিবাজারের গহনার দোকানে ডাকাতি', tier: 'organized', reward: [5_000, 20_000], sentence: [3, 7], risk: 0.65 },
+  { id: 'racket', label: 'পরিবহন সিন্ডিকেটের তোলাবাজি', tier: 'organized', reward: [10_000, 30_000], sentence: [4, 8], risk: 0.6 },
 ];
 
 export interface CrimeOutcome {
@@ -65,21 +65,21 @@ export function arrestChanceFor(crime: CrimeDef, karma: number): number {
 
 export function commitCrime(character: Character, rng: RNG, crimeId: string): CrimeOutcome {
   if (!character.alive) {
-    return { arrested: false, reward: 0, jailYears: 0, text: 'You cannot commit crimes now.', tone: 'bad' };
+    return { arrested: false, reward: 0, jailYears: 0, text: 'গোরস্তানের নিচে পা নাই, অপরাধ করবো কিসের? ভূতের ভাজা সপ্ন দেইখো না!', tone: 'bad' };
   }
   const crime = CRIMES.find((c) => c.id === crimeId);
   if (!crime) {
-    return { arrested: false, reward: 0, jailYears: 0, text: 'That is not a known crime.', tone: 'neutral' };
+    return { arrested: false, reward: 0, jailYears: 0, text: 'এমন অপরাধের কথা পুলিশও শুনে নাই!', tone: 'neutral' };
   }
   if (isJailed(character)) {
-    return { arrested: false, reward: 0, jailYears: 0, text: 'You are already inside.', tone: 'neutral' };
+    return { arrested: false, reward: 0, jailYears: 0, text: 'তুমি তো অলরেডি জেলের ঘানি টানতাছো (already inside), বাইরে আসবা ক্যামনে?', tone: 'neutral' };
   }
 
   const caught = rng.chance(arrestChanceFor(crime, character.reputation.karma));
   if (caught) {
     const sentenceYears = rng.rangeInt(crime.sentence[0], crime.sentence[1]);
     character.criminalRecord.push({
-      offense: crime.label,
+      offense: crime.id,
       age: character.age,
       sentenceYears,
       served: false,
@@ -92,8 +92,8 @@ export function commitCrime(character: Character, rng: RNG, crimeId: string): Cr
       reward: 0,
       jailYears: sentenceYears,
       text: sentenceYears > 0
-        ? `${crime.label} does not pay the way they promised. The judge sentences you to ${sentenceYears} year${sentenceYears === 1 ? '' : 's'}.`
-        : `The ${crime.label} attempt ends with a warning — but a record nonetheless.`,
+        ? `${crime.label} করতে গিয়া ধরা খাইলা! পুলিশ ধইরা চালান দিল, ম্যাজিস্ট্রেট তোমারে ${sentenceYears} বছরের সশ্রম কারাদণ্ড দিয়া জেলে পাঠাইলো!`
+        : `${crime.label} করতে গিয়া হাতেনাতে ধরা খাইলা! পুলিশ কান ধইরা চরম ধমক দিয়া ছাড়লো, তয় খাতায় নাম উইঠা গেল!`,
       tone: 'bad',
     };
   }
@@ -104,7 +104,7 @@ export function commitCrime(character: Character, rng: RNG, crimeId: string): Cr
     arrested: false,
     reward,
     jailYears: 0,
-    text: `The ${crime.label} comes off without a hitch. ${reward.toLocaleString()} coins richer.`,
+    text: `${crime.label} এক্কেরে পানির লাহান সফল! সটকে পইড়া পকেট গরম করলা, লাভ হইলো ৳${reward.toLocaleString()}!`,
     tone: 'funny',
   };
 }
@@ -127,13 +127,13 @@ export function tickCrime(character: Character): CrimeOutcome | null {
     entry.sentenceYears = 0;
     character.flags = character.flags.filter((f) => f !== 'in_jail');
     setFlag(character, 'gone_straight');
-    return { arrested: false, reward: 0, jailYears: 0, text: 'Release day. The world looks bigger than you left it.', tone: 'good' };
+    return { arrested: false, reward: 0, jailYears: 0, text: 'সাজার মেয়াদ শেষ! জেলের ফটক খুইলা তোমারে খালাস দিল। দুনিয়ায় আইসা বুক ভইরা নিশ্বাস নিলা!', tone: 'good' };
   }
   return {
     arrested: false,
     reward: 0,
     jailYears: entry.sentenceYears,
-    text: `${entry.sentenceYears} year${entry.sentenceYears === 1 ? '' : 's'} left to serve for ${entry.offense}.`,
+    text: `${entry.offense} অপরাধের জেল এখনো ${entry.sentenceYears} বছর বাকি রইছে। জেলের ডাল-ভাত খাইয়া দিন কাটতাছে।`,
     tone: 'neutral',
   };
 }

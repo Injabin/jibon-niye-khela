@@ -45,7 +45,7 @@ export function Button({ variant = 'primary', children, className = '', onClick,
       ? 'bg-primary text-on-primary hover:opacity-90'
       : variant === 'secondary'
         ? 'border border-border bg-surface text-text hover:bg-surface-raised'
-        : 'border border-danger/40 bg-transparent text-danger hover:bg-danger/10';
+        : 'border border-danger-border bg-transparent text-danger-text hover:bg-danger/10';
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (!rest.disabled) {

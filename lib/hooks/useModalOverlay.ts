@@ -44,7 +44,11 @@ export function useModalOverlay(active: boolean, onClose: () => void) {
     }
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCloseRef.current();
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        event.preventDefault();
+        onCloseRef.current();
+      }
     };
 
     const restoreFocus = () => returnFocus.current?.focus?.();

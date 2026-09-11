@@ -17,11 +17,21 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const IGNORE_DIRS = new Set(['node_modules', '.next', '.git', '.cache']);
+const IGNORE_DIRS = new Set(['node_modules', '.next', '.git', '.cache', '.lighthouse', 'docs', 'test-results']);
 const IGNORE_EXT = new Set(['tsbuildinfo']);
 // The sweep tool itself describes what it guards against; allow it next to
 // the reference docs.
-const REFERENCE_DOCS = new Set(['TESTING.md', 'DESIGN.md', 'AGENT.md', 'init.md', 'legal-sweep.mjs']);
+const REFERENCE_DOCS = new Set([
+  'TESTING.md',
+  'DESIGN.md',
+  'AGENT.md',
+  'init.md',
+  'legal-sweep.mjs',
+  'Additional_plus_improved_plan.md',
+  'UI-DESIGN.md',
+  'ui-ux-guide.md',
+  'AGENTS.md',
+]);
 
 const TRADEMARK = /bitlife|bit[ -]life/i;
 const BRANDS_AND_PEOPLE = new RegExp(
@@ -69,7 +79,7 @@ function scan() {
     };
 
     check(TRADEMARK, 'trademark: BitLife', true);
-    check(BRANDS_AND_PEOPLE, 'brand/celebrity', false);
+    check(BRANDS_AND_PEOPLE, 'brand/celebrity', true);
   }
   return violations;
 }

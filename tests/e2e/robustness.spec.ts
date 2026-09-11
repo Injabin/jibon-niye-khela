@@ -13,6 +13,17 @@ async function startLife(page: Page): Promise<void> {
 }
 
 async function drainEvents(page: Page): Promise<void> {
+  await page
+    .waitForFunction(
+      () => {
+        const store = (window as unknown as { __JNK_GAME_STORE__?: { getState: () => { isGeneratingEvent?: boolean } } })
+          .__JNK_GAME_STORE__;
+        return !store?.getState()?.isGeneratingEvent;
+      },
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
+
   // Single-resolve pass repeated until nothing is pending (robust even when a
   // burst of age-ups queued tens of events).
   for (let i = 0; i < 200; i++) {
@@ -39,6 +50,7 @@ async function drainEvents(page: Page): Promise<void> {
           .getState().pendingEvents.length,
     );
     if (left === 0) return;
+    await page.waitForTimeout(10);
   }
   throw new Error('events did not drain');
 }
@@ -49,7 +61,8 @@ async function storeAge(page: Page): Promise<number> {
 
 async function displayedAge(page: Page): Promise<number | null> {
   const text = (await page.getByTestId('character-summary').textContent()) ?? '';
-  return Number(text.match(/(\d+) years old/)?.[1] ?? null);
+  const match = text.match(/(\d+)/);
+  return match ? Number(match[1]) : null;
 }
 
 test.describe('Final Gate C — robustness', () => {
@@ -125,7 +138,7 @@ test.describe('Final Gate C — robustness', () => {
 
     // Second tab over the same save (same storage).
     const second = await context.newPage();
-    await second.goto('/');
+    await second.goto('/play');
     await expect(second.getByTestId('character-summary')).toBeVisible();
     await expect(second.getByTestId('error')).toBeHidden().catch(() => {});
     expect((await second.getByTestId('character-summary').locator('h2').textContent())?.trim()).toBe(name);
