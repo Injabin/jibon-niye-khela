@@ -12,7 +12,13 @@
 import type { RNG } from '@/lib/engine/rng';
 import { applyStatEffects } from '@/lib/engine/stats';
 import { seedClassmates } from '@/lib/engine/relationships';
-import type { Character, EducationStage, Tone } from '@/lib/engine/types';
+import type { Character, EducationSchool, EducationStage, Tone } from '@/lib/engine/types';
+import {
+  defaultSchoolForStage,
+  findSchoolById,
+  stageForAge,
+  type SchoolDef,
+} from '@/content/education/schools';
 
 export interface EducationOutcome {
   text: string;
@@ -28,6 +34,36 @@ export const MAJOR_FLAG: Record<MajorField, string> = {
   medicine: 'major_medicine',
   law: 'major_law',
 };
+
+export interface SubjectMeta {
+  label: string;
+  institute: string;
+  minSmarts: number;
+}
+
+/** Higher-studies subjects (H): the player picks one, gated by smarts. */
+export const SUBJECTS: Record<MajorField, SubjectMeta> = {
+  stem: { label: 'ইঞ্জিনিয়ারিং / বিজ্ঞান', institute: 'বুয়েট', minSmarts: 70 },
+  medicine: { label: 'ডাক্তারি (এমবিবিএস)', institute: 'মিটফোর্ড মেডিকেল কলেজ', minSmarts: 80 },
+  law: { label: 'আইন বিভাগ', institute: 'ঢাকা বিশ্ববিদ্যালয়', minSmarts: 65 },
+  business: { label: 'বাণিজ্য ও ব্যবসা', institute: 'ঢাকা বিশ্ববিদ্যালয়', minSmarts: 55 },
+  arts: { label: 'সাহিত্য ও মানবিক', institute: 'জগন্নাথ বিশ্ববিদ্যালয়', minSmarts: 40 },
+};
+
+/** Subjects the player may currently take, given their smarts (bitlife gate). */
+export function eligibleSubjects(character: Character): MajorField[] {
+  return (Object.keys(SUBJECTS) as MajorField[]).filter(
+    (m) => character.stats.smarts >= SUBJECTS[m].minSmarts,
+  );
+}
+
+function subjectByMajor(major: MajorField): string {
+  return `${SUBJECTS[major].label} — ${SUBJECTS[major].institute}`;
+}
+
+function toEducationSchool(def: SchoolDef): EducationSchool {
+  return { id: def.id, name: def.name, stage: def.stage, prestige: def.prestige };
+}
 
 export const SCHOOL_START_AGE = 6;
 export const SCHOOL_END_AGE = 17;
@@ -74,10 +110,8 @@ export function gpaFor(character: Character, rng: RNG): number {
 
 /** Post-secondary major suggestion driven by smarts (DESIGN.md §5.1). */
 function chooseMajor(character: Character, rng: RNG): MajorField {
-  const smarts = character.stats.smarts;
-  if (smarts >= 75) return rng.pick(['stem', 'medicine'] as const);
-  if (smarts >= 55) return rng.pick(['stem', 'business', 'law'] as const);
-  return rng.pick(['business', 'arts'] as const);
+  const pool = eligibleSubjects(character);
+  return rng.pick(pool.length > 0 ? pool : ['arts']);
 }
 
 function setMajor(character: Character, major: string): void {
@@ -97,19 +131,12 @@ function toggleStudentFlag(character: Character, enrolled: boolean): void {
   }
 }
 
-export const MAJOR_NAMES_BANGLA: Record<MajorField, string> = {
-  stem: 'বুয়েটে ইঞ্জিনিয়ারিং',
-  medicine: 'মিটফোর্ড মেডিকেল কলেজে ডাক্তারি',
-  law: 'ঢাকা বিশ্ববিদ্যালয়ের আইন বিভাগ',
-  business: 'ঢাকা বিশ্ববিদ্যালয়ে বাণিজ্য ও ব্যবসা শিক্ষা',
-  arts: 'জগন্নাথ বিশ্ববিদ্যালয়ে সাহিত্য ও মানবিক',
-};
-
 /** Post-secondary enrollment of the player's choosing (DESIGN.md §5.1). */
 export function enterHigherEducation(
   character: Character,
   rng: RNG,
   path: 'undergraduate' | 'vocational',
+  major?: MajorField,
 ): EducationOutcome & { accepted: boolean } {
   const e = character.education;
 
@@ -149,20 +176,75 @@ export function enterHigherEducation(
     };
   }
 
-  const major = chooseMajor(character, rng);
+  // A player-chosen subject must clear its own smarts gate (H).
+  if (major && character.stats.smarts < SUBJECTS[major].minSmarts) {
+    return {
+      accepted: false,
+      text: `${SUBJECTS[major].institute}-র ভর্তি গেটের জন্য বুদ্ধি কম পড়তাছে — আগে পড়াশোনায় আরও জোর দেও!`,
+      tone: 'neutral',
+    };
+  }
+
+  const chosen = major ?? chooseMajor(character, rng);
   e.stage = 'undergraduate';
   e.enrolled = true;
   e.enrolledAge = character.age;
-  setMajor(character, major);
+  setMajor(character, chosen);
   toggleStudentFlag(character, true);
   if (!hasFlag(character, 'education_university')) character.flags.push('education_university');
   applyStatEffects(character, { money: -UNDERGRAD_TUITION });
   if (character.money < 0 && !hasFlag(character, 'has_debt')) character.flags.push('has_debt');
   return {
     accepted: true,
-    text: `${MAJOR_NAMES_BANGLA[major]} শাখায় ভর্তি পাইলা! টিউশন ফির ধাক্কা আছে, তয় ক্যাম্পাসে তোমার কদর এহন তুঙ্গে!`,
+    text: `${subjectByMajor(chosen)} শাখায় ভর্তি পাইলা! টিউশন ফির ধাক্কা আছে, তয় ক্যাম্পাসে তোমার কদর এহন তুঙ্গে!`,
     tone: 'good',
   };
+}
+
+/**
+ * BitLife-style school application (H). The player picks a school for the
+ * current schooling stage; selective schools need the smarts gate, private
+ * schools need the tuition. Re-applying moves the child to the new school.
+ */
+export function applyToSchool(
+  character: Character,
+  schoolId: string,
+  _rng: RNG,
+): { accepted: boolean; text: string } {
+  const school = findSchoolById(schoolId);
+  if (!school) return { accepted: false, text: 'ওই নামে কোনো স্কুল পাইলাম না!' };
+
+  const stage = stageForAge(character.age);
+  if (!stage || stage !== school.stage) {
+    return { accepted: false, text: `এহন ${school.stage}-তে ভর্তির সময় না — বয়স মিলতেছে না!` };
+  }
+
+  const e = character.education;
+  if (e.graduated) return { accepted: false, text: 'পড়াশোনার পাট তো চুকাইয়া ফালাইছো, এহন স্কুলে কি করবা!' };
+  if (e.stage === 'dropped') return { accepted: false, text: 'স্কুল ছাড়াই ফেলার পর আবার ভর্তি? আগে মাথা ঠিক করো!' };
+
+  if (school.minSmarts !== undefined && character.stats.smarts < school.minSmarts) {
+    return { accepted: false, text: `${school.name}-র ভর্তি পরীক্ষায় নম্বরের ঘাটতি — তোরে নিবে না!` };
+  }
+  if (character.money < school.tuition) {
+    return { accepted: false, text: `টিউশন ফি ৳${school.tuition} দেবার পয়সা পকেটে নাই!` };
+  }
+  if (e.school?.id === school.id) {
+    return { accepted: false, text: `তুমি তো অলরেডি ${school.name}-তে পড়তাছো!` };
+  }
+
+  character.money -= school.tuition;
+  e.school = toEducationSchool(school);
+  e.stage = school.stage;
+  e.enrolled = true;
+  toggleStudentFlag(character, true);
+  if (e.gpa === 0 && character.age >= 6) e.gpa = gpaFor(character, _rng);
+  const prestigeLine = school.prestige >= 2
+    ? ` নামকরা স্কুল হিসেবে বুদ্ধিতে একটু বেশি লাভ হইবো!`
+    : '';
+  const text = `${school.name} (${school.area})-তে ভর্তি হইলা!${prestigeLine}`;
+  character.history.push({ age: character.age, text, tone: 'good' });
+  return { accepted: true, text };
 }
 
 /** Yearly maintenance: school progression, GPA drift, higher-ed countdown. */
@@ -217,20 +299,25 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
       removeFlag(character, 'gpa_low');
     }
     if (changed) {
+      const schoolStage = stageForAge(age);
+      if (schoolStage && (!e.school || e.school.stage !== schoolStage)) {
+        e.school = toEducationSchool(defaultSchoolForStage(schoolStage));
+      }
+      const sn = e.school?.name ?? 'সরকারি স্কুল';
       if (e.stage === 'elementary') {
         return {
-          text: 'তুমি আরমানিটোলা সরকারি প্রাথমিক বিদ্যালয়ে ভর্তি হইলা। নতুন খাতা-কলম আর পেন্সিল বক্সের গন্ধে মনটা খুশিতে ঝলমল করতাছে!',
+          text: `${sn}-তে ভর্তি হইলা। নতুন খাতা-কলম আর পেন্সিল বক্সের গন্ধে মনটা খুশিতে ঝলমল করতাছে!`,
           tone: 'neutral',
         };
       }
       if (e.stage === 'middle') {
         return {
-          text: 'পগোজ স্কুলে নতুন ক্লাসে উঠলা! পুরান ঢাকার অলিগলিপথে বন্ধুদের লগে আড্ডা আর পড়ালেখার নতুন চাপ!',
+          text: `${sn}-র নতুন ক্লাসে উঠলা! পুরান ঢাকার অলিগলিপথে বন্ধুদের লগে আড্ডা আর পড়ালেখার নতুন চাপ!`,
           tone: 'neutral',
         };
       }
       return {
-        text: 'ঢাকা কলেজিয়েট স্কুলে এসএসসির পড়াশোনা শুরু হইলো! মুরব্বিরা কইলো—"এহন যদি মন দিয়া না পড়স, বাপে কিন্তু দোকানে বসায় দিবো!"',
+        text: `${sn}-তে এসএসসির পড়াশোনা শুরু হইলো! মুরব্বিরা কইলো—"এহন যদি মন দিয়া না পড়স, বাপে কিন্তু দোকানে বসায় দিবো!"`,
         tone: 'neutral',
       };
     }

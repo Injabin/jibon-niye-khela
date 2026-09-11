@@ -80,6 +80,13 @@ export type EducationStage =
   | 'vocational'
   | 'dropped';
 
+export interface EducationSchool {
+  id: string;
+  name: string;
+  stage: 'elementary' | 'middle' | 'high';
+  prestige: 1 | 2 | 3;
+}
+
 export interface EducationState {
   stage: EducationStage;
   enrolled: boolean;
@@ -88,6 +95,8 @@ export interface EducationState {
   graduated: boolean;
   /** Age at which post-secondary study began; drives the graduation countdown. */
   enrolledAge?: number;
+  /** The school currently attended (H — player-chosen, defaulted at auto-advance). */
+  school?: EducationSchool;
 }
 
 export interface CareerState {

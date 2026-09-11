@@ -23,7 +23,8 @@ import {
   prisonGym,
   prisonLibrary,
 } from '@/lib/engine/prison';
-import { enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
+import { applyToSchool, enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
+import type { MajorField } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
 import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
@@ -170,7 +171,9 @@ export interface GameStoreActions {
    * event, already studying/graduated, under 18, or an undergraduate with too
    * low smarts). Sets `message` to the outcome either way.
    */
-  enrollHigherEducation(path: 'undergraduate' | 'vocational'): boolean;
+  enrollHigherEducation(path: 'undergraduate' | 'vocational', major?: MajorField): boolean;
+  /** Active-menu education action (H): apply the child to a catalog school. */
+  applyToSchool(schoolId: string): boolean;
   /** Active-menu career action (DESIGN.md §5.2): apply to an eligible job. */
   applyForJob(jobId: string): boolean;
   /** Quit the current job, returning to the unemployed state. */
@@ -835,9 +838,16 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return { ok, message: text };
     },
 
-    enrollHigherEducation(path) {
+    enrollHigherEducation(path, major) {
       return runIdleAction((character, rng) => {
-        const out = enterHigherEducation(character, rng, path);
+        const out = enterHigherEducation(character, rng, path, major);
+        return { ok: out.accepted, text: out.text };
+      });
+    },
+
+    applyToSchool(schoolId) {
+      return runIdleAction((character, rng) => {
+        const out = applyToSchool(character, schoolId, rng);
         return { ok: out.accepted, text: out.text };
       });
     },

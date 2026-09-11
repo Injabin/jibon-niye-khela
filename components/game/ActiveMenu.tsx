@@ -8,6 +8,9 @@ import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { getFinance, LOAN_KIND_LABELS, netWorth, QUICK_BANK_AMOUNT } from '@/lib/engine/finance';
 import { peerRelationships, type PeerRelation } from '@/lib/engine/relationships';
+import { eligibleSubjects, SUBJECTS, type MajorField } from '@/lib/engine/events/categories/education';
+import { PRESTIGE_LABELS, schoolsForStage, stageForAge } from '@/content/education/schools';
+import type { SchoolDef } from '@/content/education/schools';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
@@ -63,6 +66,7 @@ export function ActiveMenu({
   const [tab, setTab] = useState<Tab>(initialTab);
 
   const enrollHigherEducation = useGameStore((s) => s.enrollHigherEducation);
+  const applyToSchool = useGameStore((s) => s.applyToSchool);
   const studyHarder = useGameStore((s) => s.studyHarder);
   const hireTutor = useGameStore((s) => s.hireTutor);
   const dropOutOfSchool = useGameStore((s) => s.dropOutOfSchool);
@@ -171,6 +175,7 @@ export function ActiveMenu({
                 <SchoolTab
                   character={character}
                   onEnroll={enrollHigherEducation}
+                  onApplySchool={applyToSchool}
                   onStudyHarder={studyHarder}
                   onHireTutor={hireTutor}
                   onDropOut={dropOutOfSchool}
@@ -236,11 +241,15 @@ export function ActiveMenu({
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  none: 'শুরু হয় নাই',
-  primary: 'প্রাথমিক বিদ্যালয়',
-  high: 'উচ্চ বিদ্যালয়',
-  undergraduate: 'বিশ্ববিদ্যালয়',
+  none: 'শুরু হয় নাই',
+  preschool: 'খেলাঘর / প্রাক-প্রাথমিক',
+  elementary: 'প্রাথমিক বিদ্যালয়',
+  middle: 'মাধ্যমিক বিদ্যালয়',
+  high: 'উচ্চ বিদ্যালয়',
+  undergraduate: 'বিশ্ববিদ্যালয়',
+  graduate: 'স্নাতকোত্তর',
   vocational: 'পলিটেকনিক / কারিগরি',
+  dropped: 'ড্রপআউট',
 };
 
 const RELATION_LABELS: Record<string, string> = {
@@ -333,6 +342,7 @@ function PeerCohort({ character, kind }: { character: Character; kind: PeerRelat
 function SchoolTab({
   character,
   onEnroll,
+  onApplySchool,
   onStudyHarder,
   onHireTutor,
   onDropOut,
@@ -340,7 +350,8 @@ function SchoolTab({
   onJoinDebateClub,
 }: {
   character: Character;
-  onEnroll: (path: 'undergraduate' | 'vocational') => boolean;
+  onEnroll: (path: 'undergraduate' | 'vocational', major?: MajorField) => boolean;
+  onApplySchool: (schoolId: string) => boolean;
   onStudyHarder: () => boolean;
   onHireTutor: () => boolean;
   onDropOut: () => boolean;
@@ -350,6 +361,10 @@ function SchoolTab({
   const education = character.education;
   const schoolDone = character.age >= 18;
   const stageName = STAGE_LABELS[education.stage] ?? education.stage;
+  const currentStage = stageForAge(character.age);
+  const availableSchools = currentStage ? schoolsForStage(currentStage) : [];
+  const subjects = eligibleSubjects(character);
+  const [selectedSubject, setSelectedSubject] = useState<MajorField | null>(null);
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -360,21 +375,68 @@ function SchoolTab({
         </p>
         <p className="text-xs text-zinc-400 mt-1">
           {education.enrolled
-            ? 'নিয়মিত শিক্ষাপ্রতিষ্ঠানে পড়াশোনা চলতাছে।'
+            ? education.school
+              ? `${education.school.name}তে পড়তাছো — এহন ইসকুল-কলেজের নজরকাড়া নাম!`
+              : 'নিয়মিত শিক্ষাপ্রতিষ্ঠানে পড়াশোনা চলতাছে।'
             : education.graduated
-            ? 'পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!'
+            ? 'পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!'
             : education.stage === 'dropped'
-            ? 'পড়াশোনা ছাইড়া দিয়া এহন মুক্ত বিহঙ্গের লাহান ঘুরতাছো!'
-            : 'পড়াশোনায় ভর্তি নাই।'}
+            ? 'পড়াশোনা ছাইড়া দিয়া এহন মুক্ত বিহঙ্গের লাহান ঘুরতাছো!'
+            : 'পড়াশোনায় ভর্তি নাই।'}
         </p>
       </div>
 
+      {currentStage && !education.graduated && education.stage !== 'dropped' && (
+        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">স্কুল বাছাও</p>
+            <p className="text-[11px] text-zinc-500">
+              নামকরা স্কুলে পড়লে বুদ্ধি বেশি বাড়ে, কিন্তু ভর্তি-পরীক্ষা ও ফি-র চ্যালেঞ্জ আছে!
+            </p>
+          </div>
+          <div className="space-y-2">
+            {availableSchools.map((school: SchoolDef) => {
+              const blocked =
+                education.school?.id === school.id ||
+                (school.minSmarts !== undefined && character.stats.smarts < school.minSmarts) ||
+                character.money < school.tuition;
+              return (
+                <div
+                  key={school.id}
+                  className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3"
+                  data-testid={`school-card-${school.id}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-white">{school.name}</p>
+                      <p className="text-[11px] text-zinc-400">
+                        {school.area} · {PRESTIGE_LABELS[school.prestige]}
+                        {school.tuition > 0 ? ` · ফি ৳${school.tuition}` : ' · ফ্রি'}
+                        {school.minSmarts !== undefined ? ` · বুদ্ধি ${school.minSmarts}+ লাগে` : ''}
+                      </p>
+                    </div>
+                    <Button
+                      variant={blocked ? 'secondary' : 'primary'}
+                      disabled={blocked}
+                      onClick={() => onApplySchool(school.id)}
+                      data-testid={`apply-school-${school.id}`}
+                    >
+                      {education.school?.id === school.id ? 'পড়তাছো' : 'ভর্তি হই'}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {education.enrolled && (
         <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">পড়াশোনার বিশেষ কারবার</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">পড়াশোনার বিশেষ কারবার</p>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onStudyHarder} data-testid="study-harder">
-              পড়াশোনায় জান দেওয়া (জিপিএ ও বুদ্ধি +)
+              পড়াশোনায় জান দেওয়া (জিপিএ ও বুদ্ধি +)
             </Button>
             <Button variant="secondary" onClick={onHireTutor} data-testid="hire-tutor">
               প্রাইভেট টিউটর ধরা (৳৫০০)
@@ -396,10 +458,39 @@ function SchoolTab({
 
       {!education.enrolled && !education.graduated && schoolDone && (
         <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">উচ্চশিক্ষায় ভর্তি</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">উচ্চশিক্ষায় ভর্তি</p>
+          <p className="text-[11px] text-zinc-500">
+            তোমার বুদ্ধি {character.stats.smarts} — নিচের বিষয়গুলোর মাঝে বাছাও (উপরে বুদ্ধি মান থাকলে শুধু ওইগুলাই চলে)
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {(Object.keys(SUBJECTS) as MajorField[]).map((m) => {
+              const eligible = subjects.includes(m);
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  disabled={!eligible}
+                  onClick={() => setSelectedSubject(selectedSubject === m ? null : m)}
+                  data-testid={`subject-${m}`}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                    selectedSubject === m
+                      ? 'bg-primary text-white'
+                      : eligible
+                      ? 'bg-white/[0.05] text-text hover:bg-white/[0.08]'
+                      : 'bg-white/[0.02] text-zinc-600 line-through'
+                  }`}
+                >
+                  {SUBJECTS[m].label} · {SUBJECTS[m].institute} ({SUBJECTS[m].minSmarts}+)
+                </button>
+              );
+            })}
+          </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => onEnroll('undergraduate')} data-testid="enroll-university">
-              ভার্সিটিতে ভর্তি হও (৳১,০০০)
+            <Button
+              onClick={() => onEnroll('undergraduate', selectedSubject ?? undefined)}
+              data-testid="enroll-university"
+            >
+              ভার্সিটিতে ভর্তি হও (৳১,০০০){selectedSubject ? ` — ${SUBJECTS[selectedSubject].label}` : ''}
             </Button>
             <Button variant="secondary" onClick={() => onEnroll('vocational')} data-testid="enroll-vocational">
               কারিগরি ট্রেডে ভর্তি হও (৳২৫০)
