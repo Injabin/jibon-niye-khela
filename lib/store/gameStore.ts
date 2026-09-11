@@ -127,6 +127,8 @@ export interface GameStoreState {
   currentEventIndex: number;
   savedAt: string | null;
   message: string | null;
+  /** Funny Dhakaiya rejection popup text — set when an action's outcome is a rejection (ok:false). */
+  rejection: string | null;
   error: string | null;
   isHydrated: boolean;
   /** Tone of the player's most recent choice — drives the avatar expression overlay. */
@@ -284,6 +286,8 @@ export interface GameStoreActions {
   setPaused(isPaused: boolean): void;
   /** Toggle pause state (Phase 10). */
   togglePause(): void;
+  /** Dismiss the current rejection popup after the player has read it. */
+  clearRejection(): void;
 }
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -296,6 +300,7 @@ const initialState: GameStoreState = {
   currentEventIndex: 0,
   savedAt: null,
   message: null,
+  rejection: null,
   error: null,
   isHydrated: false,
   lastOutcomeTone: null,
@@ -363,7 +368,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     if (!s.character || !s.character.alive || s.isPaused) return false;
     if (s.pendingEvents.length > 0) return false;
     if (!canSpendAction(s.character)) {
-      set({ message: ACTIVITY_BUDGET_EXCEEDED_MESSAGE, error: null });
+      set({ message: null, rejection: ACTIVITY_BUDGET_EXCEEDED_MESSAGE, error: null });
       return false;
     }
 
@@ -386,7 +391,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
       });
     }
 
-    set({ character, rngState: rng.getState(), message: result.text, error: null });
+    set({
+      character,
+      rngState: rng.getState(),
+      message: result.ok ? result.text : null,
+      rejection: result.ok ? null : result.text,
+      error: null,
+    });
     persist();
     return result.ok;
   }
@@ -401,7 +412,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     if (!s.character || !s.character.alive) return false;
     if (s.pendingEvents.length > 0) return false;
     if (!canSpendAction(s.character)) {
-      set({ message: ACTIVITY_BUDGET_EXCEEDED_MESSAGE, error: null });
+      set({ message: null, rejection: ACTIVITY_BUDGET_EXCEEDED_MESSAGE, error: null });
       return false;
     }
     return true;
@@ -427,6 +438,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           currentEventIndex: save.currentEventIndex ?? 0,
           savedAt: save.savedAt,
           message: null,
+          rejection: null,
           error: null,
           pendingSting: null,
           stingToken: 0,
@@ -522,6 +534,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         pendingSting: result.character.alive ? null : 'tombstone',
         stingToken: result.character.alive ? s.stingToken : s.stingToken + 1,
         message: null,
+        rejection: null,
         error: null,
         familyTree,
         isGeneratingEvent: false,
@@ -559,6 +572,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           pendingSting: 'tombstone',
           stingToken: s.stingToken + 1,
           message: null,
+          rejection: null,
           error: null,
           familyTree,
           isGeneratingEvent: false,
@@ -580,6 +594,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           lastOutcomeTone: null,
           pendingSting: null,
           message: null,
+          rejection: null,
           error: null,
           isGeneratingEvent: false,
         });
@@ -628,6 +643,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         lastOutcomeTone: null,
         pendingSting: null,
         message: null,
+        rejection: null,
         error: null,
         isGeneratingEvent: false,
       });
@@ -831,7 +847,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character,
         familyTree: { ...tree, members },
         rngState: rng.getState(),
-        message: text,
+        message: ok ? text : null,
+        rejection: ok ? null : text,
       });
 
       persist();
@@ -992,7 +1009,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1013,7 +1031,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1036,7 +1055,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character,
         familyTree,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         pendingSting: result.ok ? 'wedding' : null,
         stingToken: result.ok ? s.stingToken + 1 : s.stingToken,
         error: null,
@@ -1059,7 +1079,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1082,7 +1103,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character,
         familyTree,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1107,7 +1129,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1132,7 +1155,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1155,7 +1179,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
         character,
         familyTree,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         pendingSting: result.ok ? 'birth' : null,
         stingToken: result.ok ? s.stingToken + 1 : s.stingToken,
         error: null,
@@ -1176,7 +1201,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character,
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1195,7 +1221,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character,
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1214,7 +1241,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character,
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1235,7 +1263,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1256,7 +1285,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1275,7 +1305,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character,
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1296,7 +1327,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1317,7 +1349,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1397,7 +1430,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: result.text,
+        message: result.ok ? result.text : null,
+        rejection: result.ok ? null : result.text,
         error: null,
       });
       persist();
@@ -1427,7 +1461,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({
         character,
         rngState: rng.getState(),
-        message: out.text,
+        message: out.ok ? out.text : null,
+        rejection: out.ok ? null : out.text,
         error: null,
       });
       persist();
@@ -1593,6 +1628,10 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const isPaused = !get().isPaused;
       set({ isPaused });
       soundManager.duckMusic(isPaused);
+    },
+
+    clearRejection() {
+      set({ rejection: null });
     },
 
     resetGame() {

@@ -981,21 +981,19 @@ function RomanceTab({
                   </div>
                 </div>
 
-                {/* Romance Stage meter if defined */}
-                {partner.romanceStage !== undefined && (
-                  <div>
-                    <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
-                      <span>প্রেমের গভীরতা</span>
-                      <span className="font-mono">{partner.romanceStage}/100</span>
-                    </div>
-                    <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-400 transition-all"
-                        style={{ width: `${partner.romanceStage}%` }}
-                      />
-                    </div>
+                {/* Relational bond meter */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
+                    <span>প্রেমের গভীরতা</span>
+                    <span className="font-mono">{partner.meter}/100</span>
                   </div>
-                )}
+                  <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-400 transition-all"
+                      style={{ width: `${partner.meter}%` }}
+                    />
+                  </div>
+                </div>
 
                 {/* Actions based on relationship state */}
                 <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.05]">

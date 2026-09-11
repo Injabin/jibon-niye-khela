@@ -29,7 +29,7 @@ import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
-import { Sparkles, AlertCircle, Sliders, Settings } from 'lucide-react';
+import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown } from 'lucide-react';
 
 // Lazy-loaded family tree
 const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
@@ -76,7 +76,8 @@ export function GameHub() {
   const pendingEvents = useGameStore((s) => s.pendingEvents);
   const currentEventIndex = useGameStore((s) => s.currentEventIndex);
   const isHydrated = useGameStore((s) => s.isHydrated);
-  const message = useGameStore((s) => s.message);
+const message = useGameStore((s) => s.message);
+  const rejection = useGameStore((s) => s.rejection);
   const error = useGameStore((s) => s.error);
   const pendingSting = useGameStore((s) => s.pendingSting);
   const stingToken = useGameStore((s) => s.stingToken);
@@ -89,6 +90,7 @@ export function GameHub() {
   const exportToJson = useGameStore((s) => s.exportToJson);
   const importFromRaw = useGameStore((s) => s.importFromRaw);
   const resetGame = useGameStore((s) => s.resetGame);
+  const clearRejection = useGameStore((s) => s.clearRejection);
   const continueAsHeir = useGameStore((s) => s.continueAsHeir);
   const isPaused = useGameStore((s) => s.isPaused);
   const setPaused = useGameStore((s) => s.setPaused);
@@ -442,6 +444,26 @@ export function GameHub() {
               >
                 <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                 <span>{message}</span>
+              </div>
+            )}
+            {/* Rejection popup — funny Dhakaiya "you got rejected" notes. */}
+            {rejection && (
+              <div
+                className="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-gradient-to-r from-rose-950/80 to-rose-900/40 p-3.5 backdrop-blur-md text-xs font-medium text-rose-100 shadow-lg shadow-rose-950/40"
+                role="alert"
+                data-testid="rejection"
+              >
+                <ThumbsDown className="mt-0.5 size-4 shrink-0 text-rose-400" />
+                <span className="flex-1 leading-relaxed">{rejection}</span>
+                <button
+                  type="button"
+                  onClick={clearRejection}
+                  data-testid="dismiss-rejection"
+                  className="shrink-0 rounded-md px-1.5 py-0.5 text-rose-300 hover:bg-rose-500/20 hover:text-rose-100 transition-colors"
+                  aria-label="বন্ধ করো"
+                >
+                  ✕
+                </button>
               </div>
             )}
             {error && (
