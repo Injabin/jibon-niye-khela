@@ -63,7 +63,7 @@ export function LeftSidebar({
 
   return (
     <aside
-      className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20"
+      className="flex h-full min-h-0 flex-col justify-between overflow-y-auto rounded-3xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20 scrollbar-none"
       aria-label="চরিত্র আর নিয়ন্ত্রণ"
     >
       <div className="flex flex-col gap-4">

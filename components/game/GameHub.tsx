@@ -29,7 +29,7 @@ import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
-import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown } from 'lucide-react';
+import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, X } from 'lucide-react';
 
 // Lazy-loaded family tree
 const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
@@ -76,7 +76,7 @@ export function GameHub() {
   const pendingEvents = useGameStore((s) => s.pendingEvents);
   const currentEventIndex = useGameStore((s) => s.currentEventIndex);
   const isHydrated = useGameStore((s) => s.isHydrated);
-const message = useGameStore((s) => s.message);
+  const message = useGameStore((s) => s.message);
   const rejection = useGameStore((s) => s.rejection);
   const error = useGameStore((s) => s.error);
   const pendingSting = useGameStore((s) => s.pendingSting);
@@ -376,6 +376,37 @@ const message = useGameStore((s) => s.message);
         <div className="absolute -bottom-40 left-1/3 size-[650px] rounded-full bg-sky-500/[0.02] blur-[140px]" />
       </div>
 
+      <AnimatePresence>
+        {rejection && (
+          <motion.div
+            className="pointer-events-none fixed inset-x-3 top-3 z-[70] flex justify-center sm:inset-x-auto sm:right-5 sm:top-5"
+            initial={{ opacity: 0, y: -16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+          >
+            <div
+              className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-950/95 p-4 text-sm font-medium text-rose-50 shadow-2xl shadow-black/50 backdrop-blur-xl"
+              role="alert"
+              aria-live="assertive"
+              data-testid="rejection-popup"
+            >
+              <ThumbsDown className="mt-0.5 size-5 shrink-0 text-rose-300" aria-hidden="true" />
+              <p className="min-w-0 flex-1 leading-relaxed">{rejection}</p>
+              <button
+                type="button"
+                onClick={clearRejection}
+                data-testid="dismiss-rejection"
+                className="shrink-0 rounded-lg p-1 text-rose-200 transition-colors hover:bg-rose-400/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
+                aria-label="রিজেকশনের বার্তা বন্ধ করো"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top bar on Mobile (< 768px) */}
       {isMobile && character && (
         <div className="relative z-20">
@@ -390,20 +421,18 @@ const message = useGameStore((s) => s.message);
       */}
       <div className="relative z-10 mx-auto w-full max-w-[1700px] px-3 sm:px-4 md:px-6 xl:px-8 py-3 sm:py-4 lg:py-6">
         <div
-          className={`grid items-start ${
-            isMobile
+          className={`grid items-start ${isMobile
               ? 'grid-cols-1'
               : isTablet
                 ? 'grid-cols-12 gap-5'
                 : 'grid-cols-12 gap-6'
-          }`}
+            }`}
         >
           {/* Left Column (Sticky Sidebar): 5 cols on Tablet, 3 cols on Desktop */}
           {!isMobile && (
             <div
-              className={`${
-                isTablet ? 'col-span-5' : 'col-span-3'
-              } sticky top-6 h-[calc(100vh-3rem)]`}
+              className={`${isTablet ? 'col-span-5' : 'col-span-3'
+                } sticky top-6 h-[calc(100vh-3rem)]`}
             >
               <LeftSidebar
                 character={character}
@@ -428,13 +457,12 @@ const message = useGameStore((s) => s.message);
           */}
           <main
             id="chronicle-scroll"
-            className={`${
-              isMobile
+            className={`${isMobile
                 ? 'pb-36'
                 : isTablet
                   ? 'col-span-7 h-[calc(100vh-3rem)] overflow-y-auto pr-2'
                   : 'col-span-6 h-[calc(100vh-3rem)] overflow-y-auto pr-2'
-            } flex flex-col min-h-0 scrollbar-none`}
+              } flex flex-col min-h-0 scrollbar-none`}
           >
             {/* Ambient Alerts / Feedback */}
             {message && (
@@ -444,26 +472,6 @@ const message = useGameStore((s) => s.message);
               >
                 <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                 <span>{message}</span>
-              </div>
-            )}
-            {/* Rejection popup — funny Dhakaiya "you got rejected" notes. */}
-            {rejection && (
-              <div
-                className="mb-4 flex items-start gap-2.5 rounded-xl border border-rose-500/30 bg-gradient-to-r from-rose-950/80 to-rose-900/40 p-3.5 backdrop-blur-md text-xs font-medium text-rose-100 shadow-lg shadow-rose-950/40"
-                role="alert"
-                data-testid="rejection"
-              >
-                <ThumbsDown className="mt-0.5 size-4 shrink-0 text-rose-400" />
-                <span className="flex-1 leading-relaxed">{rejection}</span>
-                <button
-                  type="button"
-                  onClick={clearRejection}
-                  data-testid="dismiss-rejection"
-                  className="shrink-0 rounded-md px-1.5 py-0.5 text-rose-300 hover:bg-rose-500/20 hover:text-rose-100 transition-colors"
-                  aria-label="বন্ধ করো"
-                >
-                  ✕
-                </button>
               </div>
             )}
             {error && (
@@ -582,7 +590,7 @@ const message = useGameStore((s) => s.message);
 
           {/* Right Column (Secondary Stats & Relationships Rail): 3 cols on Desktop */}
           {isDesktop && (
-            <div className="col-span-3 sticky top-6 h-[calc(100vh-3rem)]">
+            <div className="relative z-40 col-span-3 sticky top-6 h-[calc(100vh-3rem)]">
               <RightRail
                 character={character}
                 onOpenFamilyTree={() => setFamilyTreeOpen(true)}
