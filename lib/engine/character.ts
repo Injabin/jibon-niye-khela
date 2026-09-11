@@ -7,6 +7,7 @@ import {
   MUSLIM_SURNAMES,
 } from '@/content/names';
 import { RNG } from './rng';
+import { defaultFinance } from './finance';
 import { clamp } from './stats';
 import type { Character, CreateCharacterResult, CustomCharacterOptions, Gender, Religion } from './types';
 
@@ -87,6 +88,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
     },
     career: { jobId: null, performance: 50, yearsAtJob: 0, tier: 0 },
     assets: [],
+    finance: defaultFinance(),
     relationships: [
       {
         id: generateId(rng),

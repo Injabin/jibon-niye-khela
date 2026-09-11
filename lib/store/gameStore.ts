@@ -12,6 +12,7 @@ import { BOND_MAX, BOND_PER_VISIT, ageFamilyMembers, birthChild, generateFamilyT
 import type { FamilyTree, FamilyRole } from '@/lib/engine/family';
 import { buildHeirFamilyTree, createHeirCharacter, eligibleHeirs, nextLifeSeed } from '@/lib/engine/legacy';
 import { buyAsset, sellAsset } from '@/lib/engine/events/categories/assets';
+import { declareBankruptcy, depositSavings, repayLoan, takeLoan, withdrawSavings } from '@/lib/engine/finance';
 import { applyForJob, quitJob, workOvertime, suckUpToBoss, askForRaise } from '@/lib/engine/events/categories/career';
 import { commitCrime } from '@/lib/engine/events/categories/crime';
 import {
@@ -25,7 +26,7 @@ import {
 import { enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
+import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
 import {
   generateDatingPool,
   askOutCandidate,
@@ -192,6 +193,16 @@ export interface GameStoreActions {
   buyAsset(kind: AssetKind, options?: { name?: string; price?: number }): boolean;
   /** Sell one owned asset by id. */
   sellAsset(assetId: string): boolean;
+  /** Deposit cash into the interest-bearing savings account (F — Phase 3.5). */
+  depositSavings(amount: number): boolean;
+  /** Withdraw from savings back to cash. */
+  withdrawSavings(amount: number): boolean;
+  /** Take out a loan from the bank and receive the cash now. */
+  takeLoan(amount: number, kind: LoanKind): boolean;
+  /** Repay a loan by id. */
+  repayLoan(loanId: string): boolean;
+  /** Declare personal bankruptcy (insolvency only — liquidates assets, discharges debt). */
+  declareBankruptcy(): boolean;
   /** Active-menu health action (DESIGN.md §5.4/§5.7): a doctor's visit. */
   visitDoctor(): boolean;
   /**
@@ -905,6 +916,41 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return runIdleAction((character, rng) => {
         const out = sellAsset(character, rng, assetId);
         return { ok: out.sold, text: out.text };
+      });
+    },
+
+    depositSavings(amount) {
+      return runIdleAction((character) => {
+        const out = depositSavings(character, amount);
+        return { ok: out.ok, text: out.text, tone: out.tone };
+      });
+    },
+
+    withdrawSavings(amount) {
+      return runIdleAction((character) => {
+        const out = withdrawSavings(character, amount);
+        return { ok: out.ok, text: out.text, tone: out.tone };
+      });
+    },
+
+    takeLoan(amount, kind) {
+      return runIdleAction((character, rng) => {
+        const out = takeLoan(character, rng, amount, kind);
+        return { ok: out.ok, text: out.text, tone: out.tone };
+      });
+    },
+
+    repayLoan(loanId) {
+      return runIdleAction((character) => {
+        const out = repayLoan(character, loanId);
+        return { ok: out.ok, text: out.text, tone: out.tone };
+      });
+    },
+
+    declareBankruptcy() {
+      return runIdleAction((character) => {
+        const out = declareBankruptcy(character);
+        return { ok: out.ok, text: out.text, tone: out.tone };
       });
     },
 

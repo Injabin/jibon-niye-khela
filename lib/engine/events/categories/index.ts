@@ -2,8 +2,8 @@
  * Systems tick (init.md M5 #2, AGENT.md §5 engine-first).
  *
  * Runs each system's yearly maintenance in priority order every age-up:
- * education → career → assets → crime → health. Health runs last so an
- * incident may kill through `checkForDeath` in the same year. Outcomes that
+ * education → career → finance → assets → crime → health. Health runs last so
+ * an incident may kill through `checkForDeath` in the same year. Outcomes that
  * are noteworthy (graduations, promotions, releases, incidents) are pushed
  * to the character's history; quiet years stay silent.
  */
@@ -14,6 +14,7 @@ import { tickAssets } from './assets';
 import { tickCareer } from './career';
 import { tickCrime } from './crime';
 import { tickEducation } from './education';
+import { tickFinance } from '@/lib/engine/finance';
 import { tickHealth } from './health';
 
 export interface TickReport {
@@ -27,6 +28,7 @@ export function tickSystems(character: Character, rng: RNG): TickReport[] {
   const reports: (TickReport | null)[] = [
     tickEducation(character, rng),
     tickCareer(character, rng),
+    tickFinance(character),
     tickAssets(character, rng),
     tickCrime(character),
     tickHealth(character, rng),

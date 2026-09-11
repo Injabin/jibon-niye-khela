@@ -11,6 +11,7 @@
 
 import { generateId } from './character';
 import { BOND_MAX, type FamilyMember, type FamilyTree, type FamilyRole } from './family';
+import { defaultFinance, liquidateEstate } from './finance';
 import { MONEY_MAX } from './stats';
 import type { RNG } from './rng';
 import type { Character, Stats, StatsHistoryPoint } from './types';
@@ -64,7 +65,7 @@ export function createHeirCharacter(
     const lastSpace = firstName.lastIndexOf(' ');
     firstName = firstName.slice(0, lastSpace);
   }
-  const share = Math.max(0, Math.floor(parent.money / Math.max(1, heirsCount)));
+  const share = Math.max(0, Math.floor(liquidateEstate(parent) / Math.max(1, heirsCount)));
   const inheritance = Math.min(MAX_INHERITANCE, share);
 
   const stats: Stats = {
@@ -97,6 +98,7 @@ export function createHeirCharacter(
     education: { stage, enrolled: false, gpa: 3.0, major: '', graduated: false },
     career: { jobId: null, performance: 50, yearsAtJob: 0, tier: 0 },
     assets: [],
+    finance: defaultFinance(),
     relationships: [],
     criminalRecord: [],
     history: [

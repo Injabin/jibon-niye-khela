@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/Button';
 import { getJobBoard, careerTitle } from '@/lib/engine/events/categories/career';
 import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
+import { getFinance, LOAN_KIND_LABELS, netWorth, QUICK_BANK_AMOUNT } from '@/lib/engine/finance';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
 import { Flame, UserPlus } from 'lucide-react';
-import type { AssetKind, Character } from '@/lib/engine/types';
+import type { AssetKind, Character, LoanKind } from '@/lib/engine/types';
 import type { DatingCandidate } from '@/lib/engine/romance';
 
 type Tab = 'school' | 'career' | 'romance' | 'assets' | 'crime' | 'health';
@@ -77,6 +78,11 @@ export function ActiveMenu({
   const commitCrime = useGameStore((s) => s.commitCrime);
   const buyAsset = useGameStore((s) => s.buyAsset);
   const sellAsset = useGameStore((s) => s.sellAsset);
+  const depositSavings = useGameStore((s) => s.depositSavings);
+  const withdrawSavings = useGameStore((s) => s.withdrawSavings);
+  const takeLoan = useGameStore((s) => s.takeLoan);
+  const repayLoan = useGameStore((s) => s.repayLoan);
+  const declareBankruptcy = useGameStore((s) => s.declareBankruptcy);
   const visitDoctor = useGameStore((s) => s.visitDoctor);
   const visitKabiraj = useGameStore((s) => s.visitKabiraj);
   const doGymWorkout = useGameStore((s) => s.doGymWorkout);
@@ -197,7 +203,18 @@ export function ActiveMenu({
                   onHaveBaby={haveBaby}
                 />
               )}
-              {tab === 'assets' && <AssetsTab character={character} onBuy={buyAsset} onSell={sellAsset} />}
+              {tab === 'assets' && (
+                <AssetsTab
+                  character={character}
+                  onBuy={buyAsset}
+                  onSell={sellAsset}
+                  onDeposit={depositSavings}
+                  onWithdraw={withdrawSavings}
+                  onTakeLoan={takeLoan}
+                  onRepayLoan={repayLoan}
+                  onBankrupt={declareBankruptcy}
+                />
+              )}
               {tab === 'crime' && <CrimeTab character={character} onCommit={commitCrime} />}
               {tab === 'health' && (
                 <HealthTab
@@ -419,16 +436,87 @@ function AssetsTab({
   character,
   onBuy,
   onSell,
+  onDeposit,
+  onWithdraw,
+  onTakeLoan,
+  onRepayLoan,
+  onBankrupt,
 }: {
   character: Character;
   onBuy: (kind: AssetKind) => boolean;
   onSell: (assetId: string) => boolean;
+  onDeposit: (amount: number) => boolean;
+  onWithdraw: (amount: number) => boolean;
+  onTakeLoan: (amount: number, kind: LoanKind) => boolean;
+  onRepayLoan: (loanId: string) => boolean;
+  onBankrupt: () => boolean;
 }) {
+  const finance = getFinance(character);
+  const worth = netWorth(character);
+  const insolvent = worth < 0;
   return (
     <div className="space-y-3">
-      <p className="text-sm text-text">
-        ট্যাকা-পয়সা: <span className="font-medium">৳{coins(character.money)}</span>
-      </p>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p className="text-sm text-text">
+          হাতে-পকেটে: <span className="font-medium">৳{coins(character.money)}</span> · সঞ্চয়:{' '}
+          <span className="font-medium">৳{coins(finance.savings)}</span>
+        </p>
+        <p className="mt-0.5 text-xs text-text-muted">
+          সর্বমোট সম্পত্তি (মোট ট্যাকা − ধার): <span className="font-medium text-white">৳{coins(worth)}</span>
+        </p>
+      </div>
+
+      <div>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">ব্যাংক সঞ্চয় (বার্ষিক সুদ ৪%)</p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => onDeposit(QUICK_BANK_AMOUNT)} data-testid="bank-deposit">
+            সঞ্চয়ে জমাও ৳{QUICK_BANK_AMOUNT.toLocaleString()}
+          </Button>
+          <Button variant="secondary" onClick={() => onWithdraw(QUICK_BANK_AMOUNT)} data-testid="bank-withdraw">
+            সঞ্চয় থেকে তোলো ৳{QUICK_BANK_AMOUNT.toLocaleString()}
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">ঋণ / ধার</p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => onTakeLoan(100_000, 'personal')} data-testid="take-loan">
+            ব্যক্তিগত ঋণ নাও ৳100,000 (সোদ)
+          </Button>
+        </div>
+        {finance.loans.length > 0 && (
+          <ul className="mt-2 space-y-2">
+            {finance.loans.map((loan) => (
+              <li
+                key={loan.id}
+                className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-text">{LOAN_KIND_LABELS[loan.kind]}</p>
+                  <p className="text-xs text-text-muted">
+                    বাকি ৳{coins(loan.balance)} · {loan.takenAge} বছর বয়সে নেওয়া
+                  </p>
+                </div>
+                <Button variant="secondary" onClick={() => onRepayLoan(loan.id)} data-testid={`repay-${loan.id}`}>
+                  শোধ করো
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="rounded-md border border-danger-border bg-danger/10 p-3">
+        <p className="text-sm text-danger-text">
+          {insolvent
+            ? 'তোদের মোট ট্যাকা ঋণের তুলনায় নেতিবাচক — দেউলিয়া ঘোষণা দিলে সম্পত্তি বাজেয়াপ্ত হয়ে ধার মাফ হয়।'
+            : 'সচ্ছল অবস্থায় আদালত দেউলিয়া ঘোষণা মানাবে না — ঋণে ডুবলে ফিরে আইসো।'}
+        </p>
+        <Button variant="danger" onClick={onBankrupt} data-testid="declare-bankruptcy" className="mt-2 w-full justify-center">
+          দেউলিয়া ঘোষণা
+        </Button>
+      </div>
 
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">কিনাকাটা</p>

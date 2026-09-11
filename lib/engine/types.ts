@@ -109,6 +109,28 @@ export interface Asset {
   acquiredAge: number;
 }
 
+export type LoanKind = 'personal' | 'student' | 'home' | 'business';
+
+export interface Loan {
+  id: string;
+  kind: LoanKind;
+  principal: number;
+  balance: number;
+  rate: number;
+  takenAge: number;
+}
+
+export interface FinanceState {
+  /** Interest-bearing savings balance (DESIGN.md §5.5). */
+  savings: number;
+  /** Annual simple interest rate on the savings balance. */
+  savingsRate: number;
+  loans: Loan[];
+  bankruptcies: number;
+  /** Lending blackout until this age after a bankruptcy discharge. */
+  bankruptcyBlockUntilAge?: number;
+}
+
 export interface CrimeEntry {
   offense: string;
   age: number;
@@ -170,6 +192,8 @@ export interface Character {
   education: EducationState;
   career: CareerState;
   assets: Asset[];
+  /** Finance block (F — Phase 3.5); absent = an all-zero default for old saves. */
+  finance?: FinanceState;
   relationships: Relationship[];
   criminalRecord: CrimeEntry[];
   history: LifeEventLogEntry[];
