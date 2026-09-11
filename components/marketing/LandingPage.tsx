@@ -15,56 +15,56 @@ import {
 
 export function LandingPage() {
   const tags = [
-    'লাইফ সিমুলেশন',
-    'চয়েস-চালিত',
-    'ফ্রি-টু-প্লে',
-    'অফলাইন ফallback',
-    'ব্রাউজার-বেসড',
+    'ঢাকাইয়া সিম',
+    'চয়েস-চালিত বাঁশ',
+    '১০০% ফ্রি ফালতুগিরি',
+    'অফলাইন প্যারা',
+    'ব্রাউজার-বেসড গ্যাঞ্জাম',
   ];
 
   const features = [
     {
-      title: 'প্রতিটা জীবন আলাদা',
+      title: 'প্রতিটা জীবন এক একটা মাইঙ্কা চিপা',
       description:
-        'বয়স, স্ট্যাট, সম্পর্ক, আগের সিদ্ধান্ত আর ভাগ্যের উপর ভিত্তি করে নতুন নতুন ঢাকাইয়া ঘটনা বেছে নাও। কাস্টম লাইফ দিয়েও শুরু করতে পারো।',
+        'বয়স, স্ট্যাট, বউয়ের রাগ, আগের করা সব বাঁশ আর ভাগ্যের উপর ভিত্তি করে নতুন নতুন ঢাকাইয়া গ্যাঞ্জাম সামলাও। নিজের পছন্দমতো কাস্টম লাইফ বানাইয়াও নামতে পারো।',
       icon: Sparkles,
-      badge: 'অনিশ্চিত',
+      badge: 'অনিশ্চিত প্যারা',
     },
     {
-      title: 'প্রতিক্রিয়াশীল স্ট্যাট, সাউন্ড আর মুহূর্ত',
+      title: 'লাইভ স্ট্যাট, চান্দি গরম করা ফিডব্যাক',
       description:
-        'স্বাস্থ্য, সুখ, বুদ্ধি, চেহারা, ট্যাকা আর সম্পর্কের পরিবর্তন তোমার পছন্দের ফল দেখায়—সাথে অ্যানিমেশন, সাউন্ড আর হ্যাপটিক ফিডব্যাক।',
+        'স্বাস্থ্য, সুখ, বুদ্ধি, চেহারা, পকেটের ট্যাকা আর সম্পর্কের হালচাল দেখেই বুঝবা জিন্দেগি কী জিনিস—সাথে জোস অ্যানিমেশন আর সাউন্ড ইফেক্ট।',
       icon: Zap,
-      badge: 'লাইভ ফিডব্যাক',
+      badge: 'আগুন ফিডব্যাক',
     },
     {
-      title: '১০০% ফ্রি সবসময়, কোনো ঐড নাই, অ্যাকাউন্ট নাই',
+      title: '১০০% ফ্রি, কোনো ভেজাল নাই, নো সাইন-আপ',
       description:
-        'কোনো সাইন-আপ বা পে-ওয়াল ছাড়াই ব্রাউজারে খেলো। Gemini বন্ধ থাকলেও লোকাল fallback ইভেন্টে গেম চলতে থাকে।',
+        'কোনো রেজিস্ট্রেশন বা পে-ওয়াল ছাড়াই ডাইরেক্ট ব্রাউজারে খেলো। ইন্টারনেট ফুরড়ায় গেলে লোকাল ফলব্যাক ইভেন্ট দিয়া খেলা চালাইতে পারবা।',
       icon: CheckCircle2,
-      badge: 'ফ্রি এন্ড ওপেন',
+      badge: 'খাঁটি উন্মুক্ত',
     },
   ];
 
   const pillars = [
     {
-      title: 'পড়াশোনা, কামকাজ & ট্যাকা-পয়সা',
-      desc: 'স্কুলে পড়ো, কাম খোঁজো, পারফরম্যান্স বাড়াও, সঞ্চয় করো, ঋণ নাও বা সম্পদ কিনে নিজের আর্থিক অবস্থা সামলাও।',
+      title: 'পড়াশোনা, কামকাজ & পকেটের বাতাস',
+      desc: 'ভার্সিটিতে চিপায় পইড়ো না, জবের ইন্টারভিউতে ফাপড় দিও, মাস শেষে স্যালারি পাইয়া কাচ্চি খামোখা উড়াইয়া দাও।',
       icon: Scroll,
     },
     {
-      title: 'প্রেম, সম্পর্ক & পরিবার',
-      desc: 'ডেট করো, সম্পর্ক গড়ো, বিয়ে করো, পরিবারে সময় দাও, সন্তান নাও এবং তোমার সিদ্ধান্তে সম্পর্কের বন্ধন বদলাতে দেখো।',
+      title: 'পিরিত, ওয়াইফি & ফ্যামিলির গ্যাঞ্জাম',
+      desc: 'প্রেমিকার লগে লেকে ডেটিং করো, বিয়া বইসা কাবিনের প্যারা খাও, শাশুড়ির ঝাড়ি সামলাও আর ফ্যামিলির অশান্তি উপভোগ করো।',
       icon: Heart,
     },
     {
-      title: 'পরিবার & উত্তরাধিকার',
-      desc: 'ফ্যামিলি ট্রি দেখো, আত্মীয়দের সাথে সম্পর্ক রাখো, আর জীবন শেষ হলে যোগ্য উত্তরাধিকারী নিয়ে পরের গল্প চালিয়ে যাও।',
+      title: 'বংশরক্ষা & জেনারেশনাল বাঁশ',
+      desc: 'ফ্যামিলি ট্রি বানাও, নাতি-পুতিদের ভিউ দ্যাখো, আর লাইফ শেষ হইলে তোমার অযোগ্য উত্তরাধিকারী নিয়া পরের প্যারা শুরু করো।',
       icon: Users,
     },
     {
-      title: 'ঢাকাইয়া ঘটনা & সিদ্ধান্ত',
-      desc: 'শৈশব থেকে বুড়ো বয়স পর্যন্ত বয়স-উপযোগী ঘটনা সামলাও। Gemini নতুন কাহিনি বানাতে পারে, আর fallback ব্যাংক অফলাইনেও খেলা চালায়।',
+      title: 'খাঁটি ঢাকাইয়া ঘটনা & ডিসগাস্টিং চিল',
+      desc: 'শৈশব থিকা বুড়া বয়স পর্যন্ত পদে পদে বাঁশ খাও। জেনারেটিভ এআই দিয়া নতুন নতুন কিসসা বানাও, আর অফলাইনে ফলব্যাক দিয়া জিন্দেগি চিল রাখো।',
       icon: Sparkles,
     },
   ];
@@ -126,7 +126,7 @@ export function LandingPage() {
             {/* Top Pill Announcement */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.15)]">
               <Flame className="size-3.5 text-rose-400" />
-              <span>চয়েস-চালিত ঢাকাইয়া লাইফ সিমুলেশন</span>
+              <span>চান্দি গরম করা ঢাকাইয়া লাইফ সিমুলেশন</span>
             </div>
 
             {/* Headline */}
@@ -134,7 +134,7 @@ export function LandingPage() {
               id="hero-heading"
               className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl max-w-4xl leading-[1.1]"
             >
-              বাঁচো। বেছে নাও। আবার শুরু করো। <br />
+              পয়দা হও। বাঁশ খাও। আবার মরো। <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-400">
                 Jibon Niye Khela
               </span>
@@ -142,7 +142,7 @@ export function LandingPage() {
 
             {/* Hook Line */}
             <p className="mt-6 max-w-2xl text-base sm:text-lg text-zinc-300 font-normal leading-relaxed">
-              একটা চয়েস-চালিত ঢাকাইয়া লাইফ সিমুলেশন। পড়াশোনা, কামকাজ, প্রেম, পরিবার, ট্যাকা-পয়সা আর জীবনের গ্যাঞ্জাম সামলায়া নিজের গল্প বানাও।
+              একদম খাঁটি পুরান ঢাকার ফ্লেভারে ভরা লাইফ সিম। পড়াশোনা, ট্যাকা-পয়সার অভাব, প্রেমিকার গ্যাঞ্জাম আর জিন্দেগির সব প্যারার মুখোমুখি হইতে নামিয়া পড়ো!
             </p>
 
             {/* Call to Actions */}
@@ -153,7 +153,7 @@ export function LandingPage() {
                 className="group relative flex w-full sm:w-auto items-center justify-center gap-3 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-xl shadow-rose-950/50 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
               >
                 <Play className="size-4 fill-current transition-transform group-hover:scale-110" />
-                <span>ব্রাউজারে ফ্রি খেলো</span>
+                <span>মামা, এখনই খেলো</span>
                 <ArrowRight className="size-4 opacity-70 group-hover:translate-x-1 transition-transform" />
               </Link>
 
@@ -163,20 +163,20 @@ export function LandingPage() {
                 className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] px-6 py-4 text-sm font-semibold tracking-wider text-zinc-200 hover:text-white transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               >
                 <Sliders className="size-4 text-zinc-400" />
-                <span>কাস্টম লাইফ</span>
+                <span>কাস্টম বাঁশ (লাইফ)</span>
               </Link>
             </div>
 
             {/* Trust Badges */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-400">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-emerald-400" /> সাইন-আপ লাগে না
+                <CheckCircle2 className="size-3.5 text-emerald-400" /> সাইন-আপ করার ল্যাঁচানি নাই
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-emerald-400" /> ১০০% ফ্রি সবসময়
+                <CheckCircle2 className="size-3.5 text-emerald-400" /> মাগনা ফ্রি একদম
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-emerald-400" /> কোনো পে-ওয়াল বা অ্যাড নাই
+                <CheckCircle2 className="size-3.5 text-emerald-400" /> কোনো ফালতু অ্যাড নাই
               </span>
             </div>
 
@@ -205,15 +205,15 @@ export function LandingPage() {
                         <Award className="size-5" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">কাজী রায়হান</div>
-                        <div className="text-xs text-zinc-400 font-mono">বয়স ২৪ • সফটওয়্যার ডেভেলপার</div>
+                        <div className="text-sm font-bold text-white">মকবুল হোসেন</div>
+                        <div className="text-xs text-zinc-400 font-mono">বয়স ২৪ • বেকার ও ফাপড়বাজ</div>
                       </div>
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-xs font-mono">
-                      <span className="text-rose-400 font-bold">স্বাস্থ্য ৯২%</span>
-                      <span className="text-blue-400 font-bold">সুখ ৮৮%</span>
-                      <span className="text-amber-400 font-bold">বুদ্ধি ৯৫%</span>
-                      <span className="text-yellow-400 font-bold">চেহারা ৮৫%</span>
+                      <span className="text-rose-400 font-bold">স্বাস্থ্য ৫০%</span>
+                      <span className="text-blue-400 font-bold">দিল খুশ ৩০%</span>
+                      <span className="text-amber-400 font-bold">ঘিলু ১০%</span>
+                      <span className="text-yellow-400 font-bold">ফুটানি ২০%</span>
                     </div>
                   </div>
 
@@ -222,46 +222,46 @@ export function LandingPage() {
                     <div className="hidden md:block col-span-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
                       <div className="text-[10px] uppercase font-mono text-zinc-400">স্ট্যাট</div>
                       <div className="mt-3 space-y-2 text-xs">
-                        <div className="flex justify-between text-zinc-300"><span>বুদ্ধি</span><span className="text-amber-400 font-bold">95</span></div>
-                        <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[95%]" /></div>
-                        <div className="flex justify-between text-zinc-300"><span>চেহারা</span><span className="text-amber-400 font-bold">85</span></div>
-                        <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[85%]" /></div>
+                        <div className="flex justify-between text-zinc-300"><span>মগজের ঘিলু</span><span className="text-amber-400 font-bold">10</span></div>
+                        <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[10%]" /></div>
+                        <div className="flex justify-between text-zinc-300"><span>আলগা ভাব</span><span className="text-amber-400 font-bold">90</span></div>
+                        <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[90%]" /></div>
                       </div>
                     </div>
 
                     <div className="col-span-1 md:col-span-6 rounded-2xl border border-rose-500/30 bg-zinc-900/90 p-5 sm:p-6 text-center shadow-2xl backdrop-blur-xl">
                       <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-300 mb-3">
                         <Sparkles className="size-3.5" />
-                        <span>আজকের ঢাকাইয়া ঘটনা</span>
+                        <span>আজকের মাইঙ্কা চিপা</span>
                       </div>
                       <h2 className="text-base sm:text-lg font-bold text-white">
-                        অফিসের বস হঠাৎ কইরা কইলো, কালকের প্রেজেন্টেশনটা তোমাকেই দিতে হইবো।
+                        পকেটে নাই একখান ট্যাকা, এদিকে ওয়াইফি কইতাছে কাচ্চি খাওয়াইতে! তুমি এখন কী করবা?
                       </h2>
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold">
                         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-zinc-200">
-                          [১] রাত জাইগা প্রস্তুতি নে (+বুদ্ধি, -সুখ)
+                          [১] দোস্তর থিকা ধার করা (-ট্যাকা, +রোমিও গিরি)
                         </div>
                         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-zinc-200">
-                          [২] অসুস্থতার ভান কর (+সুখ, -ক্যারিয়ার)
+                          [২] ইমোশনাল কবিতা লেখা (+ফাপড়, +শান্তি)
                         </div>
                       </div>
                     </div>
 
                     <div className="hidden md:block col-span-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
-                      <div className="text-[10px] uppercase font-mono text-zinc-400">বংশ & বাড়ি</div>
+                      <div className="text-[10px] uppercase font-mono text-zinc-400">সংসার & গ্যাঞ্জাম</div>
                       <div className="mt-3 text-xs text-zinc-300 space-y-1.5">
-                        <div>কাজ: <span className="text-white font-semibold">ডেভেলপার</span></div>
-                        <div>সঙ্গিনী: <span className="text-rose-300 font-semibold">শিরিন</span></div>
-                        <div>সন্তান: <span className="text-amber-300 font-semibold">২ জন</span></div>
+                        <div>পেশা: <span className="text-white font-semibold">ফেলুদা</span></div>
+                        <div>ওয়াইফি: <span className="text-rose-300 font-semibold">লাল বাত্তি</span></div>
+                        <div>অবস্থা: <span className="text-amber-300 font-semibold">ফকির</span></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Mock Controls */}
                   <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                    <span className="text-[11px] text-zinc-400 font-mono">いつでも ? চাপলে কীবোর্ড শর্টকাট</span>
+                    <span className="text-[11px] text-zinc-400 font-mono">শর্টকাট দেখতে ? চাপো</span>
                     <span className="rounded-xl bg-[#b23a3b] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white">
-                      বয়স (+১ বছর)
+                      বয়স বাড়াও (+১ বছর বাঁশ)
                     </span>
                   </div>
                 </div>
@@ -280,13 +280,13 @@ export function LandingPage() {
               id="features-heading"
               className="text-xs font-mono uppercase tracking-widest text-rose-400"
             >
-              কেন জীবন নিয়া খেলা
+              কেন এই গেম খেলবা?
             </h2>
             <p className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              গভীর রিপ্লेबিলিটির জন্য এনজিনিয়ারড
+              খেইল্লা দেহো, চান্দি গরম না হইলে কইয়ো!
             </p>
             <p className="mt-4 text-sm sm:text-base text-zinc-400">
-              শুধু স্ট্যাটিক গল্প না—বয়স, চরিত্রের অবস্থা, আগের ঘটনা আর তোমার সিদ্ধান্ত মিলায়া প্রতিটি জীবন এগোয়।
+              কোনো বোরিং স্ট্যাটিক গল্প না—তোমার করা প্রতিটা ভুলের ফল পাইবা হাতে-নাতে।
             </p>
           </div>
 
@@ -308,7 +308,7 @@ export function LandingPage() {
                   <source src="/media/gameplay-demo.webm" type="video/webm" />
                 </video>
                 <div className="absolute top-3 left-3 rounded-md bg-black/70 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-emerald-400 border border-emerald-500/30 backdrop-blur-md">
-                  ● রিয়েল গেমপ্লে ফুটেজ
+                  ● রিয়েল ঢাকাইয়া গ্যাঞ্জাম ফুটেজ
                 </div>
               </div>
 
@@ -363,7 +363,7 @@ export function LandingPage() {
               সিস্টেম & মেকানিক্স
             </h2>
             <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              নিজের পথ বানাও
+              যেভাবে জিন্দেগি তেজপাতা বানাবা
             </p>
           </div>
 
@@ -390,10 +390,10 @@ export function LandingPage() {
         <section className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20 text-center">
           <div className="rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-950/40 to-zinc-950 p-8 sm:p-14 shadow-2xl backdrop-blur-2xl">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              নিজের জীবন শুরু করার জন্য প্রস্তুত?
+              নিজের চান্দি গরম করার জন্য প্রস্তুত তো?
             </h2>
             <p className="mt-3 max-w-xl mx-auto text-sm sm:text-base text-zinc-300">
-              কোনো রেজিস্ট্রেশন নাই, কোনো ডাউনলোড নাই, কোনো ফি নাই। শুধু ক্লিক করো আর ব্রাউজারে ইনস্ট্যান্ট খেলো।
+              কোনো সাইন-আপ নাই, কোনো ট্যাকা লাগে না। খালি ক্লিক করো আর ব্রাউজারে ইনস্ট্যান্ট বাঁশ খাওয়া শুরু করো।
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
@@ -402,7 +402,7 @@ export function LandingPage() {
                 className="inline-flex items-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-rose-950/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
               >
                 <Play className="size-4 fill-current" />
-                <span>ফ্রি জীবন শুরু কর</span>
+                <span>মাগনা জীবন শুরু কর</span>
               </Link>
             </div>
           </div>
@@ -415,7 +415,7 @@ export function LandingPage() {
           <div className="flex items-center gap-2">
             <Heart className="size-4 text-rose-400" />
             <span className="font-semibold text-white">Jibon Niye Khela</span>
-            <span>— ঢাকাইয়া ব্রাউজার লাইফ সিমুলেশন।</span>
+            <span>— খাঁটি ঢাকাইয়া ব্রাউজার লাইফ সিমুলেশন।</span>
           </div>
           <div className="flex items-center gap-6">
             <span className="font-mono text-[11px] text-zinc-400">
