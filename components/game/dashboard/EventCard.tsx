@@ -38,25 +38,25 @@ const TONE_CONFIG: Record<
     badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     borderAccent: 'border-emerald-500/30',
     icon: Sparkles,
-    label: 'Favorable Turn',
+    label: 'সৌভাগ্যের পালা',
   },
   bad: {
     badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
     borderAccent: 'border-rose-500/30',
     icon: AlertCircle,
-    label: 'Adversity',
+    label: 'মাইঙ্কা চিপা',
   },
   funny: {
     badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     borderAccent: 'border-violet-500/30',
     icon: Smile,
-    label: 'Peculiar Event',
+    label: 'অ্যাখ্যানের অদৃষ্ট কাণ্ড',
   },
   neutral: {
     badgeColor: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
     borderAccent: 'border-white/10',
     icon: HelpCircle,
-    label: 'Life Occurrence',
+    label: 'জীবনের সাধারন ঘটনা',
   },
 };
 
@@ -160,7 +160,7 @@ export function EventCard({ event, onChoose }: EventCardProps) {
         ref={overlayRef as React.Ref<HTMLElement>}
         role="group"
         aria-roledescription="life event"
-        aria-label={`Life event — ${toneCfg.label}`}
+        aria-label={`জীবনের ঘটনা — ${toneCfg.label}`}
         tabIndex={-1}
         onKeyDown={onKeyDown}
         initial={reducedMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}
@@ -179,7 +179,7 @@ export function EventCard({ event, onChoose }: EventCardProps) {
             <span>{toneCfg.label}</span>
           </div>
           <span className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
-            Decision Required
+            সিদ্ধান্ত নিতে হবে
           </span>
         </div>
 

@@ -4,9 +4,20 @@ import { useMemo } from 'react';
 import { avatarVisualsFor } from '@/lib/avatar/palette';
 import { expressionForTone } from '@/lib/engine/moments';
 import { lifeStageForAge } from '@/lib/engine/life';
+import type { LifeStage } from '@/lib/engine/life';
 import type { Character } from '@/lib/engine/types';
 import { useGameStore } from '@/lib/store/gameStore';
 import { ExpressionOverlay } from './ExpressionOverlay';
+
+const STAGE_LABELS: Record<LifeStage, string> = {
+  infant: 'শিশু',
+  child: 'ছোলা',
+  teen: 'কিশোর',
+  'young-adult': 'তরুণ',
+  adult: 'সাবালক',
+  'middle-aged': 'মধ্যবয়সী',
+  senior: 'বুড়া',
+};
 
 const VIEW_W = 140;
 const VIEW_H = 170;
@@ -72,7 +83,7 @@ export function Avatar({
       data-gender={character.gender}
       data-dead={dead ? 'true' : 'false'}
       role="img"
-      aria-label={`${character.name} ${character.surname}, ${stage} stage`}
+      aria-label={`${character.name} ${character.surname}, ${STAGE_LABELS[stage]}`}
     >
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}

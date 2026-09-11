@@ -68,8 +68,8 @@ export function TimelineStream({ history, scrollContainerId }: TimelineStreamPro
         className="flex flex-col items-center justify-center py-20 text-center text-zinc-400"
         data-testid="chronicle-stream"
       >
-        <p className="text-sm font-medium">The chronicle of your life begins with your first year.</p>
-        <p className="text-xs text-zinc-400 mt-1">Advance age to begin your journey.</p>
+        <p className="text-sm font-medium">তোমার জীবনের পান্ডুলিপি শুরু হয় পহিলা বছর থেইকা।</p>
+        <p className="text-xs text-zinc-400 mt-1">যাত্রা শুরু করতে বয়স বাড়াও।</p>
       </div>
     );
   }
@@ -86,13 +86,13 @@ export function TimelineStream({ history, scrollContainerId }: TimelineStreamPro
   return (
     <ol className="flex flex-col gap-6 py-2" data-testid="chronicle-stream">
       {years.map(([age, entries]) => (
-        <li key={age} aria-label={`Year ${age}`} className="flex flex-col gap-3">
+        <li key={age} aria-label={`বয়স ${age}`} className="flex flex-col gap-3">
           {/* Year Marker Badge */}
           <div className="sticky top-0 z-10 flex items-center gap-3 py-1 bg-zinc-950/80 backdrop-blur-md">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 shadow-sm">
               <span className="size-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
               <span className="text-[11px] font-mono font-semibold uppercase tracking-widest text-zinc-300">
-                Year {age}
+                বয়স {age}
               </span>
             </div>
             <div className="h-px flex-1 bg-gradient-to-r from-white/[0.08] to-transparent" />

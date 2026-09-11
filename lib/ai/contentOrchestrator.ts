@@ -11,6 +11,7 @@
 import type { Character, LifeEventDef, Tone } from '@/lib/engine/types';
 import { RNG } from '@/lib/engine/rng';
 import { getFallbackEvent } from '@/lib/ai/fallbackBank';
+import { careerTitle } from '@/lib/engine/events/categories/career';
 
 export const MILESTONE_AGES: readonly number[] = [0, 6, 13, 18, 30, 60];
 export const MAX_AI_CALLS_PER_LIFE = 8;
@@ -155,11 +156,11 @@ if (!eligible) {
     if (character.flags.includes('in_jail')) playerStyle = 'লাল দালানের কয়েদি (Jail Inmate)';
     else if (character.criminalRecord.length > 0) playerStyle = 'মহল্লার মাস্তান ও ধান্ধাবাজ (Street Hustler)';
     else if (character.education.enrolled && character.stats.smarts >= 65) playerStyle = 'পড়াকু ছাত্র ও ভবিষ্যৎ ক্যাডার (Studious Scholar)';
-    else if (character.career.jobId && character.career.performance >= 70) playerStyle = 'কাজের পাকা মানুষ (Hardworking Professional)';
+    else if (character.career.jobId && character.career.performance >= 70) playerStyle = 'কাজের পাকা মানুষ (কাজের পাকা মানুষ)';
     else if (character.flags.includes('is_married') || character.flags.includes('has_child')) playerStyle = 'সংসারী গৃহস্থ (Family Person)';
     else if (character.relationships.some((r) => r.relation === 'dating' || r.relation === 'partner')) playerStyle = 'দিলখোলা আশিক (Romantic Lover)';
     else if (character.money > 3000) playerStyle = 'টাকাওয়ালা বড়লোক (Wealthy Person)';
-    else if (character.age >= 18 && !character.career.jobId) playerStyle = 'টংয়ের আড্ডাবাজ বেকার (Tea-Stall Loafer)';
+    else if (character.age >= 18 && !character.career.jobId) playerStyle = 'টংয়ের আড্ডাবাজ বেকার (টংয়ের আড্ডাবাজ বেকার)';
 
     const spouse = character.relationships.find((r) => r.relation === 'spouse' && r.alive);
     const partner = character.relationships.find((r) => r.relation === 'partner' && r.alive);
@@ -175,10 +176,10 @@ if (!eligible) {
       ? `ক্রাশ ${crush.name}-এর ওপর`
       : 'সিঙ্গেল';
 
-    const careerStatus = character.education.enrolled
+const careerStatus = character.education.enrolled
       ? `পড়াশোনা করতাছে (${character.education.stage})`
       : character.career.jobId
-      ? `চাকরি করতাছে: ${character.career.jobId} (পারফরম্যান্স ${character.career.performance}%)`
+      ? `চাকরি করতাছে: ${careerTitle(character)} (পারফরম্যান্স ${character.career.performance}%)`
       : 'বেকার / কোনো চাকরি নাই';
 
     const criminalStatus = character.flags.includes('in_jail')

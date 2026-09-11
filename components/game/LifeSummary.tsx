@@ -59,19 +59,19 @@ export function LifeSummary({ character }: { character: Character }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-text">Life over</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-text">জীবন শেষ</h2>
           <p className="mt-1 text-sm text-text-muted">
-            {character.name} {character.surname} lived for {character.age} years.
+            {character.name} {character.surname} মোট {character.age} বছর এই দুনিয়ায় ঘুরাঘুরি করেছে।
           </p>
           <p className="mt-2 text-text">
-            Cause of death: <span className="font-medium">{character.causeOfDeath}</span>
+            মৃত্যুর কারণ: <span className="font-medium">{character.causeOfDeath}</span>
           </p>
           <p className="mt-1 text-sm text-text-muted">
-            Final worth:{' '}
+            কবরে নামার আগে হাতে-গণা ট্যাকা:{' '}
             <span className="font-bold tabular-nums" style={{ color: 'var(--color-wealth-text)' }}>
               {formatMoney(character.money)}
             </span>{' '}
-            coins
+            টাকা
           </p>
         </div>
         <button
@@ -80,7 +80,7 @@ export function LifeSummary({ character }: { character: Character }) {
           className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-on-primary transition-colors hover:opacity-90"
           data-testid="export-summary-image"
         >
-          Save as image
+          ছবি বানাইয়া নামাও
         </button>
       </div>
 
@@ -91,16 +91,16 @@ export function LifeSummary({ character }: { character: Character }) {
       </div>
 
       {character.statHistory.length > 0 && (
-        <section className="mt-6" aria-label="Stats over lifetime" data-testid="life-chart-section">
-          <h3 className="mb-2 text-sm font-semibold tracking-wide text-text">Your life in numbers</h3>
+        <section className="mt-6" aria-label="জীবনজুড়ে পরিসংখ্যান" data-testid="life-chart-section">
+          <h3 className="mb-2 text-sm font-semibold tracking-wide text-text">তোমার জীবনের অংক-কিতাব</h3>
           <LifeChart statHistory={character.statHistory} />
         </section>
       )}
 
-      <section className="mt-6" aria-label="Ribbons" data-testid="life-ribbons">
-        <h3 className="mb-2 text-sm font-semibold tracking-wide text-text">Ribbons</h3>
+      <section className="mt-6" aria-label="সনদপত্র" data-testid="life-ribbons">
+        <h3 className="mb-2 text-sm font-semibold tracking-wide text-text">সনদপত্র</h3>
         {ribbonDefs.length === 0 ? (
-          <p className="text-sm text-text-muted">No ribbons earned in this life. Every grave is a fresh start.</p>
+          <p className="text-sm text-text-muted">এই জীবনে কোনো সনদ জেতা হয় নাই। হাল ছাড়িস না — কবর থেকেও নতুন শুরু সম্ভব!</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {ribbonDefs.map((ribbon) => (
@@ -119,10 +119,10 @@ export function LifeSummary({ character }: { character: Character }) {
         )}
       </section>
 
-      <section className="mt-6" aria-label="Story timeline" data-testid="life-timeline">
-        <h3 className="mb-2 text-sm font-semibold tracking-wide text-text">The story, one year at a time</h3>
+      <section className="mt-6" aria-label="জীবন-খাতা" data-testid="life-timeline">
+        <h3 className="mb-2 text-sm font-semibold tracking-wide text-text">গল্পটা, বছর ধরে ধরে</h3>
         {timeline.length === 0 ? (
-          <p className="text-sm text-text-muted">This life left no record.</p>
+          <p className="text-sm text-text-muted">এই জীবন কোনো চিহ্নই রাখে নাই।</p>
         ) : (
           <ol className="relative ml-2 space-y-3 border-l border-border pl-4">
             {timeline.map((entry, index) => (

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Character, Relation, Relationship } from '@/lib/engine/types';
 import { isPeerRelation } from '@/lib/engine/relationships';
+import { relLabel } from '@/lib/ui/relations';
 import { RelationshipModal } from '@/components/game/RelationshipModal';
 import { NpcChips } from '@/components/game/NpcChips';
 import { formatMoney } from '@/lib/ui/money';
@@ -59,7 +60,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
     return (
       <div className="flex h-full flex-col justify-center items-center rounded-2xl border border-white/[0.06] bg-white/[0.025] p-5 text-center text-zinc-400 backdrop-blur-xl">
         <Users className="size-6 mb-2 text-zinc-400" />
-        <p className="text-xs font-medium">Relationships & status appear here.</p>
+        <p className="text-xs font-medium">এহানে তোমার সম্পর্ক আর হালচাল দ্যাখা যাবে।</p>
       </div>
     );
   }
@@ -75,12 +76,12 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
     <>
       <aside
         className="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20 scrollbar-none"
-        aria-label="Secondary stats and lineage"
+        aria-label="বাকি পরিসংখ্যান আর বংশ-পরম্পরা"
       >
       {/* 1. Reputation & Standing */}
       <div className="flex flex-col gap-2.5 pb-4 border-b border-white/[0.06]">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-          Standing & Reputation
+          মান-মর্যাদা আর নাম-ইজ্জত
         </span>
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5">
@@ -88,7 +89,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
               <Sparkles className="size-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Fame</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">নাম-ডাক</p>
               <p className="text-sm font-bold tabular-nums text-white">
                 {character.reputation.fame}
               </p>
@@ -100,7 +101,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
               <ShieldCheck className="size-3.5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Karma</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">কাম-কর্ম</p>
               <p className="text-sm font-bold tabular-nums text-white">
                 {character.reputation.karma}
               </p>
@@ -112,7 +113,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
           <div className="flex items-center justify-between rounded-xl border border-rose-500/20 bg-rose-500/5 p-2.5 text-xs text-rose-400 mt-1">
             <div className="flex items-center gap-2">
               <AlertTriangle className="size-3.5" />
-              <span>Criminal History</span>
+              <span>অপরাধের তালিকা</span>
             </div>
             <span className="font-semibold tabular-nums">{character.criminalRecord.length}</span>
           </div>
@@ -123,7 +124,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
       {character.traits.length > 0 && (
         <div className="flex flex-col gap-2 pb-4 border-b border-white/[0.06]">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-            Traits & Attributes
+            সোভাব আর গুণাগুণ
           </span>
           <div className="flex flex-wrap gap-1.5">
             {character.traits.map((trait) => (
@@ -143,15 +144,15 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
       <div className="flex flex-col gap-2.5 flex-1">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-            Relationships
+            আত্মীয়স্বজন
           </span>
           <span className="text-[10px] text-zinc-400 tabular-nums">
-            {livingRelationships.length} alive
+            {livingRelationships.length} জন জীবিত
           </span>
         </div>
 
         {livingRelationships.length === 0 ? (
-          <p className="text-xs text-zinc-400 py-3 text-center">No current contacts.</p>
+          <p className="text-xs text-zinc-400 py-3 text-center">এখন কারো সাথে যোগাযোগই নাই।</p>
         ) : (
           <div className="flex flex-col gap-1.5">
             {livingRelationships.map((rel, index) => {
@@ -172,12 +173,12 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
                         <p className="truncate text-xs font-medium text-zinc-200 group-hover:text-white transition-colors">{rel.name}</p>
                         {rel.romanceStage !== undefined && (
                           <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/20">
-                            {rel.relation}
+                            {relLabel(rel.relation)}
                           </span>
                         )}
                       </div>
                       <p className="text-[10px] uppercase tracking-wider text-zinc-400 font-medium capitalize">
-                        {rel.occupation ? `${rel.occupation} · ` : ''}{rel.relation}
+                        {rel.occupation ? `${rel.occupation} · ` : ''}{relLabel(rel.relation)}
                       </p>
                       <NpcChips
                         health={rel.health}
@@ -211,7 +212,7 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
           onClick={onOpenFamilyTree}
           className="group mt-2 flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs font-medium text-zinc-300 hover:border-white/20 hover:bg-white/[0.06] hover:text-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         >
-          <span>Explore Family Tree</span>
+          <span>পারিবারিক গোছ দেখো</span>
           <ArrowRight className="size-3.5 text-zinc-400 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
         </button>
       </div>
@@ -221,10 +222,10 @@ export function RightRail({ character, onOpenFamilyTree }: RightRailProps) {
         <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.06]">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-              Key Holdings
+              সেরা-সেরা সম্পদ
             </span>
             <span className="text-[10px] text-zinc-400 tabular-nums">
-              {character.assets.length} items
+              {character.assets.length} টা জিনিস
             </span>
           </div>
           <div className="flex flex-col gap-1">

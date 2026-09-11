@@ -46,7 +46,7 @@ export function PauseMenu({
             ref={overlayRef as React.Ref<HTMLElement>}
             role="dialog"
             aria-modal="true"
-            aria-label="Game Paused"
+            aria-label="খেলা থামাইয়া রাখা"
             tabIndex={-1}
             onKeyDown={trapKeyDown}
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
@@ -62,10 +62,10 @@ export function PauseMenu({
                 <Pause className="size-6" />
               </div>
               <h2 className="text-xl font-bold tracking-tight text-white">
-                Game Paused
+                খেলা থামাইয়া রাখা হইছে
               </h2>
               <p className="mt-1 text-xs text-zinc-400 font-normal">
-                All timers and progression are on hold.
+                হিসাব-নিকাশ আর বয়স বাড়া, সব কিছুই থেমে আছে।
               </p>
             </div>
 
@@ -79,7 +79,7 @@ export function PauseMenu({
               >
                 <div className="flex items-center gap-3">
                   <Play className="size-4 fill-current" />
-                  <span>Resume</span>
+                  <span>চালাইয়া যাও</span>
                 </div>
                 <span className="rounded bg-black/30 px-1.5 py-0.5 text-[10px] font-mono text-rose-200">
                   Esc
@@ -94,7 +94,7 @@ export function PauseMenu({
               >
                 <div className="flex items-center gap-3">
                   <Sliders className="size-4 text-zinc-400" />
-                  <span>Settings</span>
+                  <span>সেটিংস</span>
                 </div>
               </button>
 
@@ -106,7 +106,7 @@ export function PauseMenu({
               >
                 <div className="flex items-center gap-3">
                   <Keyboard className="size-4 text-zinc-400" />
-                  <span>Keyboard Shortcuts</span>
+                  <span>কিবোর্ড শর্টকাট</span>
                 </div>
                 <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-mono text-zinc-400">
                   ?
@@ -121,7 +121,7 @@ export function PauseMenu({
               >
                 <div className="flex items-center gap-3">
                   <Download className="size-4 text-zinc-400" />
-                  <span>Export Save</span>
+                  <span>সেভ নামাইয়া নাও</span>
                 </div>
               </button>
 
@@ -135,7 +135,7 @@ export function PauseMenu({
               >
                 <div className="flex items-center gap-3">
                   <LogOut className="size-4 text-rose-400" />
-                  <span>Quit to Landing</span>
+                  <span>প্রথম পর্দায় ফিরে যাও</span>
                 </div>
               </button>
             </div>

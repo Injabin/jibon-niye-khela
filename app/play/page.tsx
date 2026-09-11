@@ -1,8 +1,8 @@
 import { GameHub } from '@/components/game/GameHub';
 
 export const metadata = {
-  title: 'Jibon Niye Khela — In-Game Life Simulation',
-  description: 'Play Jibon Niye Khela, the choice-driven medieval modern-martial life simulation.',
+  title: 'খেলা চলতেসে — জীবন নিয়া খেলা',
+  description: 'জীবন নিয়া খেলা খেলো, ঢাকাইয়া চয়েস-চালিত লাইফ সিমুলেশন।',
 };
 
 export default function PlayPage() {

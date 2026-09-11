@@ -129,7 +129,7 @@ export function CustomLifeModal({
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label="বন্ধ করো"
                 className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
               >
                 <X className="size-4" />
@@ -180,7 +180,7 @@ export function CustomLifeModal({
                   <div>
                     <input
                       type="text"
-                      aria-label="First Name"
+                      aria-label="প্রথম নাম"
                       placeholder="নাম"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -191,7 +191,7 @@ export function CustomLifeModal({
                   <div>
                     <input
                       type="text"
-                      aria-label="Surname"
+                      aria-label="পদবি"
                       placeholder="পদবি / বংশনাম"
                       value={surname}
                       onChange={(e) => setSurname(e.target.value)}

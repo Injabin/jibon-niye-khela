@@ -20,13 +20,13 @@ const hind = Hind_Siliguri({
 
 export const metadata: Metadata = {
   title: {
-    default: "Jibon Niye Khela (জীবন নিয়ে খেলা) — Dhakaiya Life Simulation",
-    template: "%s · Jibon Niye Khela",
+    default: "জীবন নিয়া খেলা — ঢাকাইয়া জীবনের লাইফ সিমুলেশন",
+    template: "%s · জীবন নিয়া খেলা",
   },
   description:
-    "জীবন নিয়ে খেলা (Jibon Niye Khela) — ঢাকাইয়া ভাষায় ফ্রি লাইফ সিমুলেশন গেম। জন্ম থেকে মৃত্যু, ক্যারিয়ার, সম্পর্ক আর মাইঙ্কা চিপার সব রোমাঞ্চকর গল্প!",
+    "জীবন নিয়া খেলা — ঢাকাইয়া ভাষায় ফ্রি লাইফ সিমুলেশন গেম। জন্ম থেইকা মৃত্যু, ক্যারিয়ার, সম্পর্ক আর মাইঙ্কা চিপার সব রোমাঞ্চকর কাহিনি!",
   applicationName: "Jibon Niye Khela",
-  keywords: ["life simulation", "life sim", "jibon niye khela", "dhakaiya bangla", "browser game", "জীবন নিয়ে খেলা"],
+  keywords: ["life simulation", "life sim", "jibon niye khela", "dhakaiya bangla", "browser game", "জীবন নিয়া খেলা", "ঢাকাইয়া গেম"],
   robots: { index: true, follow: true },
 };
 

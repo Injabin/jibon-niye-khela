@@ -138,7 +138,7 @@ export function EventCard({ event, onChoose }: EventCardProps) {
         ref={overlayRef as React.Ref<HTMLElement>}
         role="group"
         aria-roledescription="life event"
-        aria-label={`Life event — ${tone.label}`}
+        aria-label={`জীবনের ঘটনা — ${tone.label}`}
         tabIndex={-1}
         onKeyDown={onKeyDown}
         initial={reducedMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}

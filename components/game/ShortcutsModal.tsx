@@ -18,42 +18,42 @@ interface ShortcutItem {
 
 const SHORTCUTS: { category: string; items: ShortcutItem[] }[] = [
   {
-    category: 'Core Gameplay',
+    category: 'মূল খেলা',
     items: [
       {
         keys: ['Space', 'Enter'],
-        description: 'Age up (+1 Year) or confirm focused action',
-        context: 'Dashboard / Controls',
+        description: 'বয়স +১ বছর আগাইয়া দাও বা সিলেক্ট করা কাজই নিশ্চিত করো',
+        context: 'ড্যাশবোর্ড / নিয়ন্ত্রণ',
       },
       {
         keys: ['1', '2', '3', '4'],
-        description: 'Select numbered choice on active event card',
-        context: 'Event Dilemmas',
+        description: 'চলমান ঘটনা-কার্ডে নম্বর দিয়া বাছাই করো',
+        context: 'ঘটনার ফয়ে-সালা',
       },
     ],
   },
   {
-    category: 'Navigation & Overlays',
+    category: 'ঘুরাঘুরি আর ওভারলে',
     items: [
       {
         keys: ['Esc'],
-        description: 'Close active modal / Open pause menu (when in game)',
-        context: 'Global',
+        description: 'খোলা পর্দা বন্ধ করো / পজ মেনু খোলো (খেলার ভেতরে)',
+        context: 'যেকোনো জায়গায়',
       },
       {
         keys: ['?'],
-        description: 'Toggle this keyboard shortcuts guide',
-        context: 'Global',
+        description: 'এই কিবোর্ড শর্টকাট গাইড খোলো-বন্ধ করো',
+        context: 'যেকোনো জায়গায়',
       },
       {
         keys: ['Tab', 'Shift + Tab'],
-        description: 'Cycle focus through interactive elements',
-        context: 'Global',
+        description: 'ইন্টারঅ্যাক্টিভ জিনিসগুলোতে ফোকাস ঘুরাও',
+        context: 'যেকোনো জায়গায়',
       },
       {
         keys: ['Arrow Keys'],
-        description: 'Navigate options, tabs, and lists',
-        context: 'Menus & Steppers',
+        description: 'অপশন, ট্যাব আর তালিকায় চলো',
+        context: 'মেনু আর স্টেপার',
       },
     ],
   },
@@ -84,7 +84,7 @@ export function ShortcutsModal({ open, onClose }: ShortcutsModalProps) {
             ref={overlayRef as React.Ref<HTMLElement>}
             role="dialog"
             aria-modal="true"
-            aria-label="Keyboard Shortcuts"
+            aria-label="কিবোর্ড শর্টকাট"
             tabIndex={-1}
             onKeyDown={trapKeyDown}
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
@@ -101,14 +101,14 @@ export function ShortcutsModal({ open, onClose }: ShortcutsModalProps) {
                   <Keyboard className="size-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">Keyboard Shortcuts</h2>
-                  <p className="text-xs text-zinc-400">Master full game control without a mouse</p>
+                  <h2 className="text-lg font-bold text-white">কিবোর্ড শর্টকাট</h2>
+                  <p className="text-xs text-zinc-400">মাউস ছাড়াই সারাটা খেলার লাগাম নিজের হাতে!</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close shortcuts dialog"
+                aria-label="শর্টকাট-পর্দা বন্ধ করো"
                 className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
               >
                 <X className="size-5" />
@@ -157,7 +157,7 @@ export function ShortcutsModal({ open, onClose }: ShortcutsModalProps) {
             <div className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300 flex items-start gap-2.5">
               <Sparkles className="size-4 shrink-0 mt-0.5" />
               <span>
-                <strong>Smart Protection:</strong> Gameplay shortcuts are automatically paused while typing in text inputs (e.g., character names) to prevent accidental actions.
+                <strong>বুদ্ধিমান সুরক্ষা:</strong> টেক্সট বক্সে লেখালেখির সময় (যেমন নাম লেখা) খেলার শর্টকাটগুলো আপনা-আপনি বন্ধ থাইকা যায়, যাতে ভুলবশত কিছু না ঘটা ঘটে!
               </span>
             </div>
 
@@ -168,7 +168,7 @@ export function ShortcutsModal({ open, onClose }: ShortcutsModalProps) {
                 onClick={onClose}
                 className="rounded-xl bg-white/10 hover:bg-white/15 px-5 py-2.5 text-xs font-semibold text-white transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
               >
-                Close (Esc)
+                বন্ধ করো (Esc)
               </button>
             </div>
           </motion.section>

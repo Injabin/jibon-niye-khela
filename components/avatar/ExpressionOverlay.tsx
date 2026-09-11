@@ -67,7 +67,7 @@ export function ExpressionOverlay({ expression }: { expression: ExpressionId | n
               transition={{ duration: motionTokens.micro }}
               aria-hidden
             >
-              <LottieMotion src={EXPRESSION_FILE[expression]} ariaLabel={`${meta.label} expression`} loop />
+              <LottieMotion src={EXPRESSION_FILE[expression]} ariaLabel={`${meta.label} — মুখের ভাব`} loop />
             </motion.div>
           ))}
       </AnimatePresence>

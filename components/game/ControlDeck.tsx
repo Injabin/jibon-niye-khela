@@ -43,12 +43,12 @@ export function ControlDeck({
             className="group relative flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-black/40 px-4 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
           >
             <Sparkles className="size-4" />
-            <span>Age (+1 Year)</span>
+            <span>বয়স (+১ বছর)</span>
           </button>
         )}
 
         {/* 4 Bottom Navigation Tabs */}
-        <nav className="grid grid-cols-4 gap-1" aria-label="Controls">
+        <nav className="grid grid-cols-4 gap-1" aria-label="নিয়ন্ত্রণ">
           <button
             type="button"
             onClick={onOpenProfile}
@@ -57,7 +57,7 @@ export function ControlDeck({
             className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
           >
             <User className="size-4" />
-            <span className="text-[10px] font-medium mt-1">Profile</span>
+            <span className="text-[10px] font-medium mt-1">প্রোফাইল</span>
           </button>
 
           <button
@@ -68,7 +68,7 @@ export function ControlDeck({
             className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
           >
             <Swords className="size-4" />
-            <span className="text-[10px] font-medium mt-1">Activities</span>
+            <span className="text-[10px] font-medium mt-1">কাজকর্ম</span>
           </button>
 
           <button
@@ -79,7 +79,7 @@ export function ControlDeck({
             className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
           >
             <Users className="size-4" />
-            <span className="text-[10px] font-medium mt-1">Relations</span>
+            <span className="text-[10px] font-medium mt-1">আত্মীয়-স্বজন</span>
           </button>
 
           <button
@@ -90,7 +90,7 @@ export function ControlDeck({
             className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
           >
             <Coins className="size-4" />
-            <span className="text-[10px] font-medium mt-1">Assets</span>
+            <span className="text-[10px] font-medium mt-1">ধন-সম্পদ</span>
           </button>
         </nav>
 
@@ -104,7 +104,7 @@ export function ControlDeck({
               className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               <Settings className="size-3" />
-              <span>Settings</span>
+              <span>সেটিংস</span>
             </button>
 
             {onOpenShortcuts && (
@@ -115,7 +115,7 @@ export function ControlDeck({
                 className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
               >
                 <Keyboard className="size-3" />
-                <span>Shortcuts</span>
+                <span>শর্টকাট</span>
               </button>
             )}
           </div>
@@ -129,7 +129,7 @@ export function ControlDeck({
               className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-40"
             >
               <Download className="size-3" />
-              <span>Export</span>
+              <span>সেভ নামাও</span>
             </button>
             <span className="text-zinc-700">•</span>
             <button
@@ -138,7 +138,7 @@ export function ControlDeck({
               className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               <Upload className="size-3" />
-              <span>Import</span>
+              <span>সেভ দাও</span>
             </button>
             <span className="text-zinc-700">•</span>
             <button
@@ -149,7 +149,7 @@ export function ControlDeck({
               className="flex items-center gap-1 text-zinc-400 hover:text-rose-400 transition-colors disabled:opacity-40"
             >
               <RotateCcw className="size-3" />
-              <span>Reset</span>
+              <span>রিসেট</span>
             </button>
           </div>
         </div>

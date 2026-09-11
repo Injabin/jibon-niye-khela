@@ -1,6 +1,7 @@
 'use client';
 
 import { Briefcase, Heart, Smile } from 'lucide-react';
+import { JOB_LABELS } from '@/lib/ui/jobs';
 
 interface NpcChipsProps {
   health?: number;
@@ -8,23 +9,6 @@ interface NpcChipsProps {
   jobId?: string;
   lastMetAge?: number;
 }
-
-const JOB_LABELS: Record<string, string> = {
-  job_retail: 'দোকান',
-  job_service: 'সেবা',
-  job_office: 'অফিস',
-  job_tech: 'টেক',
-  job_medical: 'ডাক্তারি',
-  job_legal: 'আইন',
-  job_finance: 'ব্যাংক',
-  job_art: 'শিল্প',
-  job_trade: 'কারিগর',
-  job_military: 'সেনা',
-  job_entertainer: 'শিল্পী',
-  job_politics: 'রাজনীতি',
-  job_sports: 'খেলাধুলা',
-  job_business: 'ব্যবসা',
-};
 
 function toneClass(value: number): string {
   if (value >= 70) return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300';

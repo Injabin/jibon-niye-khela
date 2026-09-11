@@ -8,6 +8,8 @@ import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { getFinance, LOAN_KIND_LABELS, netWorth, QUICK_BANK_AMOUNT } from '@/lib/engine/finance';
 import { peerRelationships, type PeerRelation } from '@/lib/engine/relationships';
+import { relLabel } from '@/lib/ui/relations';
+import { jobLabel } from '@/lib/ui/jobs';
 import { eligibleSubjects, SUBJECTS, type MajorField } from '@/lib/engine/events/categories/education';
 import { PRESTIGE_LABELS, schoolsForStage, stageForAge } from '@/content/education/schools';
 import type { SchoolDef } from '@/content/education/schools';
@@ -133,7 +135,7 @@ export function ActiveMenu({
             data-testid="active-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Life actions"
+            aria-label="জীবনের নানা কাজ"
             onKeyDown={trapKeyDown}
             tabIndex={-1}
           >
@@ -252,21 +254,21 @@ const STAGE_LABELS: Record<string, string> = {
   dropped: 'ড্রপআউট',
 };
 
-const RELATION_LABELS: Record<string, string> = {
-  crush: 'ক্রাশ',
-  dating: 'প্রেম করতাছত',
-  partner: 'মনের মানুষ',
-  spouse: 'বউ / স্বামী',
-};
 
-const COWORKER_KIND_LABELS: Record<string, string> = {
-  job_retail: 'দোকান-পসারে চাকরি',
-  job_service: 'সার্ভিসের কাম',
-  job_office: 'অফিসের কেরানি',
-  job_tech: 'আইটি / টেক',
-  job_trade: 'কারবারের ঠেক',
-  job_finance: 'ব্যাংক-ফাইন্যান্স',
-};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * BitLife-style peer cohort: classmates (study tab) and coworkers (job tab)
@@ -303,9 +305,9 @@ function PeerCohort({ character, kind }: { character: Character; kind: PeerRelat
                 <p className="text-[11px] text-zinc-400">
                   বয়স {peer.age}
                   {kind === 'coworker' && peer.jobId
-                    ? ` · ${COWORKER_KIND_LABELS[peer.jobId] ?? peer.jobId}`
+                    ? ` · ${jobLabel(peer.jobId)}`
                     : ''}
-                  {peer.relation !== kind ? ` · ${peer.relation}` : ''}
+                  {peer.relation !== kind ? ` · ${relLabel(peer.relation)}` : ''}
                 </p>
               </div>
               <div className="shrink-0 text-right">
@@ -968,7 +970,7 @@ function RomanceTab({
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-white">{partner.name}</span>
                       <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/25">
-                        {RELATION_LABELS[partner.relation] ?? partner.relation}
+                        {relLabel(partner.relation)}
                       </span>
                     </div>
                     <p className="text-xs text-zinc-400 mt-0.5">

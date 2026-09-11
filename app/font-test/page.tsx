@@ -4,46 +4,46 @@ import React from 'react';
 import { DHAKAIYA_VOICE_GUIDE } from '@/content/bangla/voice-guide';
 
 const CONJUNCTS = [
-  { char: 'ক্ষ', example: 'পরীক্ষা', meaning: 'Exam' },
-  { char: 'জ্ঞ', example: 'জ্ঞান', meaning: 'Wisdom' },
-  { char: 'ঞ্চ', example: 'চঞ্চল', meaning: 'Restless' },
-  { char: 'ঞ্ছ', example: 'বাঞ্ছা', meaning: 'Desire' },
-  { char: 'ঞ্জ', example: 'গ্যাঞ্জাম', meaning: 'Trouble' },
-  { char: 'ঙ্ক', example: 'শঙ্কা', meaning: 'Fear' },
-  { char: 'ঙ্গ', example: 'বাঙালি', meaning: 'Bengali' },
-  { char: 'ঙ্ঘ', example: 'লঙ্ঘন', meaning: 'Violation' },
-  { char: 'ণ্ড', example: 'মাথামুণ্ডু', meaning: 'Head-tail' },
-  { char: 'ণ্ঠ', example: 'কণ্ঠ', meaning: 'Throat/Voice' },
-  { char: 'ত্ত', example: 'উত্তেজনা', meaning: 'Excitement' },
-  { char: 'ত্থ', example: 'উত্থান', meaning: 'Rise' },
-  { char: 'ত্র', example: 'ছাত্র', meaning: 'Student' },
-  { char: 'দ্ব', example: 'দ্বন্দ', meaning: 'Conflict' },
-  { char: 'ধ্ব', example: 'ধ্বংস', meaning: 'Destruction' },
-  { char: 'ন্ত', example: 'শান্তি', meaning: 'Peace' },
-  { char: 'ন্থ', example: 'গ্রন্থ', meaning: 'Book' },
-  { char: 'ন্দ', example: 'চান্দি', meaning: 'Scalp/Head' },
-  { char: 'ন্ধ', example: 'বন্ধু', meaning: 'Friend' },
-  { char: 'প্ত', example: 'দীপ্ত', meaning: 'Shining' },
-  { char: 'ব্দ', example: 'শব্দ', meaning: 'Sound' },
-  { char: 'ব্ধ', example: 'স্তব্ধ', meaning: 'Silenced' },
-  { char: 'ম্প', example: 'অলিম্পিক', meaning: 'Olympics' },
-  { char: 'ম্ব', example: 'সম্বল', meaning: 'Means/Wealth' },
-  { char: 'ম্ভ', example: 'সম্ভব', meaning: 'Possible' },
-  { char: 'ল্ক', example: 'বল্কল', meaning: 'Bark' },
-  { char: 'ল্প', example: 'গল্প', meaning: 'Story' },
-  { char: 'ষ্ক', example: 'শুষ্ক', meaning: 'Dry' },
-  { char: 'ষ্ট', example: 'কষ্ট', meaning: 'Hardship' },
-  { char: 'ষ্ঠ', example: 'শ্রেষ্ঠ', meaning: 'Supreme' },
-  { char: 'ষ্ণ', example: 'উষ্ণ', meaning: 'Warm' },
-  { char: 'স্ক', example: 'স্কুল', meaning: 'School' },
-  { char: 'স্ত', example: 'দোস্ত', meaning: 'Friend' },
-  { char: 'স্থ', example: 'গোরস্থান', meaning: 'Graveyard' },
-  { char: 'স্ন', example: 'স্নেহ', meaning: 'Affection' },
-  { char: 'স্প', example: 'স্পর্ধা', meaning: 'Audacity' },
-  { char: 'স্ফ', example: 'স্ফুরণ', meaning: 'Spark' },
-  { char: 'হ্ন', example: 'চিহ্ন', meaning: 'Sign' },
-  { char: 'হ্ম', example: 'ব্রহ্মাণ্ড', meaning: 'Universe' },
-  { char: 'হৃ', example: 'হৃদয়', meaning: 'Heart' },
+  { char: 'ক্ষ', example: 'পরীক্ষা', meaning: 'পরীক্ষা' },
+  { char: 'জ্ঞ', example: 'জ্ঞান', meaning: 'জ্ঞান' },
+  { char: 'ঞ্চ', example: 'চঞ্চল', meaning: 'চঞ্চল' },
+  { char: 'ঞ্ছ', example: 'বাঞ্ছা', meaning: 'বাঞ্ছা/খাম' },
+  { char: 'ঞ্জ', example: 'গ্যাঞ্জাম', meaning: 'ঝামেলা' },
+  { char: 'ঙ্ক', example: 'শঙ্কা', meaning: 'ভয়' },
+  { char: 'ঙ্গ', example: 'বাঙালি', meaning: 'বাঙালি' },
+  { char: 'ঙ্ঘ', example: 'লঙ্ঘন', meaning: 'ঊলঙ্ঘন' },
+  { char: 'ণ্ড', example: 'মাথামুণ্ডু', meaning: 'মাথা-লেজ' },
+  { char: 'ণ্ঠ', example: 'কণ্ঠ', meaning: 'গলা/স্বর' },
+  { char: 'ত্ত', example: 'উত্তেজনা', meaning: 'উত্তেজনা' },
+  { char: 'ত্থ', example: 'উত্থান', meaning: 'উত্থান' },
+  { char: 'ত্র', example: 'ছাত্র', meaning: 'ছাত্র' },
+  { char: 'দ্ব', example: 'দ্বন্দ', meaning: 'দ্বন্দ্ব/ঝগড়া' },
+  { char: 'ধ্ব', example: 'ধ্বংস', meaning: 'ধ্বংস/নাশ' },
+  { char: 'ন্ত', example: 'শান্তি', meaning: 'শান্তি' },
+  { char: 'ন্থ', example: 'গ্রন্থ', meaning: 'বই/গ্রন্থ' },
+  { char: 'ন্দ', example: 'চান্দি', meaning: 'খোপড়ি/মাথা' },
+  { char: 'ন্ধ', example: 'বন্ধু', meaning: 'বন্ধু/বান্ধব' },
+  { char: 'প্ত', example: 'দীপ্ত', meaning: 'জ্বলন্ত/উজ্জ্বল' },
+  { char: 'ব্দ', example: 'শব্দ', meaning: 'শব্দ/ধ্বনি' },
+  { char: 'ব্ধ', example: 'স্তব্ধ', meaning: 'নীরব/স্থবির' },
+  { char: 'ম্প', example: 'অলিম্পিক', meaning: 'অলিম্পিক' },
+  { char: 'ম্ব', example: 'সম্বল', meaning: 'সহারা/সম্পদ' },
+  { char: 'ম্ভ', example: 'সম্ভব', meaning: 'সম্ভব' },
+  { char: 'ল্ক', example: 'বল্কল', meaning: 'বল্কল/বাবলা' },
+  { char: 'ল্প', example: 'গল্প', meaning: 'গল্প/কাহিনি' },
+  { char: 'ষ্ক', example: 'শুষ্ক', meaning: 'শুষ্ক/শুকনো' },
+  { char: 'ষ্ট', example: 'কষ্ট', meaning: 'কষ্ট/যত্ন' },
+  { char: 'ষ্ঠ', example: 'শ্রেষ্ঠ', meaning: 'শ্রেষ্ঠ/সেরা' },
+  { char: 'ষ্ণ', example: 'উষ্ণ', meaning: 'উষ্ণ/গরম' },
+  { char: 'স্ক', example: 'স্কুল', meaning: 'স্কুল/বিদ্যালয়' },
+  { char: 'স্ত', example: 'দোস্ত', meaning: 'দোস্ত/বন্ধু' },
+  { char: 'স্থ', example: 'গোরস্থান', meaning: 'কবরস্থান' },
+  { char: 'স্ন', example: 'স্নেহ', meaning: 'স্নেহ/ভালোবাসা' },
+  { char: 'স্প', example: 'স্পর্ধা', meaning: 'স্পর্ধা/প্রতিযোগিতা' },
+  { char: 'স্ফ', example: 'স্ফুরণ', meaning: 'স্ফুলিং/চমক' },
+  { char: 'হ্ন', example: 'চিহ্ন', meaning: 'চিহ্ন/নমুনা' },
+  { char: 'হ্ম', example: 'ব্রহ্মাণ্ড', meaning: 'ব্রহ্মাণ্ড/বিশ্ব' },
+  { char: 'হৃ', example: 'হৃদয়', meaning: 'হৃদয়/হাত' },
 ];
 
 export default function FontTestPage() {
@@ -55,9 +55,9 @@ export default function FontTestPage() {
       <div className="mx-auto max-w-5xl space-y-12">
         {/* Header Section */}
         <header className="border-b border-zinc-800 pb-6">
-          <div className="flex items-center gap-3">
+<div className="flex items-center gap-3">
             <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-emerald-400 border border-emerald-500/20">
-              Phase 1 Gate Verification
+              ফেজ ১ গেট ভেরিফিকেশন
             </span>
             <span className="text-xs text-zinc-400">Unicode বাংলা লিপি ও টাইপোগ্রাফি</span>
           </div>
@@ -67,8 +67,8 @@ export default function FontTestPage() {
           >
             জীবন নিয়ে খেলা — ঢাকাইয়া ফন্ট ও যুক্তাক্ষর টেস্ট
           </h1>
-          <p className="mt-2 text-base text-zinc-400 font-body">
-            Display Font: <span className="font-semibold text-emerald-300 font-display">Baloo Da 2</span> · Body Font: <span className="font-semibold text-rose-300 font-body">Hind Siliguri</span>
+<p className="mt-2 text-base text-zinc-400 font-body">
+            ডিসপ্লে ফন্ট: <span className="font-semibold text-emerald-300 font-display">Baloo Da 2</span> · বডি ফন্ট: <span className="font-semibold text-rose-300 font-body">Hind Siliguri</span>
           </p>
         </header>
 

@@ -1,9 +1,9 @@
 import { LandingPage } from '@/components/marketing/LandingPage';
 
 export const metadata = {
-  title: 'Jibon Niye Khela — A Medieval Modern-Martial Life Simulation',
+  title: 'জীবন নিয়া খেলা — ঢাকাইয়া লাইফ সিমুলেশন',
   description:
-    'A choice-driven medieval modern-martial life simulation. Forge your destiny, master ancient martial arts, nurture bonds, and carve a legendary dynasty across generations. 100% free forever in your browser.',
+    'চয়েস-চালিত ঢাকাইয়া লাইফ সিমুলেশন। ভাগ্য বানাও, সম্পর্ক পোষাও, আর আস্তে আস্তে নিজের বংশ ধরে বাঁচো। ব্রাউজারে সম্পূর্ণ ফ্রি, সব সময়।',
 };
 
 export default function Home() {

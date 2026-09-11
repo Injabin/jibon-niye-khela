@@ -44,7 +44,7 @@ export function ChronicleStream({
   if (history.length === 0) {
     return (
       <div className="px-4 py-6 text-center text-sm text-text-muted" data-testid="chronicle-stream">
-        The chronicle of your life begins with the first year that passes.
+        তোমার জীবনের পান্ডুলিপি শুরু হয় প্রথম বছর গড়ানোর সাথেই।
       </div>
     );
   }
@@ -60,11 +60,11 @@ export function ChronicleStream({
   return (
     <ol className="py-4" data-testid="chronicle-stream">
       {years.map(([age, entries]) => (
-        <li key={age} aria-label={`Year ${age}`}>
+        <li key={age} aria-label={`বয়স ${age}`}>
           <div className="flex items-center gap-2 px-4">
             <span className="h-px flex-1 bg-border" aria-hidden="true" />
             <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.04em] text-text-muted">
-              Year {age}
+              বয়স {age}
             </span>
             <span className="h-px flex-1 bg-border" aria-hidden="true" />
           </div>

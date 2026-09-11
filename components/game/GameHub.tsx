@@ -186,7 +186,7 @@ const message = useGameStore((s) => s.message);
     const reader = new FileReader();
     reader.onload = () => importFromRaw(String(reader.result ?? ''));
     reader.onerror = () => {
-      useGameStore.setState({ error: 'The file could not be read.' });
+      useGameStore.setState({ error: 'ফাইলডা পড়া গেলো না মিয়া — ফরম্যাট ঠিক আছে তো?' });
     };
     reader.readAsText(file);
   };
@@ -359,7 +359,7 @@ const message = useGameStore((s) => s.message);
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
         <div className="flex items-center gap-3">
           <div className="size-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-          <p className="text-sm font-medium">Initializing state…</p>
+          <p className="text-sm font-medium">দুনিয়া গুছানো হইতেছে…</p>
         </div>
       </div>
     );
@@ -367,7 +367,7 @@ const message = useGameStore((s) => s.message);
 
   return (
     <div className="relative min-h-screen w-full bg-zinc-950 text-zinc-100 selection:bg-emerald-500/20 selection:text-emerald-200 font-sans">
-      <h1 className="sr-only">Jibon Niye Khela — A Life Simulation</h1>
+      <h1 className="sr-only">জীবন নিয়ে খেলা — এক লাইফ সিমুলেশন</h1>
 
       {/* Ambient background glow accents for depth and specular reflection */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -488,10 +488,10 @@ const message = useGameStore((s) => s.message);
                   <Sparkles className="size-7" />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                  Begin a New Life
+                  নতুন জীবন শুরু করো
                 </h2>
                 <p className="mt-2 max-w-sm text-sm text-zinc-400 font-normal leading-relaxed">
-                  Make decisions, nurture relationships, build fortunes, and navigate unpredictable twists.
+                  সিদ্ধান্ত নিয়া, সম্পর্ক গড়ো, ভাগ্য গুছাও — আর দেখো জীবন কোন্ কোন্ অপ্রত্যাশিত মোড়ে ঘুইরা যায়!
                 </p>
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <button
@@ -501,7 +501,7 @@ const message = useGameStore((s) => s.message);
                     className="inline-flex items-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 shadow-lg shadow-rose-950/40 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
                   >
                     <Sparkles className="size-4" />
-                    <span>Start Journey</span>
+                    <span>যাত্রা শুরু করো</span>
                   </button>
                   <button
                     type="button"
@@ -510,7 +510,7 @@ const message = useGameStore((s) => s.message);
                     className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     <Sliders className="size-4" />
-                    <span>Custom Life</span>
+                    <span>নিজের মতো জীবন</span>
                   </button>
                   <button
                     type="button"
@@ -519,7 +519,7 @@ const message = useGameStore((s) => s.message);
                     className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     <Settings className="size-4" />
-                    <span>Settings</span>
+                    <span>সেটিংস</span>
                   </button>
                 </div>
               </motion.section>
@@ -558,7 +558,7 @@ const message = useGameStore((s) => s.message);
                     data-testid="new-life"
                     className="rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-2 border-b-[#7a1c1d] active:border-b-0 active:translate-y-0.5 shadow-md shadow-rose-950/40 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all duration-150"
                   >
-                    Start a new life
+                    আবার নতুন জীবন শুরু করো
                   </button>
                   <button
                     type="button"
@@ -566,14 +566,14 @@ const message = useGameStore((s) => s.message);
                     data-testid="new-custom-life"
                     className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-6 py-3 text-xs font-bold uppercase tracking-wider text-emerald-300 transition-all duration-150"
                   >
-                    Custom Life
+                    নিজের মতো জীবন
                   </button>
                   <button
                     type="button"
                     onClick={resetGame}
                     className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-all"
                   >
-                    Reset
+                    রিসেট
                   </button>
                 </div>
               </div>

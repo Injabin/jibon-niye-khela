@@ -5,6 +5,8 @@ import { motion as motionTokens } from '@/lib/theme';
 import { STAT_META, type StatKey } from '@/lib/theme/concepts';
 import { rankForLife } from '@/lib/ui/rank';
 import { formatMoney } from '@/lib/ui/money';
+import { careerTitle } from '@/lib/engine/events/categories/career';
+import { relLabel } from '@/lib/ui/relations';
 import type { Asset, Character } from '@/lib/engine/types';
 import { isPeerRelation } from '@/lib/engine/relationships';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
@@ -53,19 +55,19 @@ export function ProfileSheet({
             data-testid="profile-sheet"
             role="dialog"
             aria-modal="true"
-            aria-label="Character profile"
+            aria-label="জীবনবৃত্তান্ত"
             onKeyDown={trapKeyDown}
             tabIndex={-1}
           >
             {/* Modal Header with Close Button */}
             <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3.5">
-              <h2 className="text-base font-bold tracking-tight text-white">Full Profile</h2>
+              <h2 className="text-base font-bold tracking-tight text-white">সম্পূর্ণ জীবনবৃত্তান্ত</h2>
               <button
                 type="button"
                 onClick={onClose}
                 data-testid="close-profile"
                 className="flex size-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
-                aria-label="Close profile"
+                aria-label="বৃত্তান্ত-পর্দা বন্ধ করো"
               >
                 <X className="size-4" />
               </button>
@@ -83,11 +85,11 @@ export function ProfileSheet({
                   </h3>
                   <p className="text-xs text-zinc-400 font-medium">{rankForLife(character)}</p>
                   <p className="text-xs text-zinc-500 mt-0.5 capitalize">
-                    {character.gender}, born {character.birthYear}
+                    {character.gender === 'male' ? 'ছেলে' : 'মেয়ে'}, জন্ম {character.birthYear}
                   </p>
                   <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
                     <Coins className="size-3 text-amber-400" />
-                    <span>{coinsOf(character.money)} coins</span>
+                    <span>{coinsOf(character.money)} টাকা</span>
                   </div>
                 </div>
               </div>
@@ -95,7 +97,7 @@ export function ProfileSheet({
               {/* Stats Section */}
               <div className="space-y-2 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                  Core Vital Stats
+                  প্রধান আটপৌরে স্ট্যাট
                 </span>
                 <div className="mt-2 space-y-2.5">
                   {statKeys.map((key) => (
@@ -107,31 +109,31 @@ export function ProfileSheet({
               {/* Detailed Metrics */}
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                  Attributes & Standing
+                  মান-গুণ আর সম্মান
                 </span>
                 <dl className="mt-2.5 space-y-2 text-xs">
                   <div className="flex justify-between gap-3 border-b border-white/[0.04] pb-1.5">
-                    <dt className="text-zinc-400">Traits</dt>
+                    <dt className="text-zinc-400">সোভাব</dt>
                     <dd className="text-right font-medium text-white">
-                      {character.traits.length ? character.traits.join(', ') : 'none discovered yet'}
+                      {character.traits.length ? character.traits.join(', ') : 'এখনো কিছু সোভাব খুঁজা পাওয়া যায় নাই'}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-3 border-b border-white/[0.04] pb-1.5">
-                    <dt className="text-zinc-400">Fame</dt>
+                    <dt className="text-zinc-400">নাম-ডাক</dt>
                     <dd className="text-right font-bold tabular-nums text-amber-300">{character.reputation.fame}</dd>
                   </div>
                   <div className="flex justify-between gap-3 border-b border-white/[0.04] pb-1.5">
-                    <dt className="text-zinc-400">Karma</dt>
+                    <dt className="text-zinc-400">কাম-কর্ম</dt>
                     <dd className="text-right font-bold tabular-nums text-teal-300">{character.reputation.karma}</dd>
                   </div>
                   <div className="flex justify-between gap-3">
-                    <dt className="text-zinc-400">Career / Path</dt>
+                    <dt className="text-zinc-400">জীবিকার পথ</dt>
                     <dd className="text-right text-zinc-200">
                       {character.career.jobId
-                        ? `${character.career.jobId} · year ${character.career.yearsAtJob}`
+                        ? `${careerTitle(character)} · ${character.career.yearsAtJob} বছর চাকরি`
                         : character.education.graduated
-                          ? 'Graduated scholar'
-                          : 'Unemployed'}
+                          ? 'লেখাপড়া শিখে বেরহওয়া'
+                          : 'বেকার ভাইয়া'}
                     </dd>
                   </div>
                 </dl>
@@ -141,18 +143,18 @@ export function ProfileSheet({
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]" data-testid="profile-lineage">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Lineage & Circle
+                    বংশ ও আত্মীয় গণ্ডা
                   </span>
-                  <span className="text-[10px] text-zinc-500">{character.relationships.filter((r) => !isPeerRelation(r.relation)).length} members</span>
+                  <span className="text-[10px] text-zinc-500">{character.relationships.filter((r) => !isPeerRelation(r.relation)).length} জন</span>
                 </div>
                 <ul className="mt-2.5 space-y-1.5 text-xs text-zinc-200">
                   {character.relationships.filter((r) => !isPeerRelation(r.relation)).length === 0 ? (
-                    <li className="text-zinc-500">No kindred found yet.</li>
+                    <li className="text-zinc-500">এখনো কোনো গরিষ্ঠ-আত্মীয় খুঁজা পাওয়া যায় নাই।</li>
                   ) : (
                     character.relationships.filter((r) => !isPeerRelation(r.relation)).map((r) => (
                       <li key={r.id} className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/[0.03]">
                         <span className="font-medium text-white">{r.name}</span>
-                        <span className="capitalize text-zinc-400 text-[11px]">{r.relation}</span>
+                        <span className="capitalize text-zinc-400 text-[11px]">{relLabel(r.relation)}</span>
                       </li>
                     ))
                   )}
@@ -164,7 +166,7 @@ export function ProfileSheet({
                   className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-xs font-semibold text-zinc-200 hover:bg-white/10 hover:text-white transition-all"
                 >
                   <Users className="size-3.5" />
-                  <span>Open Interactive Family Tree</span>
+                  <span>ইন্টারঅ্যাক্টিভ পারিবারিক গোছ খোলো</span>
                 </button>
               </div>
 
@@ -172,12 +174,12 @@ export function ProfileSheet({
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06]" data-testid="profile-holdings">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Assets & Holdings
+                    মাল-সম্পদ ও জমিজমা
                   </span>
-                  <span className="text-[10px] text-zinc-500">{character.assets.length} items</span>
+                  <span className="text-[10px] text-zinc-500">{character.assets.length} টা জিনিস</span>
                 </div>
                 {character.assets.length === 0 ? (
-                  <p className="mt-2 text-xs text-zinc-500">No holdings acquired yet.</p>
+                  <p className="mt-2 text-xs text-zinc-500">এখনো কোনো সম্পদ হাতে ওঠে নাই।</p>
                 ) : (
                   <ul className="mt-2 space-y-1 text-xs text-zinc-200">
                     {character.assets.map((asset: Asset) => (

@@ -141,7 +141,7 @@ export function enterHigherEducation(
   const e = character.education;
 
   if (!character.alive) {
-    return { accepted: false, text: 'এহন তো পড়াশোনায় ভর্তি হওয়ার উপায় নাই।', tone: 'bad' };
+    return { accepted: false, text: 'কফিনের ভেতর থাইকা ভর্তি-ফরম ভরার উপায় নাই মিয়া — তুমি তো উল্টা পানে গেছো!', tone: 'bad' };
   }
   if (e.enrolled) {
     return { accepted: false, text: 'তুমি তো অলরেডি পড়াশোনা করতাছো, ক্লাসে মন দেও!', tone: 'neutral' };
@@ -180,7 +180,7 @@ export function enterHigherEducation(
   if (major && character.stats.smarts < SUBJECTS[major].minSmarts) {
     return {
       accepted: false,
-      text: `${SUBJECTS[major].institute}-র ভর্তি গেটের জন্য বুদ্ধি কম পড়তাছে — আগে পড়াশোনায় আরও জোর দেও!`,
+      text: `${SUBJECTS[major].institute}-র ভর্তি গেটে তোমার বুদ্ধির পাল্লা হালকা পড়লো — হাবিজাবি না কইরা আগে পড়াশোনায় জোর দে!`,
       tone: 'neutral',
     };
   }
@@ -212,11 +212,11 @@ export function applyToSchool(
   _rng: RNG,
 ): { accepted: boolean; text: string } {
   const school = findSchoolById(schoolId);
-  if (!school) return { accepted: false, text: 'ওই নামে কোনো স্কুল পাইলাম না!' };
+  if (!school) return { accepted: false, text: 'ওই নামে কোনো স্কুলের খবর-কাগজেও খবর নাই মিয়া — সবুর কইরা সঠিক নাম খোঁজো!' };
 
   const stage = stageForAge(character.age);
   if (!stage || stage !== school.stage) {
-    return { accepted: false, text: `এহন ${school.stage}-তে ভর্তির সময় না — বয়স মিলতেছে না!` };
+    return { accepted: false, text: `এই বয়সে ${school.stage}-তে ভর্তি? বেলা কিন্তু ভাইসা গেছে — বয়সের নাগাল আগে বাড়াও!` };
   }
 
   const e = character.education;
@@ -230,7 +230,7 @@ export function applyToSchool(
     return { accepted: false, text: `টিউশন ফি ৳${school.tuition} দেবার পয়সা পকেটে নাই!` };
   }
   if (e.school?.id === school.id) {
-    return { accepted: false, text: `তুমি তো অলরেডি ${school.name}-তে পড়তাছো!` };
+    return { accepted: false, text: `তুমি তো ${school.name}-তে অলরেডি ভর্তি! স্কুল নিয়া খালি নাটক কইরো না — ক্লাসে মন দিয়া পড়ো!` };
   }
 
   character.money -= school.tuition;
@@ -372,7 +372,7 @@ export function hireTutor(character: Character): { ok: boolean; text: string } {
 /** Drops out of school early to pursue life in the streets or odd jobs. */
 export function dropOutOfSchool(character: Character): { ok: boolean; text: string } {
   if (!character.education.enrolled) {
-    return { ok: false, text: 'তুমি তো অলরেডি পড়াশোনা করতাছো না!' };
+    return { ok: false, text: 'পড়াশোনার লগে তো তোমার চেনাশোনাই নাই — স্কুল ছাড়ার কথা কইবা কেমনে? আগে ভর্তি হইয়া আইসো!' };
   }
 
   character.education.enrolled = false;

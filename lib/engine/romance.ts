@@ -166,7 +166,7 @@ export function askOutCandidate(
   rng: RNG
 ): { ok: boolean; text: string; relationship?: Relationship } {
   if (character.age < 13) {
-    return { ok: false, text: 'প্রেম করার বয়স তোমার এখনও হয় নাই!' };
+    return { ok: false, text: 'ইশ্! এতো কচি বয়সে প্রেমের ফরমায়েশ? নিজের প্যান্টের নাটাই আগে সামলাও!' };
   }
 
   // Acceptance check based on character looks, happiness, wealth, and celebrity difficulty
@@ -261,12 +261,12 @@ export function makeOfficialPartner(
   rng: RNG
 ): { ok: boolean; text: string } {
   if (character.age < 18) {
-    return { ok: false, text: 'অফিসিয়াল পার্টনার বানাইতে হইলে অন্তত ১৮ বছর বয়স হওয়া লাগবো!' };
+    return { ok: false, text: '১৮ বছরের আগে অফিসিয়াল লাইন? কাজী সাব আগে থাইকাই তোরে খেদাইয়া দেওয়ার হুশিয়ারি দিছে!' };
   }
 
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.romanceStage !== 'dating' && rel.relation !== 'dating')) {
-    return { ok: false, text: 'তুমি তো এই মানুষের লগে ডেটিং করতাছো না!' };
+    return { ok: false, text: 'আগে তো এই মানুষটার লগে ডেটিংয়ের গাছটা লাগাও — তারপর পাকা ফলে লোভ দেখাও!' };
   }
 
   if (rel.meter < 50) {
@@ -319,7 +319,7 @@ export function proposeMarriage(
   if (character.money < totalCost) {
     return {
       ok: false,
-      text: `বিয়ার আংটি ও অনুষ্ঠানের খরচ মোট ৳${totalCost.toLocaleString()} লাগবো, পকেটে আছে মাত্র ৳${character.money.toLocaleString()}। আগে রোজগার করো!`,
+      text: `আংটি, দাওয়াত আর আনুষ্ঠানিকতায় মোটে ৳${totalCost.toLocaleString()} খরচ লাগবো, মাগার পকেটে আছে খালি ৳${character.money.toLocaleString()}! আগে রোজগারের ধান্দা ধরো মিয়া!`,
     };
   }
 
@@ -382,7 +382,7 @@ export function cheatBranch(
 ): { ok: boolean; text: string; caught: boolean } {
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.relation !== 'partner' && rel.relation !== 'spouse')) {
-    return { ok: false, text: 'চিটিং করার মতো কোনো জীবনসঙ্গী তো তোমার নাই!', caught: false };
+    return { ok: false, text: 'পরকীয়া সারবার মতো মানুষ কই? আগে একটা প্রেম মনে-প্রাণে ঠিক করা শেখো!', caught: false };
   }
 
   // Guaranteed heavy karma loss
@@ -430,7 +430,7 @@ export function breakupOrDivorce(
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId);
   if (!rel || (rel.relation !== 'partner' && rel.relation !== 'spouse' && rel.relation !== 'dating')) {
-    return { ok: false, text: 'ভেঙে দেওয়ার মতো কোনো সক্রিয় সম্পর্ক পাওয়া যায় নাই।' };
+    return { ok: false, text: 'ভাঙবার মতো সম্পর্কই নাই — কাঁচা হাতে পুকুরে ছাপড়া মারার লাহান অবস্থা!' };
   }
 
   const wasSpouse = rel.relation === 'spouse';
@@ -471,7 +471,7 @@ export function dateCandidateOrPartner(
   rng: RNG
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!' };
+  if (!rel) return { ok: false, text: 'ডেট মারবার মানুষ কই? ফুলের বাগানে মৌমাছির মতো কাউকে তো রেডি পাওয়া গেলো না!' };
 
   const DATE_COST = 200;
   if (character.money < DATE_COST) {
@@ -502,11 +502,11 @@ export function giveGiftToPartner(
   rng: RNG
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'উপহার দেওয়ার মতো কাউকে পাওয়া যায় নাই!' };
+  if (!rel) return { ok: false, text: 'উপহার দিবার মতো প্রিয়জন কই? হাতে মিষ্টির ডাব্বা নিয়া কিসের অপেক্ষা!' };
 
   const GIFT_COST = 400;
   if (character.money < GIFT_COST) {
-    return { ok: false, text: `উপহার কেনার মতো ৳${GIFT_COST} পকেটে নাই!` };
+    return { ok: false, text: `উপহার কেনার ট্যাকা ৳${GIFT_COST} পকেটে নাই — নাড়ু না দেখাই যাওয়াই ভালো!` };
   }
 
   character.money -= GIFT_COST;
@@ -533,16 +533,16 @@ export function tryForBaby(
   rng: RNG
 ): { ok: boolean; text: string; babyMember?: FamilyMember } {
   if (character.age < 18) {
-    return { ok: false, text: 'বাচ্চা নেওয়ার মতো বয়স এখনও তোমার হয় নাই!' };
+    return { ok: false, text: 'এহন বাচ্চা লইবার বয়স না — নিজেই তো দই-চিনি খাওয়ার পাত্র!' };
   }
 
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel || (rel.relation !== 'spouse' && rel.relation !== 'partner')) {
-    return { ok: false, text: 'বাচ্চা নেওয়ার জন্য একজন বিবাহিত সঙ্গী বা জীবনসঙ্গী দরকার!' };
+    return { ok: false, text: 'গোয়ালঘরে বাছুর নাই তো! বাচ্চার খবর পাইতে আগে ঘরে নূতন বউ বা জামাই জোটানো লাগবো!' };
   }
 
   if (rel.age > 48 || character.age > 55) {
-    return { ok: false, text: 'বয়সের কারণে প্রাকৃতিক উপায়ে সন্তান হওয়া অসম্ভব বললেই চলে।' };
+    return { ok: false, text: 'বয়সের কাঁটা পাহাড় ডিঙাইছে — প্রাকৃতিক উপায়ে সন্তানের খবর এখন খালি গল্পের পাতায় পাওয়া যায়!' };
   }
 
   // Fertility check based on health and randomness
@@ -615,7 +615,7 @@ export function callOrTextEx(
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel || rel.relation !== 'ex') {
-    return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!' };
+    return { ok: false, text: 'প্রাক্তনের নম্বর খুঁইজা পাইলাম না — ফোনবুকে তো খালি নামটাই জ্বলে, মানুষ নাই!' };
   }
 
   const roll = rng.rangeInt(1, 100);
@@ -664,7 +664,7 @@ export function hookupWithEx(
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel || rel.relation !== 'ex') {
-    return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!' };
+    return { ok: false, text: 'প্রাক্তনের লগে চিপা মিলামিশার টেক্কা? কেডা? ফোনবুকে তো এই নামের মানুষই নাই!' };
   }
 
   const hasCommitted = character.relationships.some(
@@ -696,7 +696,7 @@ export function begGetBackTogether(
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel || rel.relation !== 'ex') {
-    return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!' };
+    return { ok: false, text: 'ক্ষমা চাইবার মানুষটার খোঁজে ঢাকা চষা গেল, মাগার কেউ পাওয়া গেলো না — সম্পর্কের বাসরঘর ফাঁকা!' };
   }
 
   let chance = (rel.meter / 100) * 0.5;
@@ -734,7 +734,7 @@ export function insultEx(
 ): { ok: boolean; text: string } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel || rel.relation !== 'ex') {
-    return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!' };
+    return { ok: false, text: 'গালাগালি মাইরা দিমু? আগে কাউকে দিস না — প্রাক্তন নামের সড়ক এই পাড়ায়ই নাই!' };
   }
 
   rel.meter = clamp(rel.meter - 25);

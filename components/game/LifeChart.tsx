@@ -12,10 +12,10 @@ const METRIC_COLOR: Record<Metric, string> = {
 };
 
 const METRIC_LABEL: Record<Metric, string> = {
-  health: 'Health',
-  happiness: 'Happiness',
-  smarts: 'Smarts',
-  looks: 'Looks',
+  health: 'স্বাস্থ্য',
+  happiness: 'সুখ',
+  smarts: 'বুদ্ধি',
+  looks: 'চেহারা',
 };
 
 /**
@@ -41,7 +41,7 @@ export function LifeChart({
       <svg
         viewBox={`0 0 ${d.width} ${d.height}`}
         role="img"
-        aria-label="Your four stats plotted across your whole life"
+        aria-label="তোমার চারটা স্ট্যাট, গোটা জীবনের হিসাবমতো"
         className="h-auto w-full"
       >
         <defs>
@@ -85,10 +85,10 @@ export function LifeChart({
         ))}
 
         <text x={d.padL} y={d.height - 8} fontSize={10} fill={colors.textMuted}>
-          age {minAge}
+          বয়স {minAge}
         </text>
         <text x={d.width - d.padR} y={d.height - 8} textAnchor="end" fontSize={10} fill={colors.textMuted}>
-          age {maxAge}
+          বয়স {maxAge}
         </text>
       </svg>
       <figcaption className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted">

@@ -294,17 +294,17 @@ export function applyForJob(
   reasonOverride?: string,
 ): JobApplicationResult {
   if (!character.alive) {
-    return { hired: false, text: 'এহন তো চাকরি খোঁজার উপায় নাই।', tone: 'bad' };
+    return { hired: false, text: 'তুমি তো মারা গেছো! চাকরি খুঁজতে গেলে জব বোর্ডে তোর নাম কবর-পাথরে লেখা থাকবো!', tone: 'bad' };
   }
   const job = JOB_BOARD.find((j) => j.id === jobId);
   if (!job) {
-    return { hired: false, text: 'এমন কোনো চাকরি দুনিয়ায় নাই!', tone: 'neutral' };
+    return { hired: false, text: 'ঐ নামে চাকরির অস্তিত্বই নাই মিয়া — জব বোর্ডে তো খালি মজুরি-মার গল্পের পাতা!', tone: 'neutral' };
   }
   if (!isJobEligible(job, character)) {
     if (hasCriminalRecord(character) && TRUST_BLOCKED_JOB_FLAGS.includes(job.flag)) {
       return { hired: false, text: `${job.title} পদের জন্য দরকার পুলিশি সনদ (character certificate)। ঝামেলার পাতায় নাম থাকার কারণে দরজা বন্ধ — এহন খিদমতে তাক লাগলো।`, tone: 'bad' };
     }
-    return { hired: false, text: `${job.title} পদের জন্য প্রয়োজনীয় যোগ্যতা তোমার এখনও হয় নাই।`, tone: 'neutral' };
+    return { hired: false, text: `${job.title} পদের পাল্লায় তোমার যোগ্যতার ওজন কম পড়লো — আগে সিভিতে কুঁড়ি জমাইয়া তারপর আবেদনে নামো!`, tone: 'neutral' };
   }
 
   let chance = 0.45 + (character.stats.smarts - 50) * 0.004 + (character.stats.looks - 50) * 0.002;
@@ -385,7 +385,7 @@ export function askForRaise(character: Character, rng: RNG): { ok: boolean; text
   }
 
   const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
-  if (!job) return { ok: false, text: 'চাকরি খুঁজে পাওয়া যায় নাই।' };
+  if (!job) return { ok: false, text: 'বেতন বাড়াইবার কথা ভাবতে তো আগে কোনো চাকরিই লাগবে — খালি হাত নিয়া ফাঁকা দেয়ালে কইছো!' };
 
   if (character.career.yearsAtJob < 1) {
     return { ok: false, text: 'চাকরিতে জয়েন কইরাই বেতন বাড়ানোর আবদার? মালিক তো খেদাইয়া দিবো!' };

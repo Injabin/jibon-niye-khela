@@ -88,7 +88,7 @@ function syncDebtFlag(character: Character): void {
 
 export function depositSavings(character: Character, amount: number): FinanceActionResult {
   const cash = Math.floor(amount);
-  if (!character.alive) return { ok: false, text: 'ইহকালের ব্যাংক লেনদেন এহন অচল।', tone: 'neutral' };
+  if (!character.alive) return { ok: false, text: 'মারা যাওয়ার পরে ব্যাংকের লেনদেন ও দুনিয়ার হিসাব দুটোই বন্ধ — খালি ছয় হাত মাটির তহবিল!', tone: 'neutral' };
   if (cash <= 0 || character.money < cash) {
     return { ok: false, text: `জমানোর মতো ${cash.toLocaleString()} ট্যাকা পকেটে নাই!`, tone: 'neutral' };
   }
@@ -100,13 +100,13 @@ export function depositSavings(character: Character, amount: number): FinanceAct
 
 export function withdrawSavings(character: Character, amount: number): FinanceActionResult {
   const cash = Math.floor(amount);
-  if (!character.alive) return { ok: false, text: 'ইহকালের ব্যাংক লেনদেন এহন অচল।', tone: 'neutral' };
+  if (!character.alive) return { ok: false, text: 'মরণের পরে ব্যাংক থাইকা ট্যাকা তোলবার উপায় নাই — জমার খাতা কবরের মাটিতে মিশাইয়া গেছে!', tone: 'neutral' };
   if (cash <= 0) return { ok: false, text: 'তোলার অংকটা তো ঠিক নাই!', tone: 'neutral' };
   const fin = getFinance(character);
   if (fin.savings < cash) {
     return {
       ok: false,
-      text: `ব্যাংকে জমা আচে মাত্র ${fin.savings.toLocaleString()} ট্যাকা — ${cash.toLocaleString()} ট্যাকা এহনো তোলা যাইবো না!`,
+      text: `ব্যাংকের খাতায় জমা আছে ${fin.savings.toLocaleString()} ট্যাকা — ${cash.toLocaleString()} তোলতে গেলে হিসাব মুখ থুবড়া খাইবো! আগে জমানো বাড়াও!`,
       tone: 'neutral',
     };
   }
@@ -122,13 +122,13 @@ export function takeLoan(
   kind: LoanKind = 'personal',
 ): FinanceActionResult {
   const sum = Math.floor(amount);
-  if (!character.alive) return { ok: false, text: 'মৃতব্যক্তি আর ধার নিতে পারে না।', tone: 'neutral' };
+  if (!character.alive) return { ok: false, text: 'মড়ার কাছ থাইকা ধার নিবার পথ নাই মিয়া — কবরের লোকের কাঁধে কর্জ জমে না!', tone: 'neutral' };
   if (sum <= 0) return { ok: false, text: 'কত ট্যাকা ধার নিবা? ঠিক কইরা বোলো!', tone: 'neutral' };
   const fin = getFinance(character);
   if (fin.bankruptcyBlockUntilAge !== undefined && character.age < fin.bankruptcyBlockUntilAge) {
     return {
       ok: false,
-      text: `দেউলিয়া ঘোষণার কালিমা মাথায় — ব্যাংকগুলো তোকে আর ${fin.bankruptcyBlockUntilAge - character.age} বছর ধার দিবে না!`,
+      text: `দেউলিয়া ঘোষণার কালিমা কপালে লইয়া ঘুরছস — ব্যাংকের খাতায় তোর নাম লাল কালি দিয়া চিহ্নিত! আর ${fin.bankruptcyBlockUntilAge - character.age} বছর ধার নিবার স্বপ্ন ভুলে যাও!`,
       tone: 'bad',
     };
   }
@@ -150,7 +150,7 @@ export function takeLoan(
 }
 
 export function repayLoan(character: Character, loanIdToPay: string, amount?: number): FinanceActionResult {
-  if (!character.alive) return { ok: false, text: 'মৃতব্যক্তি আর ঋণ শোধ করতে পারে না।', tone: 'neutral' };
+  if (!character.alive) return { ok: false, text: 'তুমি তো নাগাড়ে চইলা গেছো — ঋণের খাতা কিয়ামত পর্যন্ত দেনা পইরা থাকবো, শোধের সুযোগ নাই!', tone: 'neutral' };
   const fin = getFinance(character);
   const loan = fin.loans.find((l) => l.id === loanIdToPay);
   if (!loan) return { ok: false, text: 'এই ধার তো তোমার খাতায়ই নাই!', tone: 'neutral' };
@@ -182,11 +182,11 @@ export function repayLoan(character: Character, loanIdToPay: string, amount?: nu
  * the unrecoverable remainder is written off, and new borrowing is blocked.
  */
 export function declareBankruptcy(character: Character): FinanceActionResult {
-  if (!character.alive) return { ok: false, text: 'মৃতব্যক্তি আর দেউলিয়া ঘোষণা দিতে পারে না।', tone: 'neutral' };
+  if (!character.alive) return { ok: false, text: 'মারের পরে দেউলিয়া ঘোষণার খাতা সই নাই — কবরস্থানের ফর্দে দেনা-পাওনার হিসাব লেখা থাকে না!', tone: 'neutral' };
   if (netWorth(character) >= 0) {
     return {
       ok: false,
-      text: 'ট্যাকা-সম্পদ তো এখনো আছে — এই অবস্থায় আদালতে দেউলিয়া ঘোষণা মাইনা নিবে না!',
+      text: 'পকেটে ট্যাকা আর বাসায় আসবাব থাকতে দেউলিয়া ঘোষণা? আদালত হাইসা জিগাইবো — ঘরে ঘি নিয়া ক্যান এমন নোটিশ দিয়া আইসস!',
       tone: 'neutral',
     };
   }

@@ -54,8 +54,8 @@ export function LeftSidebar({
           <div className="flex size-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-zinc-400 mb-3">
             <User className="size-6" />
           </div>
-          <p className="text-sm font-medium text-zinc-300">No active life</p>
-          <p className="text-xs text-zinc-400 mt-1">Begin a new journey to track stats.</p>
+          <p className="text-sm font-medium text-zinc-300">কোনো জীবন চলতাছে না</p>
+          <p className="text-xs text-zinc-400 mt-1">উপরে গিয়া যাত্রা শুরু কইরা জীবন গুছাও!</p>
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ export function LeftSidebar({
   return (
     <aside
       className="flex h-full flex-col justify-between rounded-3xl border border-white/[0.06] bg-zinc-900/90 p-5 backdrop-blur-xl shadow-xl shadow-black/20"
-      aria-label="Character and controls"
+      aria-label="চরিত্র আর নিয়ন্ত্রণ"
     >
       <div className="flex flex-col gap-4">
         {/* Profile Card with Full Prominent Avatar Display */}
@@ -122,7 +122,7 @@ export function LeftSidebar({
         </button>
 
         {/* Minimal Vertical Navigation with smooth transition hover states */}
-        <nav className="flex flex-col gap-1 border-t border-white/[0.06] pt-3" aria-label="Navigation">
+        <nav className="flex flex-col gap-1 border-t border-white/[0.06] pt-3" aria-label="নেভিগেশন">
           <span className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
             কাজকর্ম ও জীবনধারা
           </span>
@@ -189,7 +189,7 @@ export function LeftSidebar({
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-text-muted hover:text-text hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
         >
           <Settings className="size-3.5" />
-          <span>Settings</span>
+          <span>সেটিংস</span>
         </button>
 
         <div className="flex items-center gap-1">
@@ -198,8 +198,8 @@ export function LeftSidebar({
               type="button"
               onClick={onOpenShortcuts}
               data-testid="open-shortcuts"
-              title="Keyboard Shortcuts (?)"
-              aria-label="Keyboard shortcuts"
+              title="কিবোর্ড শর্টকাট (?)"
+              aria-label="কিবোর্ড শর্টকাট"
               className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
             >
               <Keyboard className="size-3.5" />
@@ -210,8 +210,8 @@ export function LeftSidebar({
             type="button"
             onClick={onExport}
             data-testid="export-save"
-            title="Export Save"
-            aria-label="Export save"
+            title="সেভ নামাইয়া নাও"
+            aria-label="সেভ নামাইয়া নাও"
             className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
           >
             <Download className="size-3.5" />
@@ -220,8 +220,8 @@ export function LeftSidebar({
           <button
             type="button"
             onClick={onImportClick}
-            title="Import Save"
-            aria-label="Import save"
+            title="সেভ ঢুকাইয়া দাও"
+            aria-label="সেভ ঢুকাইয়া দাও"
             className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
           >
             <Upload className="size-3.5" />
@@ -231,8 +231,8 @@ export function LeftSidebar({
             type="button"
             onClick={onReset}
             data-testid="reset"
-            title="Reset Game"
-            aria-label="Reset game"
+            title="খেলা রিসেট করো"
+            aria-label="খেলা রিসেট করো"
             className="flex size-7 items-center justify-center rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
           >
             <RotateCcw className="size-3.5" />

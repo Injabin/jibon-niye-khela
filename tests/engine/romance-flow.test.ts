@@ -162,7 +162,7 @@ describe('romance-marriage-baby end-to-end flow (J)', () => {
     useGameStore.setState({ rejection: null });
     useGameStore.getState().datePartner('no-such-id');
     s = useGameStore.getState();
-    expect(s.rejection).toMatch(/টাকা|নাই|খুঁজে/);
+    expect(s.rejection).toMatch(/কই|নাই|না|পাওয়া|খুঁজি/);
 
     // Dismissal clears the popup.
     useGameStore.getState().clearRejection();

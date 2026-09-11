@@ -40,7 +40,7 @@ export function spendTimeWithPerson(
   rng: RNG
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'আড্ডা দিবার মানুষ কই? গলির মোড়ে চারপাশ ঘুড়া, কে আছে দেখো — কেউ নাই!', tone: 'neutral' };
 
   rel.meter = clamp(rel.meter + rng.rangeInt(8, 16));
   character.stats.happiness = clamp(character.stats.happiness + rng.rangeInt(5, 12));
@@ -63,7 +63,7 @@ export function chatWithPerson(
   rng: RNG
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'গল্প-গুজবের মানুষ খুঁইজা পাইলাম না — চায়ের দোকানের ফাঁকা টেবিলে বসা চলবে না!', tone: 'neutral' };
 
   rel.meter = clamp(rel.meter + rng.rangeInt(5, 12));
   character.stats.happiness = clamp(character.stats.happiness + rng.rangeInt(4, 8));
@@ -86,7 +86,7 @@ export function complimentPerson(
   rng: RNG
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'তারিফ-শাহিনার মানুষ কই? সামনে কেউ নাই — আয়নার সামনে গিয়া নিজেরেই বলো!', tone: 'neutral' };
 
   rel.meter = clamp(rel.meter + rng.rangeInt(10, 18));
   character.stats.happiness = clamp(character.stats.happiness + 6);
@@ -109,7 +109,7 @@ export function insultPerson(
   rng: RNG
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'গালাগালি দিয়া তেজ দেখাইবার মানুষ কই? সামনে মানুষ নাই তো — তেজ ধরার জায়গাও নাই!', tone: 'neutral' };
 
   rel.meter = clamp(rel.meter - rng.rangeInt(18, 30));
   character.stats.happiness = clamp(character.stats.happiness - 8);
@@ -132,12 +132,12 @@ export function askMoneyFromPerson(
   rng: RNG
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'টাকা চাইবার মানুষ কই? চারদিকে তাকাইলাম, কেউ তো সামনে নাই — খালি পায়ের ছায়া!', tone: 'neutral' };
 
   // Can only ask money from parents, grandparents, spouse, or wealthy partners
   const eligible = ['mother', 'father', 'grandparent', 'spouse', 'partner'].includes(rel.relation);
   if (!eligible) {
-    return { ok: false, text: 'এনার কাছে টাকা চাওয়ার কোনো সুযোগ নাই!', tone: 'neutral' };
+    return { ok: false, text: 'এনার কাছে ধারের আবদার বাতিল — এই ঘরের দেয়ালে খাতা-নামা লিখা দেওয়া আছে!', tone: 'neutral' };
   }
 
   // Acceptance depends on bond meter
@@ -171,10 +171,10 @@ export function giveMoneyToPerson(
   amount: number
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'টাকা দিবার মানুষ কই? হাত পসারবার আগে সামনে কে দাঁড়াইয়া আছে দেখো!', tone: 'neutral' };
 
   if (character.money < amount) {
-    return { ok: false, text: `টাকা দেওয়ার মতো ৳${amount} পকেটে নাই!`, tone: 'neutral' };
+    return { ok: false, text: `${rel.name}-রে ৳${amount} হাদিয়া দিবার বাসনা, মাগার পকেটে কড়িও জোড়া লাগতাছে না! আগে রোজগারের চাকা ঘোরান!`, tone: 'neutral' };
   }
 
   character.money -= amount;
@@ -193,11 +193,11 @@ export function giveGiftToPerson(
   rng: RNG
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'তোহফা দিবার মানুষ খুঁইজা পাইলাম না — চকবাজারে মিষ্টির ডাব্বা নিয়া মুড়া ফ্যালবো!', tone: 'neutral' };
 
   const GIFT_COST = 300;
   if (character.money < GIFT_COST) {
-    return { ok: false, text: `তোহফা কেনার মতো ৳${GIFT_COST} পকেটে নাই!`, tone: 'neutral' };
+    return { ok: false, text: `তোহফা কিনবার ৳${GIFT_COST} জোগাড় হয় নাই — দোকানের বাইর থাইকা সুবাস নিয়া খুশি নও!`, tone: 'neutral' };
   }
 
   character.money -= GIFT_COST;
@@ -223,14 +223,14 @@ export function giveGiftToPerson(
 
 function requireLiveChild(character: Character, relationshipId: string): { rel?: Character['relationships'][number]; err?: RelationshipActionResult } {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { err: { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' } };
+  if (!rel) return { err: { ok: false, text: 'সন্তানের খোঁজে ঘর-দালান চষা, মাগার অস্তিত্বই দূরে — রুমাল ঝাড়লাম, খালি ধুলো উইড়লো!', tone: 'neutral' } };
   if (rel.relation !== 'child') return { err: { ok: false, text: 'এই কারবার খালি নিজের সন্তানের লগে করতে পারবা!', tone: 'neutral' } };
   return { rel };
 }
 
 export function praiseChild(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const { rel, err } = requireLiveChild(character, relationshipId);
-  if (err || !rel) return err ?? { ok: false, text: 'সন্তান পাওয়া যাইতেছে না!', tone: 'neutral' };
+  if (err || !rel) return err ?? { ok: false, text: 'বাহবা দিবার সন্তান কই? আয়নার সামনে নিজের তারিফ কইরা দেখো — এ-ও একখান থেরাপি!', tone: 'neutral' };
 
   rel.meter = clamp(rel.meter + rng.rangeInt(12, 20));
   character.stats.happiness = clamp(character.stats.happiness + 8);
@@ -249,7 +249,7 @@ export function praiseChild(character: Character, relationshipId: string, rng: R
 
 export function buyChildTreat(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const { rel, err } = requireLiveChild(character, relationshipId);
-  if (err || !rel) return err ?? { ok: false, text: 'সন্তান পাওয়া যাইতেছে না!', tone: 'neutral' };
+  if (err || !rel) return err ?? { ok: false, text: 'মিষ্টি কিনবার সন্তান কই? ঘরে নাই তো — দোকানের সামনে গিয়া নিজেই খাইয়া ফেলো!', tone: 'neutral' };
 
   const TREAT_COST = 150;
   if (character.money < TREAT_COST) {
@@ -273,7 +273,7 @@ export function buyChildTreat(character: Character, relationshipId: string, rng:
 
 export function disciplineChild(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const { rel, err } = requireLiveChild(character, relationshipId);
-  if (err || !rel) return err ?? { ok: false, text: 'সন্তান পাওয়া যাইতেছে না!', tone: 'neutral' };
+  if (err || !rel) return err ?? { ok: false, text: 'শাসন-ভয়ে সন্তান নাই — কী শাড়া কি পেড়ে, শাসনের তেজ কারে দেখাইবো?', tone: 'neutral' };
 
   // Discipline is a gamble: it usually corrects behaviour (karma up, child's
   // smarts improve) but a rebellious streak can strain the bond.
@@ -299,7 +299,7 @@ export function disciplineChild(character: Character, relationshipId: string, rn
 
 export function giveChildAllowance(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const { rel, err } = requireLiveChild(character, relationshipId);
-  if (err || !rel) return err ?? { ok: false, text: 'সন্তান পাওয়া যাইতেছে না!', tone: 'neutral' };
+  if (err || !rel) return err ?? { ok: false, text: 'ঘরে তো সন্তান-সন্ধানই নাই — কেডার পকেট খরচ দিবা? ফ্যানের বাতাসে ট্যাকা উড়ে!', tone: 'neutral' };
 
   const amount = rng.rangeInt(50, 200);
   if (character.money < amount) {
@@ -374,9 +374,9 @@ export function seedCoworkers(character: Character, rng: RNG, count: number = 3)
 /** Escalates a classmate/coworker into a proper friendship (BitLife-style). */
 export function befriendPeer(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'বন্ধু বানাইবার মানুষ কই? ক্লাসে-অফিসে তো সবাই দূর দূর বাঁচতাছে!', tone: 'neutral' };
   if (rel.relation !== 'classmate' && rel.relation !== 'coworker') {
-    return { ok: false, text: 'এই মুহূর্তে এই মানুষটার সাথে বন্ধুত্বের সম্পর্ক করতে পারবা।', tone: 'neutral' };
+    return { ok: false, text: 'ওই মানুষজনের লগে তো তোমার ক্লাস-অফিসের আলাপই নাই — বন্ধুত্ব করবার আগে আগে চেনা লাগে মিয়া!', tone: 'neutral' };
   }
 
   rel.meter = clamp(rel.meter + rng.rangeInt(14, 24));
@@ -397,7 +397,7 @@ export function befriendPeer(character: Character, relationshipId: string, rng: 
 /** Asks a classmate/coworker out; on high enough meter the peer becomes dating. */
 export function askOutPeer(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
-  if (!rel) return { ok: false, text: 'কাউকে খুঁজে পাওয়া যায় নাই!', tone: 'neutral' };
+  if (!rel) return { ok: false, text: 'প্রেমের ফরমায়েশ করবি কারে? সামনে তো মানুষই নাই — প্রেমের বাজারে কেউ বিক্রি নাই!', tone: 'neutral' };
   if (rel.relation !== 'classmate' && rel.relation !== 'coworker') {
     return { ok: false, text: 'একে তো অরকারে প্রেমের ধান্দা করলা না!', tone: 'neutral' };
   }

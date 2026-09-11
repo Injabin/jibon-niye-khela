@@ -33,10 +33,10 @@ describe('Modern Martial reskin — stat keys and display labels', () => {
     expect(container.textContent).toContain('চেহারা');
 
     const names: Record<keyof Stats, string> = {
-      health: 'Health',
-      happiness: 'Happiness',
-      smarts: 'Smarts',
-      looks: 'Looks',
+      health: 'স্বাস্থ্য',
+      happiness: 'সুখ-খুশি',
+      smarts: 'বুদ্ধি',
+      looks: 'চেহারা',
     };
     for (const key of Object.keys(names) as (keyof Stats)[]) {
       const bar = screen.getByRole('progressbar', { name: names[key] });

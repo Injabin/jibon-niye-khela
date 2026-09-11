@@ -97,12 +97,12 @@ export function buyAsset(
   kind: AssetKind,
   options: { name?: string; price?: number } = {},
 ): BuyAssetResult {
-  if (!character.alive) return { bought: false, text: 'এহন তো কেনাকাটা করার অবস্থা নাই।', tone: 'bad' };
+  if (!character.alive) return { bought: false, text: 'মারাই গেছো, কেনাকাটায় নামবা? কবরস্থানের জমির খাতা তো তোমার নামে পুরান!', tone: 'bad' };
   const price = Math.max(0, Math.round(options.price ?? DEFAULT_PRICE[kind]));
 
   const speculative = kind === 'stock' || kind === 'crypto';
   if (speculative && character.money < price) {
-    return { bought: false, text: 'শেয়ার বা ক্রিপ্টো বাজারে নগদে কারবার—পকেটে পর্যাপ্ত ট্যাকা নাই!', tone: 'neutral' };
+    return { bought: false, text: 'শেয়ার-ক্রিপ্টোর হিসাব জোড়া লাগে, মাগার পকেটের ট্যাকা বেজোড়! আগে দেনা ভাঙো, তারপর বাজারে নামো!', tone: 'neutral' };
   }
 
   applyStatEffects(character, { money: -price });
@@ -128,7 +128,7 @@ export function buyAsset(
 
 export function sellAsset(character: Character, rng: RNG, assetId: string): SellAssetResult {
   const index = character.assets.findIndex((a) => a.id === assetId);
-  if (index === -1) return { sold: false, proceeds: 0, text: 'এই জিনিস তো তোমার নাই!', tone: 'neutral' };
+  if (index === -1) return { sold: false, proceeds: 0, text: 'ওই জিনিস তো তুমি চুরিও করো নাই — বিক্রি করবা কী? আগে কিনে নাও মিয়া!', tone: 'neutral' };
   const [asset] = character.assets.splice(index, 1);
   applyStatEffects(character, { money: asset.value });
   if (character.money >= 0) removeFlag(character, 'has_debt');

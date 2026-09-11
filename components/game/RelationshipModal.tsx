@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Relationship } from '@/lib/engine/types';
+import { relLabel } from '@/lib/ui/relations';
 import { useGameStore } from '@/lib/store/gameStore';
 import { Button } from '@/components/ui/Button';
 import { NpcChips } from '@/components/game/NpcChips';
@@ -31,22 +32,6 @@ interface RelationshipModalProps {
   relationship: Relationship | null;
   onClose: () => void;
 }
-
-const RELATION_LABELS: Record<string, string> = {
-  mother: 'আম্মা (মা)',
-  father: 'আব্বা (বাবা)',
-  sibling: 'ভাই / বোন',
-  grandparent: 'দাদা / নানা',
-  spouse: 'জীবনসঙ্গী (বউ/স্বামী)',
-  partner: 'মনের মানুষ (পার্টনার)',
-  dating: 'প্রেমের সম্পর্ক (ডেটিং)',
-  crush: 'পছন্দের মানুষ (ক্রাশ)',
-  ex: 'প্রাক্তন (সাবেক প্রেম)',
-  child: 'সন্তান (ছেলে/মেয়ে)',
-  friend: 'দোস্ত (বন্ধু)',
-  classmate: 'সহপাঠী',
-  coworker: 'সহকর্মী',
-};
 
 export function RelationshipModal({ relationship, onClose }: RelationshipModalProps) {
   const character = useGameStore((s) => s.character);
@@ -89,7 +74,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="বন্ধ করো"
             className="absolute right-4 top-4 rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
           >
             <X className="size-5" />
@@ -112,7 +97,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                   {liveRel.name}
                 </h2>
                 <span className="shrink-0 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-300">
-                  {RELATION_LABELS[liveRel.relation] ?? liveRel.relation}
+                  {relLabel(liveRel.relation)}
                 </span>
               </div>
 <p className="text-xs text-zinc-400 mt-0.5">

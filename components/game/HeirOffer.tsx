@@ -22,10 +22,10 @@ export function HeirOffer({
       className="mt-4 rounded-lg border border-border bg-surface p-5 shadow-sm"
       data-testid="heir-offer"
     >
-      <h2 className="text-base font-semibold tracking-tight text-text">The story continues</h2>
+      <h2 className="text-base font-semibold tracking-tight text-text">গল্পটা এখানেই শেষ না — চলো এগাই!</h2>
       <p className="mt-1 text-sm text-text-muted">
-        A child has come of age and can carry the {heirs[0].name.split(' ').slice(-1)[0]} name forward.
-        The estate is split between {heirs.length === 1 ? 'the heir' : `${heirs.length} heirs`}.
+        এক সন্তান বড় হইয়া গেছে — ও {heirs[0].name.split(' ').slice(-1)[0]} বংশের নামটা সামনে টাইনা নিতে পারে।
+        বাপের-চ্যায়া সম্পদ {heirs.length === 1 ? 'ও একার হাতে' : `${heirs.length} জনের মাঝে ভাগ হবে`}।
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {heirs.map((heir) => (
@@ -34,7 +34,7 @@ export function HeirOffer({
             onClick={() => onContinue(heir.id)}
             data-testid={`continue-as-heir-${heir.id}`}
           >
-            Play as {heir.name} ({heir.age})
+            {heir.name} ({heir.age}) চরিত্রে খেলো
           </Button>
         ))}
       </div>

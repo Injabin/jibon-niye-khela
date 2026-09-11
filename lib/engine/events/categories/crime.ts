@@ -65,7 +65,7 @@ export function arrestChanceFor(crime: CrimeDef, karma: number): number {
 
 export function commitCrime(character: Character, rng: RNG, crimeId: string): CrimeOutcome {
   if (!character.alive) {
-    return { arrested: false, reward: 0, jailYears: 0, text: 'এহন অপরাধ করার মতো হাল নাই।', tone: 'bad' };
+    return { arrested: false, reward: 0, jailYears: 0, text: 'গোরস্তানের নিচে পা নাই, অপরাধ করবো কিসের? ভূতের ভাজা সপ্ন দেইখো না!', tone: 'bad' };
   }
   const crime = CRIMES.find((c) => c.id === crimeId);
   if (!crime) {

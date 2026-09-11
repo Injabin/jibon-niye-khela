@@ -76,7 +76,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
   if (!familyTree || !character) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" data-testid="family-tree">
-        <p className="rounded-lg border border-border bg-surface p-6 text-sm text-text">No family yet — start a life.</p>
+        <p className="rounded-lg border border-border bg-surface p-6 text-sm text-text">এখনো কোনো বংশ-পরম্পরা গড়ে ওঠে নাই — আগে জীবন শুরু কইরা দেখো!</p>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
       data-motion={reducedMotion ? 'static' : 'animated'}
       role="dialog"
       aria-modal="true"
-      aria-label="Family tree"
+      aria-label="পারিবারিক গোছ"
       onKeyDown={trapKeyDown}
       tabIndex={-1}
     >
@@ -191,7 +191,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                   setZoom((z) => clampZoom(z * 1.2));
                 }}
                 data-testid="tree-zoom-in"
-                aria-label="Zoom in"
+                aria-label="জুম বাড়াও"
               >
                 +
               </Button>
@@ -203,7 +203,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                   setZoom((z) => clampZoom(z * 0.8));
                 }}
                 data-testid="tree-zoom-out"
-                aria-label="Zoom out"
+                aria-label="জুম কমানো"
               >
                 −
               </Button>
@@ -216,7 +216,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                   setPan({ x: 0, y: 0 });
                 }}
                 data-testid="tree-reset"
-                aria-label="Reset view"
+                aria-label="দৃশ্য রিসেট"
               >
                 ↺
               </Button>
@@ -344,7 +344,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                         style={{ cursor: 'pointer' }}
                         tabIndex={0}
                         role="button"
-                        aria-label={`${member.name}, ${relationLabel(member)}, ${member.alive ? 'alive' : 'deceased'}`}
+                        aria-label={`${member.name}, ${relationLabel(member)}, ${member.alive ? 'জীবিত' : 'মৃত'}`}
                         className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
                         animate={reducedMotion ? undefined : { y: [0, -4, 0] }}
                         transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: index * 0.35 }}
@@ -387,7 +387,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                 <div>
                   <h3 className="text-sm font-bold text-white">{selected.name}</h3>
                   <p className="mt-0.5 text-xs text-zinc-400" data-testid="tree-relation">
-                    {relationLabel(selected)} {selected.role === 'mother' ? '(Mother)' : selected.role === 'father' ? '(Father)' : ''} · বয়স {selected.age} · {selected.alive ? 'জীবিত (Alive)' : 'মৃত (Gone)'}
+                    {relationLabel(selected)} {selected.role === 'mother' ? '(আম্মা)' : selected.role === 'father' ? '(আব্বা)' : ''} · বয়স {selected.age} · {selected.alive ? 'জীবিত' : 'মৃত'}
                   </p>
                 </div>
                 <button
@@ -404,13 +404,13 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
 
               <div className="mt-3">
                 <div className="mb-1 flex justify-between text-xs text-zinc-400">
-                  <span>খাতির ও টান (Bond)</span>
+                  <span>খাতির ও টান</span>
                   <span data-testid="tree-bond-value" className="font-mono font-bold text-emerald-400">{selected.bond}</span>
                 </div>
                 <div
                   className="h-2 w-full overflow-hidden rounded-full bg-white/10"
                   role="progressbar"
-                  aria-label="Bond"
+                  aria-label="খাতির"
                   aria-valuemin={0}
                   aria-valuemax={BOND_MAX}
                   aria-valuenow={selected.bond}
@@ -459,7 +459,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                       : selected.bond >= BOND_MAX
                         ? 'খাতির সর্বোচ্চ চূড়ায়'
                         : selected.lastSpentAge === character.age
-                          ? 'এই বছর সময় কাটানো শেষ (Spent time this year)'
+                          ? 'এই বছর বন্ধনে বাঁধা হলো'
                           : 'কাচ্চি খাওয়া ও সময় কাটাও (+৮ খাতির)'}
                   </Button>
 
