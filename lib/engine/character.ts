@@ -85,7 +85,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
       major: '',
       graduated: false,
     },
-    career: { jobId: null, performance: 50, yearsAtJob: 0 },
+    career: { jobId: null, performance: 50, yearsAtJob: 0, tier: 0 },
     assets: [],
     relationships: [
       {

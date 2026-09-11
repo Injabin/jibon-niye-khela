@@ -95,7 +95,7 @@ export function createHeirCharacter(
     religion: parent.religion ?? 'islam',
     reputation: { fame: 0, karma: inheritedKarma },
     education: { stage, enrolled: false, gpa: 3.0, major: '', graduated: false },
-    career: { jobId: null, performance: 50, yearsAtJob: 0 },
+    career: { jobId: null, performance: 50, yearsAtJob: 0, tier: 0 },
     assets: [],
     relationships: [],
     criminalRecord: [],

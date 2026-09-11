@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { getJobBoard } from '@/lib/engine/events/categories/career';
+import { getJobBoard, careerTitle } from '@/lib/engine/events/categories/career';
 import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { useGameStore } from '@/lib/store/gameStore';
@@ -333,7 +333,6 @@ function CareerTab({
   onSideHustle: (kind: 'tuition' | 'delivery' | 'street_vendor') => boolean;
 }) {
   const career = character.career;
-  const currentJob = board.find((j) => j.id === career.jobId);
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -341,9 +340,7 @@ function CareerTab({
           {career.jobId ? (
             <>
               বর্তমান পদ:{' '}
-              <span className="font-bold text-white">
-                {currentJob?.title ?? career.jobId}
-              </span>{' '}
+              <span className="font-bold text-white">{careerTitle(character)}</span>{' '}
               · চাকুরির বয়স <span className="font-mono text-zinc-300">{career.yearsAtJob}</span> বছর · পারফরম্যান্স{' '}
               <span className="font-mono font-bold text-emerald-400">{career.performance}%</span>
             </>

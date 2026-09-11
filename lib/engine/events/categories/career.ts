@@ -221,21 +221,70 @@ export function isJobEligible(job: JobDef, character: Character): boolean {
     }
     if (req.minSmarts != null && character.stats.smarts < req.minSmarts) return false;
     if (req.minLooks != null && character.stats.looks < req.minLooks) return false;
-    if (req.trait && !character.traits.includes(req.trait)) return false;
+    // A requirement can be satisfied by a trait ~or~ the equivalent flag
+    // (E — Phase 3.5: pro_athlete wants hobby_sport, but a HSC-runner flag
+    // must earn the same seat).
+    if (req.trait && !character.traits.includes(req.trait) && !character.flags.includes(req.trait)) return false;
     if (req.major && !character.flags.includes(req.major)) return false;
   }
   return true;
 }
 
+export interface CareerLadderDef {
+  jobId: string;
+  /** A title per tier — tier 0 = freshly hired. */
+  titles: readonly [string, string, string];
+  /** Salary multiplier per tier applied on top of base annual salary. */
+  scales: readonly [number, number, number];
+  /** Whether each promoted year grinds the fame meter (pain/sports/politics). */
+  fameFeed: boolean;
+}
+
+/**
+ * Career tier ladders (E — Phase 3.5, DESIGN.md §5.4). Advancing up the ladder
+ * is real — a promotion bumps `career.tier` (and therefore the salary), so the
+ * "বেতন বাড়লো / পদোন্নতি" lines in the UI stop being a lie.
+ */
+export const CAREER_LADDERS: readonly CareerLadderDef[] = [
+  { jobId: 'doctor', titles: ['জুনিয়র হাউস-স্টাফ ডাক্তার', 'এমবিবিএস রেজিস্টার্ড ডাক্তার', 'সিনিয়র বিশেষজ্ঞ / কনসালট্যান্ট'], scales: [1, 1.45, 2.1], fameFeed: false },
+  { jobId: 'lawyer', titles: ['জুনিয়র অ্যাডভোকেট', 'সিনিয়র অ্যাডভোকেট', 'সিনিয়র আইনজীবী / আদালত জজ'], scales: [1, 1.4, 2.0], fameFeed: false },
+  { jobId: 'politician', titles: ['ওয়ার্ড কাউন্সিলর', 'উপজেলা / থানা চেয়ারম্যান', 'এমপি / মন্ত্রী'], scales: [1, 1.7, 2.9], fameFeed: true },
+  { jobId: 'soldier', titles: ['নতুন রিক্রুট', 'সিপাহী / হাবিলদার', 'অফিসার / মেজর'], scales: [1, 1.3, 1.9], fameFeed: true },
+  { jobId: 'pro_athlete', titles: ['ক্লাব লেভেল খেলোয়াড়', 'জাতীয় দলের সদস্য', 'আন্তর্জাতিক সুপারস্টার'], scales: [1, 1.6, 2.5], fameFeed: true },
+  { jobId: 'entertainer', titles: ['নবীন শিল্পী', 'প্রখ্যাত শিল্পী', 'সুপারস্টার'], scales: [1, 1.7, 2.6], fameFeed: true },
+  { jobId: 'programmer', titles: ['জুনিয়র ডেভেলপার', 'সিনিয়র ডেভেলপার', 'টেক লিড / আর্কিটেক্ট'], scales: [1, 1.4, 2.0], fameFeed: false },
+  { jobId: 'side_business', titles: ['ছোট্ট পসার', 'ব্যবসা-বিস্তার', 'ব্যবসার সাম্রাজ্য'], scales: [1, 1.5, 2.2], fameFeed: false },
+  { jobId: 'nurse', titles: ['নার্সিং অ্যাটেনডেন্ট', 'রেজিস্টার্ড নার্স', 'সিনিয়র / হেড নার্স'], scales: [1, 1.35, 1.85], fameFeed: false },
+];
+
+const LADDER_BY_JOB = new Map(CAREER_LADDERS.map((l) => [l.jobId, l]));
+
+export function careerLadder(jobId: string): CareerLadderDef | undefined {
+  return LADDER_BY_JOB.get(jobId);
+}
+
+/** Current tier title (or the plain job title when the job has no ladder). */
+export function careerTitle(character: Character): string {
+  const job = JOB_BOARD.find((j) => j.id === character.career.jobId);
+  if (!job) return 'বেকার';
+  const ladder = careerLadder(job.id);
+  if (!ladder) return job.title;
+  const tier = Math.min(character.career.tier ?? 0, ladder.titles.length - 1);
+  return ladder.titles[tier];
+}
+
+/** Salary with the tier multiplier baked in (E — Phase 3.5). */
+export function annualSalary(job: JobDef, performance: number, tier = 0): number {
+  const mid = (job.salary[0] + job.salary[1]) / 2;
+  const base = Math.round(mid * (0.5 + performance / 100));
+  const ladder = careerLadder(job.id);
+  const scale = ladder ? ladder.scales[Math.min(tier, ladder.scales.length - 1)] : 1;
+  return Math.round(base * scale);
+}
+
 /** The board a player sees at this age/state — drives the future Careers menu. */
 export function getJobBoard(character: Character): readonly JobDef[] {
   return JOB_BOARD.filter((job) => isJobEligible(job, character));
-}
-
-/** Annual salary implied by the current job + performance (mid ± perf factor). */
-export function annualSalary(job: JobDef, performance: number): number {
-  const mid = (job.salary[0] + job.salary[1]) / 2;
-  return Math.round(mid * (0.5 + performance / 100));
 }
 
 export function applyForJob(
@@ -390,7 +439,7 @@ export function tickCareer(character: Character, rng: RNG): CareerOutcome | null
 
   character.career.yearsAtJob += 1;
   if (character.career.yearsAtJob === 1) seedCoworkers(character, rng, 3);
-  const pay = annualSalary(job, character.career.performance);
+  const pay = annualSalary(job, character.career.performance, character.career.tier ?? 0);
   applyStatEffects(character, { money: pay });
 
   const nextPerf = Math.max(0, Math.min(100, character.career.performance + rng.rangeInt(-5, 5)));
@@ -400,8 +449,17 @@ export function tickCareer(character: Character, rng: RNG): CareerOutcome | null
   else if (nextPerf <= 25) character.flags.push('perf_low');
 
   if (nextPerf >= 75 && rng.chance(0.3)) {
+    const ladder = careerLadder(job.id);
+    const maxTier = ladder ? ladder.titles.length - 1 : 0;
+    const nextTier = Math.min(maxTier, (character.career.tier ?? 0) + 1);
+    character.career.tier = nextTier;
     character.career.performance = 62;
-    return { text: `${job.title} কাজে তোমার দারুণ পারফরম্যান্সের কারণে পদোন্নতি (promotion) হইলো! মালিক মাইনে বাড়াইয়া দিল!`, tone: 'good' };
+    const tierTitle = careerTitle(character);
+    const text = `${tierTitle} পদে পদোন্নতি (promotion) হইলো! মালিক খুশি হইয়া মাইনে উলটাইয়া বাড়াইয়া দিল!`;
+    if (ladder?.fameFeed && nextTier > 0) {
+      applyStatEffects(character, { fame: 12 + (nextTier - 1) * 6 });
+    }
+    return { text, tone: 'good' };
   }
 
   if (nextPerf <= 28 && character.career.yearsAtJob >= 1 && rng.chance(0.28)) {

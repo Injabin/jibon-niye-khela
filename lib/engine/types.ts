@@ -94,6 +94,8 @@ export interface CareerState {
   jobId: string | null;
   performance: number;
   yearsAtJob: number;
+  /** Rung on the career ladder (E — Phase 3.5); 0 = entry, absent = entry. */
+  tier?: number;
 }
 
 export type AssetKind = 'car' | 'home' | 'jewelry' | 'collectible' | 'stock' | 'crypto';
