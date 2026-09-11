@@ -24,23 +24,23 @@ test.describe('Gate 11 — Public Landing / Marketing Page', () => {
     // 2. Primary & Secondary CTAs
     const playCta = page.getByTestId('new-game');
     await expect(playCta).toBeVisible();
-    await expect(playCta).toContainText('Play Free in Browser');
+    await expect(playCta).toContainText('ব্রাউজারে ফ্রি খেলো');
 
     const customCta = page.getByTestId('open-custom-life-btn');
     await expect(customCta).toBeVisible();
 
     // 3. Gameplay Video and Features
     await expect(page.getByTestId('gameplay-video')).toBeVisible();
-    await expect(page.getByText('Every Life is Different')).toBeVisible();
-    await expect(page.getByText('Reactive Stats, Sounds & Moments')).toBeVisible();
-    await expect(page.getByText('100% Free Forever, No Ads, No Accounts')).toBeVisible();
+    await expect(page.getByText('প্রতিটা জীবন আলাদা')).toBeVisible();
+    await expect(page.getByText('প্রতিক্রিয়াশীল স্ট্যাট, সাউন্ড আর মুহূর্ত')).toBeVisible();
+    await expect(page.getByText('১০০% ফ্রি সবসময়, কোনো ঐড নাই, অ্যাকাউন্ট নাই')).toBeVisible();
 
     // 4. Tags
-    await expect(page.getByTestId('tag-life-simulation')).toBeVisible();
-    await expect(page.getByTestId('tag-choice-driven')).toBeVisible();
-    await expect(page.getByTestId('tag-free-to-play')).toBeVisible();
-    await expect(page.getByTestId('tag-no-ads')).toBeVisible();
-    await expect(page.getByTestId('tag-browser-based')).toBeVisible();
+    await expect(page.getByText('লাইফ সিমুলেশন', { exact: true })).toBeVisible();
+    await expect(page.getByText('চয়েস-চালিত', { exact: true })).toBeVisible();
+    await expect(page.getByText('ফ্রি-টু-প্লে', { exact: true })).toBeVisible();
+    await expect(page.getByText('অফলাইন ফallback', { exact: true })).toBeVisible();
+    await expect(page.getByText('ব্রাউজার-বেসড', { exact: true })).toBeVisible();
   });
 
   test('Responsive layouts: 375px, 900px, 1440px with zero horizontal scroll', async ({ page }) => {

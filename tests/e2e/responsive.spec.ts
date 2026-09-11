@@ -72,8 +72,8 @@ test.describe('Gate 8 — Responsive Layout Overhaul', () => {
     await expect(page.getByTestId('age-up')).toBeVisible();
 
     // Tablet specific: LeftSidebar mounted, RightRail NOT mounted, ControlDeck footer NOT mounted
-    await expect(page.locator('aside[aria-label="Character and controls"]')).toBeVisible();
-    expect(await page.locator('aside[aria-label="Secondary stats and lineage"]').count()).toBe(0);
+    await expect(page.locator('aside[aria-label="চরিত্র আর নিয়ন্ত্রণ"]')).toBeVisible();
+    expect(await page.locator('aside[aria-label="বাকি পরিসংখ্যান আর বংশ-পরম্পরা"]').count()).toBe(0);
     expect(await page.locator('footer').count()).toBe(0);
 
     // Main Chronicle container is mounted with internal scroll
@@ -99,9 +99,9 @@ test.describe('Gate 8 — Responsive Layout Overhaul', () => {
     await expect(page.getByTestId('age-up')).toBeVisible();
 
     // Desktop specific: 3 regions all present simultaneously
-    const leftSidebar = page.locator('aside[aria-label="Character and controls"]');
+    const leftSidebar = page.locator('aside[aria-label="চরিত্র আর নিয়ন্ত্রণ"]');
     const mainChronicle = page.locator('#chronicle-scroll');
-    const rightRail = page.locator('aside[aria-label="Secondary stats and lineage"]');
+    const rightRail = page.locator('aside[aria-label="বাকি পরিসংখ্যান আর বংশ-পরম্পরা"]');
 
     await expect(leftSidebar).toBeVisible();
     await expect(mainChronicle).toBeVisible();

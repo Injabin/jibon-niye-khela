@@ -3,7 +3,6 @@ import {
   Play,
   Sliders,
   Sparkles,
-  Sword,
   Heart,
   Scroll,
   Zap,
@@ -19,7 +18,7 @@ export function LandingPage() {
     'লাইফ সিমুলেশন',
     'চয়েস-চালিত',
     'ফ্রি-টু-প্লে',
-    'ঐড-নাই',
+    'অফলাইন ফallback',
     'ব্রাউজার-বেসড',
   ];
 
@@ -27,21 +26,21 @@ export function LandingPage() {
     {
       title: 'প্রতিটা জীবন আলাদা',
       description:
-        '৩৬৫+ হাতের বানানো দ্বন্দ্ব, ফটাফটি ভাগ্যের মোড়, পুনরাবৃত্তি-বিরোধী মেমরি ইঞ্জিন, আর পূর্ণাঙ্গ কাস্টম লাইফ ক্রিয়েটর — অপ্রত্যাশিত প্রতিটি খেলা।',
+        'বয়স, স্ট্যাট, সম্পর্ক, আগের সিদ্ধান্ত আর ভাগ্যের উপর ভিত্তি করে নতুন নতুন ঢাকাইয়া ঘটনা বেছে নাও। কাস্টম লাইফ দিয়েও শুরু করতে পারো।',
       icon: Sparkles,
       badge: 'অনিশ্চিত',
     },
     {
       title: 'প্রতিক্রিয়াশীল স্ট্যাট, সাউন্ড আর মুহূর্ত',
       description:
-        'জীবন্ত মার্শাল কৌশল, স্বাস্থ্য, সম্মান আর সুখ-খুশি প্রতিটি চয়েসে ডাইনামিক্যালি реа cessé করে স্পেশিয়াল অডিও কিউ, জয়-ধ্বনি আর স্পর্শ প্রতিক্রিয়ার সাথে।',
+        'স্বাস্থ্য, সুখ, বুদ্ধি, চেহারা, ট্যাকা আর সম্পর্কের পরিবর্তন তোমার পছন্দের ফল দেখায়—সাথে অ্যানিমেশন, সাউন্ড আর হ্যাপটিক ফিডব্যাক।',
       icon: Zap,
       badge: 'লাইভ ফিডব্যাক',
     },
     {
       title: '১০০% ফ্রি সবসময়, কোনো ঐড নাই, অ্যাকাউন্ট নাই',
       description:
-        'ব্রাউজারে ইনস্ট্যান্ট খেলা শুরুর সাথে শূন্য পে-ওয়াল, শূন্য সাইন-আপ, শূন্য ট্র্যাকিং। শুধু আপনার চয়েস-চালিত কাহিনি।',
+        'কোনো সাইন-আপ বা পে-ওয়াল ছাড়াই ব্রাউজারে খেলো। Gemini বন্ধ থাকলেও লোকাল fallback ইভেন্টে গেম চলতে থাকে।',
       icon: CheckCircle2,
       badge: 'ফ্রি এন্ড ওপেন',
     },
@@ -49,24 +48,24 @@ export function LandingPage() {
 
   const pillars = [
     {
-      title: 'মার্শাল Meisterschaft & সম্মান',
-      desc: 'হাতিয়ার প্রাচীন শৈলীতে প্রশিক্ষণ নাও, যুদ্ধক্ষেত্রে গৌরব অর্জন করো, কূল হায়ারার্কি চড়ে উঠো, আর কঠোর শিবলরিক শপথ ধরে রাখো।',
-      icon: Sword,
+      title: 'পড়াশোনা, কামকাজ & ট্যাকা-পয়সা',
+      desc: 'স্কুলে পড়ো, কাম খোঁজো, পারফরম্যান্স বাড়াও, সঞ্চয় করো, ঋণ নাও বা সম্পদ কিনে নিজের আর্থিক অবস্থা সামলাও।',
+      icon: Scroll,
     },
     {
-      title: 'প্রেম & বংশাবলি',
-      desc: 'আবেগময় প্রেম-প্রসঙ্গ বানাও, উচু সমাজেরषড়যন্ত্র মোকাবিলা করো, যৌতুক ঠিক করো, বিবাহ করো, নইলে বিতর্কীয় ফলাফল-চালিত অ페য়ার-র ঝুঁকি নাও।',
+      title: 'প্রেম, সম্পর্ক & পরিবার',
+      desc: 'ডেট করো, সম্পর্ক গড়ো, বিয়ে করো, পরিবারে সময় দাও, সন্তান নাও এবং তোমার সিদ্ধান্তে সম্পর্কের বন্ধন বদলাতে দেখো।',
       icon: Heart,
     },
     {
-      title: 'পূর্বপুরুষ বংশ ও রাজবংশ',
-      desc: 'সম্পত্তি, উপাধি, আর পূর্বপুরুষের স্মৃতিচিহ্ন জমা করো, লাইচ হাতের কাঠি লিখে যোগ্য উত্তরাধিকারী বেছে নাও আর নিশ্চিত করো তোমার বاري চিরকাল রাজ করছে।',
+      title: 'পরিবার & উত্তরাধিকার',
+      desc: 'ফ্যামিলি ট্রি দেখো, আত্মীয়দের সাথে সম্পর্ক রাখো, আর জীবন শেষ হলে যোগ্য উত্তরাধিকারী নিয়ে পরের গল্প চালিয়ে যাও।',
       icon: Users,
     },
     {
-      title: '৩৬৫+ প্রোসিডিউরাল দ্বন্দ্ব',
-      desc: 'পথচারী ছেলের ঝগড়া থেকেও ইমপিরিয়াল কোর্টেরषড়যন্ত্র পর্যন্ত — তোমার জীবন-অবস্থা আর যাসামান্য অনুযায়ী ফলাফল-বহুল ইভেন্টে মুখোমুখি হও।',
-      icon: Scroll,
+      title: 'ঢাকাইয়া ঘটনা & সিদ্ধান্ত',
+      desc: 'শৈশব থেকে বুড়ো বয়স পর্যন্ত বয়স-উপযোগী ঘটনা সামলাও। Gemini নতুন কাহিনি বানাতে পারে, আর fallback ব্যাংক অফলাইনেও খেলা চালায়।',
+      icon: Sparkles,
     },
   ];
 
@@ -87,14 +86,14 @@ export function LandingPage() {
             className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg p-1"
           >
             <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-400 group-hover:scale-105 transition-transform duration-200 shadow-[0_0_15px_rgba(244,63,94,0.25)]">
-              <Sword className="size-5" />
+              <Heart className="size-5" />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-black uppercase tracking-wider text-white group-hover:text-rose-200 transition-colors">
                 Jibon Niye Khela
               </span>
               <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400">
-                আধুনিক মার্শাল লাইফ সিম
+                ঢাকাইয়া লাইফ সিম
               </span>
             </div>
           </Link>
@@ -127,7 +126,7 @@ export function LandingPage() {
             {/* Top Pill Announcement */}
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.15)]">
               <Flame className="size-3.5 text-rose-400" />
-              <span>চয়েস-চালিত মিডieval লাইফ সিমুলেশন</span>
+              <span>চয়েস-চালিত ঢাকাইয়া লাইফ সিমুলেশন</span>
             </div>
 
             {/* Headline */}
@@ -135,7 +134,7 @@ export function LandingPage() {
               id="hero-heading"
               className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl max-w-4xl leading-[1.1]"
             >
-              বাঁচো। জিতো। প্রেম কর। <br />
+              বাঁচো। বেছে নাও। আবার শুরু করো। <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-400">
                 Jibon Niye Khela
               </span>
@@ -143,7 +142,7 @@ export function LandingPage() {
 
             {/* Hook Line */}
             <p className="mt-6 max-w-2xl text-base sm:text-lg text-zinc-300 font-normal leading-relaxed">
-              একটা চয়েস-চালিত মিডieval আধুনিক-মার্শাল লাইফ সিমুলেশন। তোমার ভাগ্য বানাও, প্রাচীন মার্শাল কৌশলে পারদর্শী হও, শ্রেষ্ঠ বন্ধন পোষাও, আর প্রজন্ম পর প্রজন্ম একটি লেজেন্ডারি রাজবংশ গড়ে তোল।
+              একটা চয়েস-চালিত ঢাকাইয়া লাইফ সিমুলেশন। পড়াশোনা, কামকাজ, প্রেম, পরিবার, ট্যাকা-পয়সা আর জীবনের গ্যাঞ্জাম সামলায়া নিজের গল্প বানাও।
             </p>
 
             {/* Call to Actions */}
@@ -197,7 +196,7 @@ export function LandingPage() {
 
               {/* Realistic Hero Visual / UI Snapshot */}
               <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/5 bg-zinc-950 shadow-inner">
-                {/* Visual mockup of the 3-region Modern Martial UI */}
+                {/* Visual mockup of the game dashboard */}
                 <div className="absolute inset-0 flex flex-col p-4 sm:p-6 justify-between select-none">
                   {/* Mock Header */}
                   <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -206,44 +205,44 @@ export function LandingPage() {
                         <Award className="size-5" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">লর্ড কাজী রায়হান</div>
-                        <div className="text-xs text-zinc-400 font-mono">বয়স ২৪ • বাংলার সর্ডমাস্টার</div>
+                        <div className="text-sm font-bold text-white">কাজী রায়হান</div>
+                        <div className="text-xs text-zinc-400 font-mono">বয়স ২৪ • সফটওয়্যার ডেভেলপার</div>
                       </div>
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-xs font-mono">
                       <span className="text-rose-400 font-bold">স্বাস্থ্য ৯২%</span>
                       <span className="text-blue-400 font-bold">সুখ ৮৮%</span>
-                      <span className="text-amber-400 font-bold">মার্শাল ৯৫%</span>
-                      <span className="text-yellow-400 font-bold">সম্মান ৮৫%</span>
+                      <span className="text-amber-400 font-bold">বুদ্ধি ৯৫%</span>
+                      <span className="text-yellow-400 font-bold">চেহারা ৮৫%</span>
                     </div>
                   </div>
 
                   {/* Mock Center Event & Stats */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 my-auto items-center">
                     <div className="hidden md:block col-span-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
-                      <div className="text-[10px] uppercase font-mono text-zinc-400">Core Attributes</div>
+                      <div className="text-[10px] uppercase font-mono text-zinc-400">স্ট্যাট</div>
                       <div className="mt-3 space-y-2 text-xs">
-                        <div className="flex justify-between text-zinc-300"><span>Martial Skill</span><span className="text-amber-400 font-bold">95</span></div>
+                        <div className="flex justify-between text-zinc-300"><span>বুদ্ধি</span><span className="text-amber-400 font-bold">95</span></div>
                         <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[95%]" /></div>
-                        <div className="flex justify-between text-zinc-300"><span>Honor Standing</span><span className="text-amber-400 font-bold">85</span></div>
+                        <div className="flex justify-between text-zinc-300"><span>চেহারা</span><span className="text-amber-400 font-bold">85</span></div>
                         <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[85%]" /></div>
                       </div>
                     </div>
 
                     <div className="col-span-1 md:col-span-6 rounded-2xl border border-rose-500/30 bg-zinc-900/90 p-5 sm:p-6 text-center shadow-2xl backdrop-blur-xl">
                       <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-300 mb-3">
-                        <Sword className="size-3.5" />
-                        <span>বড় টুর্নামেন্ট দ্বন্দ্ব</span>
+                        <Sparkles className="size-3.5" />
+                        <span>আজকের ঢাকাইয়া ঘটনা</span>
                       </div>
                       <h2 className="text-base sm:text-lg font-bold text-white">
-                        জেড গেটের মাস্টার রাজার সামনে তোমাকে ব্লেডের পরীক্ষায় আহ্বান করলেন।
+                        অফিসের বস হঠাৎ কইরা কইলো, কালকের প্রেজেন্টেশনটা তোমাকেই দিতে হইবো।
                       </h2>
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold">
                         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-zinc-200">
-                          [১] প্রথাগত নম্রতা দিয়ে স্বীকার (+মার্শাল, +সম্মান)
+                          [১] রাত জাইগা প্রস্তুতি নে (+বুদ্ধি, -সুখ)
                         </div>
                         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-zinc-200">
-                          [২] ৫০০ সোনার 조건ের শর্ত রাখ (+সম্পদ)
+                          [২] অসুস্থতার ভান কর (+সুখ, -ক্যারিয়ার)
                         </div>
                       </div>
                     </div>
@@ -251,9 +250,9 @@ export function LandingPage() {
                     <div className="hidden md:block col-span-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
                       <div className="text-[10px] uppercase font-mono text-zinc-400">বংশ & বাড়ি</div>
                       <div className="mt-3 text-xs text-zinc-300 space-y-1.5">
-                        <div>রাজবংশ: <span className="text-white font-semibold">রায়হান বাড়ি</span></div>
-                        <div>সঙ্গিনী: <span className="text-rose-300 font-semibold">লেডি শিরিন</span></div>
-                        <div>উত্তরাধিকারী: <span className="text-amber-300 font-semibold">২ জন যোগ্য</span></div>
+                        <div>কাজ: <span className="text-white font-semibold">ডেভেলপার</span></div>
+                        <div>সঙ্গিনী: <span className="text-rose-300 font-semibold">শিরিন</span></div>
+                        <div>সন্তান: <span className="text-amber-300 font-semibold">২ জন</span></div>
                       </div>
                     </div>
                   </div>
@@ -287,7 +286,7 @@ export function LandingPage() {
               গভীর রিপ্লेबিলিটির জন্য এনজিনিয়ারড
             </p>
             <p className="mt-4 text-sm sm:text-base text-zinc-400">
-              স্ট্যাটিক চয়েস-ইয়োর-ওন-অ্যাডভেঞ্চার গল্পের মত নয়, প্রতিটি প্লে-থ্রু ডিটারমিনিস্টিক লাইফ প্রগ্রেশন, রিয়েক্টিভ অডিও ফিডব্যাক, আর ডাইনামিক ইভেন্ট কুলিং-দ্বારા চালিত।
+              শুধু স্ট্যাটিক গল্প না—বয়স, চরিত্রের অবস্থা, আগের ঘটনা আর তোমার সিদ্ধান্ত মিলায়া প্রতিটি জীবন এগোয়।
             </p>
           </div>
 
@@ -364,7 +363,7 @@ export function LandingPage() {
               সিস্টেম & মেকানিক্স
             </h2>
             <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              প্রজন্ম ধরে নিজের পথ বানাও
+              নিজের পথ বানাও
             </p>
           </div>
 
@@ -391,7 +390,7 @@ export function LandingPage() {
         <section className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20 text-center">
           <div className="rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-950/40 to-zinc-950 p-8 sm:p-14 shadow-2xl backdrop-blur-2xl">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              তোমার রাজবংশ শুরু করার জন্য প্রস্তুত?
+              নিজের জীবন শুরু করার জন্য প্রস্তুত?
             </h2>
             <p className="mt-3 max-w-xl mx-auto text-sm sm:text-base text-zinc-300">
               কোনো রেজিস্ট্রেশন নাই, কোনো ডাউনলোড নাই, কোনো ফি নাই। শুধু ক্লিক করো আর ব্রাউজারে ইনস্ট্যান্ট খেলো।
@@ -414,15 +413,14 @@ export function LandingPage() {
       <footer className="border-t border-white/[0.08] bg-zinc-950 py-10 text-xs text-zinc-400">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Sword className="size-4 text-rose-400" />
+            <Heart className="size-4 text-rose-400" />
             <span className="font-semibold text-white">Jibon Niye Khela</span>
-            <span>— ওপেন-সোর্স ব্রাউজার লাইফ সিমুলেশন।</span>
+            <span>— ঢাকাইয়া ব্রাউজার লাইফ সিমুলেশন।</span>
           </div>
           <div className="flex items-center gap-6">
             <span className="font-mono text-[11px] text-zinc-400">
               ডেস্কটপ: <kbd className="rounded border border-white/20 bg-white/5 px-1 py-0.5 font-mono text-zinc-300">?</kbd> চাপলে শর্টকাট
             </span>
-            <span>MIT লাইসেন্স</span>
           </div>
         </div>
       </footer>
