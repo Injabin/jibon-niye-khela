@@ -11,19 +11,29 @@ import { describe, expect, test } from 'vitest';
 const RESKINNED = [
   'components/game/StickyHeader.tsx',
   'components/game/ChronicleStream.tsx',
-  'components/game/EventCard.tsx',
+  'components/game/dashboard/EventCard.tsx',
   'components/game/ProfileSheet.tsx',
   'components/game/LifeSummary.tsx',
-  'components/game/StatBar.tsx',
+  'components/game/dashboard/StatBar.tsx',
   'components/family/FamilyTreeView.tsx',
+  'components/game/ActiveMenu.tsx',
+  'components/game/GameHub.tsx',
+  'components/game/SettingsPanel.tsx',
 ];
 
 /**
- * ControlDeck makes no color decisions of its own — every fill/text/radius it
- * touches flows through <Button> and token utilities (bg-primary, text-text,
- * border-border). It is the exception to the import rule for that reason.
+ * Screens that take every color from the shared theme but express it through
+ * token utility classes (or the pure avatar palette data layer) rather than a
+ * direct import of the concept lookup. They still introduce no local hex.
  */
-const COLOR_FREE = ['components/game/ControlDeck.tsx'];
+const COLOR_FREE = [
+  'components/game/ControlDeck.tsx',
+  'components/game/dashboard/LeftSidebar.tsx',
+  'components/game/dashboard/RightRail.tsx',
+  'components/game/dashboard/TimelineStream.tsx',
+  'components/game/NpcChips.tsx',
+  'components/avatar/Avatar.tsx',
+];
 
 describe('Modern Martial reskin — shared concept lookup discipline', () => {
   for (const rel of RESKINNED) {

@@ -1,11 +1,21 @@
 'use client';
 
 import { useMemo } from 'react';
-import { avatarVisualsFor } from '@/lib/avatar/palette';
+import {
+  avatarVisualsFor,
+  CUSTOM_LIFE_HAIR_SWATCHES,
+  CUSTOM_LIFE_OUTFIT_SWATCHES,
+  CUSTOM_LIFE_OUTFIT_ACCENTS,
+  AVATAR_EYE,
+  AVATAR_EYE_GLINT,
+  AVATAR_MOUTH,
+  AVATAR_GLASSES,
+  AVATAR_CROWS_FEET,
+} from '@/lib/avatar/palette';
 import { expressionForTone } from '@/lib/engine/moments';
 import { lifeStageForAge } from '@/lib/engine/life';
 import type { LifeStage } from '@/lib/engine/life';
-import type { Character } from '@/lib/engine/types';
+import type { AvatarHair, AvatarOutfit, Character } from '@/lib/engine/types';
 import { useGameStore } from '@/lib/store/gameStore';
 import { ExpressionOverlay } from './ExpressionOverlay';
 
@@ -24,6 +34,20 @@ const VIEW_H = 170;
 const HEAD_CX = 70;
 const HEAD_CY = 54;
 const HEAD_BASE_R = 30;
+
+const HAIR_COLORS: Record<AvatarHair, string> = {
+  cocoa: CUSTOM_LIFE_HAIR_SWATCHES.cocoa,
+  midnight: CUSTOM_LIFE_HAIR_SWATCHES.midnight,
+  chestnut: CUSTOM_LIFE_HAIR_SWATCHES.chestnut,
+  silver: CUSTOM_LIFE_HAIR_SWATCHES.silver,
+};
+
+const OUTFIT_COLORS: Record<AvatarOutfit, { base: string; accent: string }> = {
+  sunshine: { base: CUSTOM_LIFE_OUTFIT_SWATCHES.sunshine, accent: CUSTOM_LIFE_OUTFIT_ACCENTS.sunshine },
+  mint: { base: CUSTOM_LIFE_OUTFIT_SWATCHES.mint, accent: CUSTOM_LIFE_OUTFIT_ACCENTS.mint },
+  lavender: { base: CUSTOM_LIFE_OUTFIT_SWATCHES.lavender, accent: CUSTOM_LIFE_OUTFIT_ACCENTS.lavender },
+  coral: { base: CUSTOM_LIFE_OUTFIT_SWATCHES.coral, accent: CUSTOM_LIFE_OUTFIT_ACCENTS.coral },
+};
 
 /**
  * Layered 2D character portrait (DESIGN.md §2, §7): SVG base body + head per
@@ -45,6 +69,8 @@ export function Avatar({
 
   const stage = lifeStageForAge(character.age);
   const visuals = avatarVisualsFor(stage, character.gender);
+  const hair = HAIR_COLORS[character.appearance?.hair ?? 'cocoa'];
+  const outfit = OUTFIT_COLORS[character.appearance?.outfit ?? 'sunshine'];
   const headR = HEAD_BASE_R * visuals.headScale;
   const dead = !character.alive;
 
@@ -100,7 +126,7 @@ export function Avatar({
               width={8}
               height={sideStrandHeight}
               rx={4}
-              fill={visuals.hair}
+              fill={hair}
             />
             <rect
               x={HEAD_CX + headR - 1}
@@ -108,14 +134,14 @@ export function Avatar({
               width={8}
               height={sideStrandHeight}
               rx={4}
-              fill={visuals.hair}
+              fill={hair}
             />
           </>
         )}
 
         {/* Torso + accent collar */}
-        <rect x={44} y={84} width={52} height={70} rx={18} fill={visuals.outfit} />
-        <rect x={47} y={87} width={46} height={12} rx={6} fill={visuals.outfitAccent} />
+        <rect x={44} y={84} width={52} height={70} rx={18} fill={outfit.base} />
+        <rect x={47} y={87} width={46} height={12} rx={6} fill={outfit.accent} />
 
         {/* Neck */}
         <rect x={HEAD_CX - 6} y={HEAD_CY + headR * 0.62} width={12} height={18} rx={4} fill={visuals.skin} />
@@ -130,12 +156,12 @@ export function Avatar({
         {/* Hair */}
         {visuals.hairStyle === 'bald-ish' ? (
           <>
-            <ellipse cx={HEAD_CX} cy={HEAD_CY - headR * 0.82} rx={headR * 0.3} ry={headR * 0.16} fill={visuals.hair} />
-            <ellipse cx={HEAD_CX + headR * 0.5} cy={HEAD_CY - headR * 0.78} rx={headR * 0.16} ry={headR * 0.28} fill={visuals.hair} />
+            <ellipse cx={HEAD_CX} cy={HEAD_CY - headR * 0.82} rx={headR * 0.3} ry={headR * 0.16} fill={hair} />
+            <ellipse cx={HEAD_CX + headR * 0.5} cy={HEAD_CY - headR * 0.78} rx={headR * 0.16} ry={headR * 0.28} fill={hair} />
           </>
         ) : (
           <>
-            <path d={capPath} fill={visuals.hair} />
+            <path d={capPath} fill={hair} />
             {sideStrandHeight !== null && (
               <>
                 <rect
@@ -144,7 +170,7 @@ export function Avatar({
                   width={7}
                   height={sideStrandHeight}
                   rx={3.5}
-                  fill={visuals.hair}
+                  fill={hair}
                 />
                 <rect
                   x={HEAD_CX + headR - 1}
@@ -152,7 +178,7 @@ export function Avatar({
                   width={7}
                   height={sideStrandHeight}
                   rx={3.5}
-                  fill={visuals.hair}
+                  fill={hair}
                 />
               </>
             )}
@@ -160,23 +186,23 @@ export function Avatar({
         )}
 
         {/* Eyes */}
-        <circle cx={HEAD_CX - eyeOffset} cy={eyeY} r={eyeR} fill="#3a2f2b" />
-        <circle cx={HEAD_CX + eyeOffset} cy={eyeY} r={eyeR} fill="#3a2f2b" />
-        <circle cx={HEAD_CX - eyeOffset - eyeR * 0.32} cy={eyeY - eyeR * 0.42} r={eyeR * 0.34} fill="#fff" />
-        <circle cx={HEAD_CX + eyeOffset - eyeR * 0.32} cy={eyeY - eyeR * 0.42} r={eyeR * 0.34} fill="#fff" />
+        <circle cx={HEAD_CX - eyeOffset} cy={eyeY} r={eyeR} fill={AVATAR_EYE} />
+        <circle cx={HEAD_CX + eyeOffset} cy={eyeY} r={eyeR} fill={AVATAR_EYE} />
+        <circle cx={HEAD_CX - eyeOffset - eyeR * 0.32} cy={eyeY - eyeR * 0.42} r={eyeR * 0.34} fill={AVATAR_EYE_GLINT} />
+        <circle cx={HEAD_CX + eyeOffset - eyeR * 0.32} cy={eyeY - eyeR * 0.42} r={eyeR * 0.34} fill={AVATAR_EYE_GLINT} />
 
         {/* Mouth — gentle smile (emotion comes from the overlay). */}
         <path
           d={`M ${HEAD_CX - headR * 0.26} ${HEAD_CY + headR * 0.5} Q ${HEAD_CX} ${HEAD_CY + headR * 0.74} ${HEAD_CX + headR * 0.26} ${HEAD_CY + headR * 0.5}`}
           fill="none"
-          stroke="#8a4a3a"
+          stroke={AVATAR_MOUTH}
           strokeWidth={2.6}
           strokeLinecap="round"
         />
 
         {/* Glasses from middle age on. */}
         {visuals.glasses && (
-          <g stroke="#7c6f61" strokeWidth={2} fill="none">
+          <g stroke={AVATAR_GLASSES} strokeWidth={2} fill="none">
             <circle cx={HEAD_CX - eyeOffset} cy={eyeY} r={eyeR * 1.9} />
             <circle cx={HEAD_CX + eyeOffset} cy={eyeY} r={eyeR * 1.9} />
             <path d={`M ${HEAD_CX - eyeOffset + eyeR * 1.9} ${eyeY} L ${HEAD_CX + eyeOffset - eyeR * 1.9} ${eyeY}`} />
@@ -187,7 +213,7 @@ export function Avatar({
 
         {/* Senior crow's feet. */}
         {stage === 'senior' && (
-          <g stroke="#b98a66" strokeWidth={1.4} fill="none" opacity={0.7}>
+          <g stroke={AVATAR_CROWS_FEET} strokeWidth={1.4} fill="none" opacity={0.7}>
             <path d={`M ${HEAD_CX - headR * 0.72} ${HEAD_CY + headR * 0.5} q 4 3 8 1`} />
             <path d={`M ${HEAD_CX + headR * 0.72} ${HEAD_CY + headR * 0.5} q -4 3 -8 1`} />
           </g>

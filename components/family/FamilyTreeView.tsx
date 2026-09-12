@@ -75,7 +75,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
   if (!open) return null;
   if (!familyTree || !character) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" data-testid="family-tree">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay p-4" data-testid="family-tree">
         <p className="rounded-lg border border-border bg-surface p-6 text-sm text-text">এখনো কোনো বংশ-পরম্পরা গড়ে ওঠে নাই — আগে জীবন শুরু কইরা দেখো!</p>
       </div>
     );
@@ -122,7 +122,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
   return (
     <motion.div
       ref={overlayRef as React.Ref<HTMLDivElement>}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-2 sm:p-6 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay p-2 sm:p-6 backdrop-blur-md"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -135,22 +135,22 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
       onKeyDown={trapKeyDown}
       tabIndex={-1}
     >
-      <div className="relative flex h-full max-h-[660px] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/95 shadow-2xl shadow-black/80 backdrop-blur-2xl">
+      <div className="relative flex h-full max-h-[660px] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-border bg-surface text-text shadow-2xl backdrop-blur-2xl">
         {/* Header */}
-        <header className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4">
+        <header className="flex items-center justify-between border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary-text border border-primary/20">
               <Users className="size-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight text-white">পরিবার ও আত্মীয়স্বজন</h2>
-              <p className="text-xs text-zinc-400">পুরান ঢাকার পরিবার ও মুরব্বিদের লগে খাতির</p>
+              <h2 className="text-base font-bold tracking-tight text-text">পরিবার ও আত্মীয়স্বজন</h2>
+              <p className="text-xs text-text-muted">পুরান ঢাকার পরিবার ও মুরব্বিদের লগে খাতির</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {/* View Switcher Tabs */}
-            <div className="flex rounded-xl bg-white/[0.04] p-1 border border-white/[0.06]">
+            <div className="flex rounded-xl bg-surface-raised p-1 border border-border">
               <button
                 type="button"
                 onClick={() => {
@@ -159,8 +159,8 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                 }}
                 className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
                   activeView === 'list'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-primary/20 text-primary-text border border-primary/30'
+                    : 'text-text-muted hover:text-text'
                 }`}
               >
                 তালিকা ভিউ
@@ -173,8 +173,8 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                 }}
                 className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
                   activeView === 'graph'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'text-zinc-400 hover:text-white'
+                    ? 'bg-primary/20 text-primary-text border border-primary/30'
+                    : 'text-text-muted hover:text-text'
                 }`}
               >
                 বংশলতিকা চিত্র
@@ -247,30 +247,30 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                     data-testid={isSelf ? 'tree-node-self' : `tree-node-${member.role}`}
                     className={`w-full flex items-center justify-between gap-3 rounded-2xl border p-4 text-left transition-all ${
                       isSelected
-                        ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-950/20'
-                        : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                        ? 'border-primary/60 bg-primary/10 shadow-lg'
+                        : 'border-border bg-surface-raised/40 hover:bg-surface-raised'
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
                       <div
-                        className="flex size-11 items-center justify-center rounded-2xl font-bold text-sm text-white shadow-md"
+                        className="flex size-11 items-center justify-center rounded-2xl font-bold text-sm text-tree-text-on-fill shadow-md"
                         style={{ backgroundColor: member.alive ? NODE_FILL[member.role] : 'var(--color-tree-deceased)' }}
                       >
                         {isSelf ? <User className="size-5" /> : initials(member.name)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-white">{member.name}</span>
-                          <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold text-zinc-300 border border-white/[0.05]">
+                          <span className="text-sm font-bold text-text">{member.name}</span>
+                          <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-bold text-text-muted border border-border">
                             {relationLabel(member)}
                           </span>
                           {!member.alive && (
-                            <span className="rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/20 px-2 py-0.5 text-[10px] font-medium">
+                            <span className="rounded-full bg-danger/10 text-danger-text border border-danger-border px-2 py-0.5 text-[10px] font-medium">
                               স্বর্গবাসী
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-zinc-400 mt-1">
+                        <p className="text-xs text-text-muted mt-1">
                           বয়স {member.age} বছর {isSelf ? '· (তুমি নিজে)' : ''}
                         </p>
                       </div>
@@ -278,13 +278,13 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
 
                     {!isSelf && (
                       <div className="text-right min-w-[80px]">
-                        <div className="flex items-center justify-end gap-1.5 text-xs font-bold text-emerald-400 font-mono">
-                          <Heart className="size-3 text-rose-400 fill-rose-400" />
+                        <div className="flex items-center justify-end gap-1.5 text-xs font-bold text-primary-text font-mono">
+                          <Heart className="size-3 text-primary fill-primary" />
                           <span>{member.bond}%</span>
                         </div>
-                        <div className="w-18 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1.5 ml-auto">
+                        <div className="w-18 h-1.5 bg-border rounded-full overflow-hidden mt-1.5 ml-auto">
                           <div
-                            className="h-full bg-gradient-to-r from-rose-500 to-pink-400 rounded-full transition-all"
+                            className="h-full bg-primary rounded-full transition-all"
                             style={{ width: `${member.bond}%` }}
                           />
                         </div>
@@ -376,7 +376,7 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
         <AnimatePresence>
           {selected && (
             <motion.aside
-              className="absolute bottom-3 right-3 left-3 sm:left-auto sm:w-80 rounded-2xl border border-white/10 bg-zinc-900/98 p-4 shadow-2xl shadow-black/90 backdrop-blur-2xl"
+              className="absolute bottom-3 right-3 left-3 sm:left-auto sm:w-80 rounded-2xl border border-border bg-surface p-4 shadow-2xl backdrop-blur-2xl"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
@@ -385,8 +385,8 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-white">{selected.name}</h3>
-                  <p className="mt-0.5 text-xs text-zinc-400" data-testid="tree-relation">
+                  <h3 className="text-sm font-bold text-text">{selected.name}</h3>
+                  <p className="mt-0.5 text-xs text-text-muted" data-testid="tree-relation">
                     {relationLabel(selected)} {selected.role === 'mother' ? '(আম্মা)' : selected.role === 'father' ? '(আব্বা)' : ''} · বয়স {selected.age} · {selected.alive ? 'জীবিত' : 'মৃত'}
                   </p>
                 </div>
@@ -396,19 +396,19 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                     setSelectedId(null);
                     setFeedback(null);
                   }}
-                  className="rounded-lg p-1 text-zinc-400 hover:bg-white/5 hover:text-white"
+                  className="rounded-lg p-1 text-text-muted hover:bg-surface-raised hover:text-text"
                 >
                   <X className="size-4" />
                 </button>
               </div>
 
               <div className="mt-3">
-                <div className="mb-1 flex justify-between text-xs text-zinc-400">
+                <div className="mb-1 flex justify-between text-xs text-text-muted">
                   <span>খাতির ও টান</span>
-                  <span data-testid="tree-bond-value" className="font-mono font-bold text-emerald-400">{selected.bond}</span>
+                  <span data-testid="tree-bond-value" className="font-mono font-bold text-primary-text">{selected.bond}</span>
                 </div>
                 <div
-                  className="h-2 w-full overflow-hidden rounded-full bg-white/10"
+                  className="h-2 w-full overflow-hidden rounded-full bg-border"
                   role="progressbar"
                   aria-label="খাতির"
                   aria-valuemin={0}
@@ -416,23 +416,23 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                   aria-valuenow={selected.bond}
                   data-testid="tree-bond"
                 >
-                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all" style={{ width: `${selected.bond}%` }} />
+                  <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${selected.bond}%` }} />
                 </div>
               </div>
 
               {/* Feedback toast message */}
               {feedback && (
-                <div className="mt-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2 text-xs text-emerald-300 leading-relaxed">
+                <div className="mt-2.5 rounded-xl border border-tone-good/30 bg-tone-good/10 p-2 text-xs text-tone-text-good leading-relaxed">
                   {feedback}
                 </div>
               )}
 
               {selected.role !== 'self' && !selected.alive && (
-                <div className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-center">
-                  <p className="text-xs text-rose-300 font-medium">
+                <div className="mt-3 rounded-xl border border-danger-border bg-danger/10 p-3 text-center">
+                  <p className="text-xs text-danger-text font-medium">
                     উনি এহন আমাদের মাঝে নাই। ইন্নাল্লাহি ওয়া ইলাইহি রাজিউন।
                   </p>
-                  <p className="text-[10px] text-rose-400/60 mt-1">
+                  <p className="text-[10px] text-danger-text/60 mt-1">
                     খাতির: {selected.bond}% · চিরস্মৃতি রইলো।
                   </p>
                 </div>
@@ -473,9 +473,9 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                         setFeedback(res.message);
                         soundManager.play('button_press');
                       }}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] px-2.5 py-2 text-xs font-medium text-zinc-200 transition-colors"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised/60 hover:bg-surface-raised px-2.5 py-2 text-xs font-medium text-text transition-colors"
                     >
-                      <MessageCircle className="size-3.5 text-sky-400 shrink-0" />
+                      <MessageCircle className="size-3.5 text-tone-neutral shrink-0" />
                       <span>আড্ডা মারা</span>
                     </button>
                     <button
@@ -485,9 +485,9 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                         setFeedback(res.message);
                         soundManager.play('button_press');
                       }}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] px-2.5 py-2 text-xs font-medium text-zinc-200 transition-colors"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised/60 hover:bg-surface-raised px-2.5 py-2 text-xs font-medium text-text transition-colors"
                     >
-                      <Sparkles className="size-3.5 text-amber-400 shrink-0" />
+                      <Sparkles className="size-3.5 text-tone-good shrink-0" />
                       <span>মাখন মারা</span>
                     </button>
                     <button
@@ -497,9 +497,9 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                         setFeedback(res.message);
                         soundManager.play('button_press');
                       }}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] px-2.5 py-2 text-xs font-medium text-zinc-200 transition-colors"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised/60 hover:bg-surface-raised px-2.5 py-2 text-xs font-medium text-text transition-colors"
                     >
-                      <Coins className="size-3.5 text-emerald-400 shrink-0" />
+                      <Coins className="size-3.5 text-tone-good shrink-0" />
                       <span>ট্যাকা ধার চাওয়া</span>
                     </button>
                     <button
@@ -509,9 +509,9 @@ export function FamilyTreeView({ open, onClose }: { open: boolean; onClose: () =
                         setFeedback(res.message);
                         soundManager.play('button_press');
                       }}
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] px-2.5 py-2 text-xs font-medium text-zinc-200 transition-colors"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface-raised/60 hover:bg-surface-raised px-2.5 py-2 text-xs font-medium text-text transition-colors"
                     >
-                      <Gift className="size-3.5 text-rose-400 shrink-0" />
+                      <Gift className="size-3.5 text-tone-good shrink-0" />
                       <span>উপহার দেওয়া</span>
                     </button>
                   </div>

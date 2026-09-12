@@ -86,16 +86,16 @@ test.describe('accessibility (M6 #1)', () => {
     await startNewLife(page);
     await expect(page.getByTestId('age-up')).toBeVisible();
     await page.getByTestId('open-family-tree').click();
-    await expect(page.getByRole('button', { name: 'Zoom in' })).toBeEnabled();
-    await expect(page.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
-    await expect(page.getByRole('button', { name: 'Reset view' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'জুম বাড়াও' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'জুম কমানো' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'দৃশ্য রিসেট' })).toBeEnabled();
     await page.keyboard.press('Escape');
 
     await page.getByTestId('open-settings').click();
-    await expect(page.getByRole('slider', { name: 'Effects volume' })).toBeEnabled();
-    await expect(page.getByRole('slider', { name: 'Music volume' })).toBeEnabled();
-    await expect(page.getByRole('switch', { name: /Sound effects/ })).toBeEnabled();
-    await expect(page.getByRole('switch', { name: /Music/ })).toBeEnabled();
+    await expect(page.getByRole('slider', { name: 'শব্দ-প্রভাবের ভলিউম' })).toBeEnabled();
+    await expect(page.getByRole('slider', { name: 'মিউজিকের ভলিউম' })).toBeEnabled();
+    await expect(page.getByRole('switch', { name: /শব্দ-প্রভাব/ })).toBeEnabled();
+    await expect(page.getByRole('switch', { name: /মিউজিক/ })).toBeEnabled();
   });
 
   test('avatar is exposed as a labelled image', async ({ page }) => {
@@ -103,6 +103,6 @@ test.describe('accessibility (M6 #1)', () => {
     await startNewLife(page);
     const avatar = page.getByTestId('avatar');
     await expect(avatar).toHaveAttribute('role', 'img');
-    await expect(avatar).toHaveAttribute('aria-label', /^.+ stage$/);
+    await expect(avatar).toHaveAttribute('aria-label', /^.+, .+$/);
   });
 });

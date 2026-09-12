@@ -1,5 +1,13 @@
 export type Gender = 'male' | 'female';
 
+export type AvatarHair = 'cocoa' | 'midnight' | 'chestnut' | 'silver';
+export type AvatarOutfit = 'sunshine' | 'mint' | 'lavender' | 'coral';
+
+export interface AvatarAppearance {
+  hair: AvatarHair;
+  outfit: AvatarOutfit;
+}
+
 export type Tone = 'good' | 'bad' | 'neutral' | 'funny';
 
 /**
@@ -188,6 +196,8 @@ export interface Character {
   name: string;
   surname: string;
   gender: Gender;
+  /** Optional presentation-only customization; absent in legacy saves. */
+  appearance?: AvatarAppearance;
   religion: Religion;
   birthYear: number;
   stats: Stats;
@@ -225,6 +235,7 @@ export interface CustomCharacterOptions {
   birthYear?: number;
   wealthTier?: WealthTier;
   startingTraits?: string[];
+  appearance?: Partial<AvatarAppearance>;
 }
 
 export interface StatEffects {

@@ -8,7 +8,7 @@ import { STAT_META, type StatKey } from '@/lib/theme/concepts';
 import { formatMoney } from '@/lib/ui/money';
 import { evaluateRibbons, RIBBONS } from '@/lib/engine/achievements';
 import { renderSummaryPostcard } from '@/lib/summary/renderSummaryImage';
-import { StatBar } from './StatBar';
+import { StatBar } from './dashboard/StatBar';
 import { LifeChart } from './LifeChart';
 
 const TONE_DOT: Record<Tone, string> = colors.tone;

@@ -7,8 +7,13 @@
  * DESIGN.md §9), generation included.
  */
 
-import { FEMALE_NAMES, MALE_NAMES } from '@/content/names';
-import type { Character, Gender } from './types';
+import {
+  HINDU_FEMALE_NAMES,
+  HINDU_MALE_NAMES,
+  MUSLIM_FEMALE_NAMES,
+  MUSLIM_MALE_NAMES,
+} from '@/content/names';
+import type { Character, Gender, Religion } from './types';
 import { generateId } from './character';
 import { RNG } from './rng';
 import { clamp } from './stats';
@@ -55,11 +60,33 @@ export interface FamilyTree {
 export const BOND_PER_VISIT = 8;
 export const BOND_MAX = 100;
 
-function fullName(gender: Gender, surname: string, rng: RNG, used: Set<string>): string {
+/** Given-name pool for a gender under the character's religion, so the
+ *  household obeys the same naming rules as the character itself (character.ts
+ *  draws from religion-specific pools, not the aggregated lists). */
+function givenNamePool(gender: Gender, religion: Religion): readonly string[] {
+  if (religion === 'hinduism') {
+    return gender === 'male' ? HINDU_MALE_NAMES : HINDU_FEMALE_NAMES;
+  }
+  return gender === 'male' ? MUSLIM_MALE_NAMES : MUSLIM_FEMALE_NAMES;
+}
+
+function fullName(
+  gender: Gender,
+  surname: string,
+  religion: Religion,
+  rng: RNG,
+  used: Set<string>,
+): string {
+  const pool = givenNamePool(gender, religion);
   let name = '';
+  // Cap the reroll loop so an exhausted pool can never hang the game; the
+  // household is tiny (≤ two members per gender) so the cap is never reached.
+  const maxTries = pool.length;
+  let tries = 0;
   do {
-    name = `${gender === 'male' ? rng.pick(MALE_NAMES) : rng.pick(FEMALE_NAMES)} ${surname}`;
-  } while (used.has(name));
+    name = `${rng.pick(pool)} ${surname}`;
+    tries += 1;
+  } while (used.has(name) && tries < maxTries);
   used.add(name);
   return name;
 }
@@ -80,8 +107,8 @@ function rollAlive(age: number, rng: RNG): boolean {
  */
 export function generateFamilyTree(character: Character, seed: number): FamilyTree {
   const rng = new RNG(seed);
-  const used = new Set<string>();
   const surname = character.surname;
+  const religion = character.religion;
 
   const self: FamilyMember = {
     id: generateId(rng),
@@ -97,12 +124,28 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
     happiness: character.stats.happiness,
   };
 
+  // The character's own full name joins the used set BEFORE any relative is
+  // rolled, so no parent/grandparent can ever collide with it. Parents reuse
+  // the mother/father identities the character already carries in
+  // relationships (character.ts), which keeps the tree and the relationship
+  // panel naming the same people — instead of rolling unrelated strangers.
+  const used = new Set<string>([self.name]);
+
+  const motherRel = character.relationships.find((r) => r.relation === 'mother');
+  const fatherRel = character.relationships.find((r) => r.relation === 'father');
+  const motherName =
+    motherRel?.name ?? fullName('female', surname, religion, rng, used);
+  const fatherName =
+    fatherRel?.name ?? fullName('male', surname, religion, rng, used);
+  used.add(motherName);
+  used.add(fatherName);
+
   const motherAge = character.age + rollAge([24, 34], rng);
   const fatherAge = character.age + rollAge([26, 36], rng);
 
   const mother: FamilyMember = {
     id: generateId(rng),
-    name: fullName('female', surname, rng, used),
+    name: motherName,
     gender: 'female',
     role: 'mother',
     age: motherAge,
@@ -116,7 +159,7 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
 
   const father: FamilyMember = {
     id: generateId(rng),
-    name: fullName('male', surname, rng, used),
+    name: fatherName,
     gender: 'male',
     role: 'father',
     age: fatherAge,
@@ -133,7 +176,7 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
 
   const grandmother: FamilyMember = {
     id: generateId(rng),
-    name: fullName('female', surname, rng, used),
+    name: fullName('female', surname, religion, rng, used),
     gender: 'female',
     role: 'grandparent',
     age: grandmotherAge,
@@ -147,7 +190,7 @@ export function generateFamilyTree(character: Character, seed: number): FamilyTr
 
   const grandfather: FamilyMember = {
     id: generateId(rng),
-    name: fullName('male', surname, rng, used),
+    name: fullName('male', surname, religion, rng, used),
     gender: 'male',
     role: 'grandparent',
     age: grandfatherAge,
@@ -218,7 +261,7 @@ export function birthChild(tree: FamilyTree, character: Character, rng: RNG): Fa
   const gender: Gender = rng.chance(0.5) ? 'male' : 'female';
   const child: FamilyMember = {
     id: generateId(rng),
-    name: fullName(gender, character.surname, rng, used),
+    name: fullName(gender, character.surname, character.religion, rng, used),
     gender,
     role: 'child',
     age: 0,

@@ -18,24 +18,24 @@ const TONE_STYLES: Record<
   }
 > = {
   good: {
-    border: 'border-l-emerald-500/60',
+    border: 'border-l-tone-good/60',
     icon: Sparkles,
-    iconColor: 'text-emerald-400',
+    iconColor: 'text-tone-text-good',
   },
   bad: {
-    border: 'border-l-rose-500/60',
+    border: 'border-l-tone-bad/60',
     icon: AlertCircle,
-    iconColor: 'text-rose-400',
+    iconColor: 'text-tone-text-bad',
   },
   funny: {
-    border: 'border-l-violet-500/60',
+    border: 'border-l-tone-funny/60',
     icon: Smile,
-    iconColor: 'text-violet-400',
+    iconColor: 'text-tone-text-funny',
   },
   neutral: {
-    border: 'border-l-zinc-600/60',
+    border: 'border-l-tone-neutral/60',
     icon: HelpCircle,
-    iconColor: 'text-zinc-400',
+    iconColor: 'text-tone-text-neutral',
   },
 };
 
@@ -65,11 +65,11 @@ export function TimelineStream({ history, scrollContainerId }: TimelineStreamPro
   if (history.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-20 text-center text-zinc-400"
+        className="flex flex-col items-center justify-center py-20 text-center text-text-muted"
         data-testid="chronicle-stream"
       >
         <p className="text-sm font-medium">তোমার জীবনের পান্ডুলিপি শুরু হয় পহিলা বছর থেইকা।</p>
-        <p className="text-xs text-zinc-400 mt-1">যাত্রা শুরু করতে বয়স বাড়াও।</p>
+        <p className="text-xs text-text-muted mt-1">যাত্রা শুরু করতে বয়স বাড়াও।</p>
       </div>
     );
   }
@@ -88,18 +88,18 @@ export function TimelineStream({ history, scrollContainerId }: TimelineStreamPro
       {years.map(([age, entries]) => (
         <li key={age} aria-label={`বয়স ${age}`} className="flex flex-col gap-3">
           {/* Year Marker Badge */}
-          <div className="sticky top-0 z-10 flex items-center gap-3 py-1 bg-zinc-950/80 backdrop-blur-md">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 shadow-sm">
-              <span className="size-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-widest text-zinc-300">
+          <div className="sticky top-0 z-10 flex items-center gap-3 py-1 bg-background/85 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-3 py-1 shadow-sm">
+              <span className="size-1.5 rounded-full bg-primary" />
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-widest text-text-muted">
                 বয়স {age}
               </span>
             </div>
-            <div className="h-px flex-1 bg-gradient-to-r from-white/[0.08] to-transparent" />
+            <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
           </div>
 
           {/* Group of Events for this Year */}
-          <ul className="flex flex-col gap-2.5 pl-2 sm:pl-3 border-l border-white/[0.04] ml-3.5">
+          <ul className="flex flex-col gap-2.5 pl-2 sm:pl-3 border-l border-border ml-3.5">
             {entries.map((entry, index) => {
               const style = TONE_STYLES[entry.tone] ?? TONE_STYLES.neutral;
               const IconComp = style.icon;
@@ -107,13 +107,13 @@ export function TimelineStream({ history, scrollContainerId }: TimelineStreamPro
                 <li
                   key={`${entry.age}-${index}`}
                   data-tone={entry.tone}
-                  className={`group relative rounded-xl border border-white/[0.06] border-l-[3px] ${style.border} bg-white/[0.025] hover:bg-white/[0.05] p-3.5 sm:p-4 backdrop-blur-md transition-all duration-200 shadow-sm hover:shadow-md hover:border-white/[0.1]`}
+                  className={`group relative rounded-xl border border-border border-l-[3px] ${style.border} bg-surface-raised/40 hover:bg-surface-raised/70 p-3.5 sm:p-4 backdrop-blur-md transition-all duration-200 shadow-sm hover:shadow-md hover:border-border`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-white/[0.04] border border-white/[0.05]">
+                    <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md bg-surface-raised/70 border border-border">
                       <IconComp className={`size-3 ${style.iconColor}`} />
                     </div>
-                    <p className="min-w-0 flex-1 text-sm leading-relaxed text-zinc-200 font-normal">
+                    <p className="min-w-0 flex-1 text-sm leading-relaxed text-text font-normal">
                       {entry.text}
                     </p>
                   </div>

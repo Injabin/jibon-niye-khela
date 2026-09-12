@@ -11,9 +11,9 @@ interface NpcChipsProps {
 }
 
 function toneClass(value: number): string {
-  if (value >= 70) return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300';
-  if (value >= 40) return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-  return 'border-rose-500/20 bg-rose-500/10 text-rose-300';
+  if (value >= 70) return 'border-tone-good/25 bg-tone-good/10 text-tone-text-good';
+  if (value >= 40) return 'border-tone-neutral/30 bg-tone-neutral/10 text-tone-text-neutral';
+  return 'border-tone-bad/25 bg-tone-bad/10 text-tone-text-bad';
 }
 
 export function NpcChips({ health, happiness, jobId, lastMetAge }: NpcChipsProps) {
@@ -36,13 +36,13 @@ export function NpcChips({ health, happiness, jobId, lastMetAge }: NpcChipsProps
         </span>
       )}
       {jobId && JOB_LABELS[jobId] && (
-        <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/20 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-sky-300">
+        <span className="inline-flex items-center gap-1 rounded-md border border-tone-neutral/30 bg-tone-neutral/10 px-1.5 py-0.5 text-[9px] font-semibold text-tone-text-neutral">
           <Briefcase className="size-2.5" />
           {JOB_LABELS[jobId]}
         </span>
       )}
       {lastMetAge !== undefined && (
-        <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-zinc-400">
+        <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-text-muted">
           মিলন {lastMetAge}
         </span>
       )}

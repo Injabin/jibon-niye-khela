@@ -9,7 +9,9 @@ import {
 import { RNG } from './rng';
 import { defaultFinance } from './finance';
 import { clamp } from './stats';
-import type { Character, CreateCharacterResult, CustomCharacterOptions, Gender, Religion } from './types';
+import type { AvatarAppearance, Character, CreateCharacterResult, CustomCharacterOptions, Gender, Religion } from './types';
+
+const DEFAULT_APPEARANCE: AvatarAppearance = { hair: 'cocoa', outfit: 'sunshine' };
 
 export function generateId(rng: RNG): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -22,6 +24,23 @@ export function generateId(rng: RNG): string {
 
 function rollGender(rng: RNG): Gender {
   return rng.chance(0.5) ? 'male' : 'female';
+}
+
+/**
+ * Pick a parent's given name that never equals the character's own given
+ * name. The character and their same-gender parent share the same pool and
+ * the same surname, so without this guard a son could share his father's
+ * exact full name (and a daughter her mother's). The guard only rerolls in
+ * the rare collision case, so the RNG stream is unchanged otherwise.
+ */
+function parentGivenName(pool: readonly string[], characterName: string, rng: RNG): string {
+  let candidate = rng.pick(pool);
+  let tries = 1;
+  while (candidate === characterName && tries < pool.length) {
+    candidate = rng.pick(pool);
+    tries += 1;
+  }
+  return candidate;
 }
 
 export function createCharacter(seed: number, options?: CustomCharacterOptions): CreateCharacterResult {
@@ -37,13 +56,13 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
   if (religion === 'islam') {
     name = options?.name ?? (gender === 'male' ? rng.pick(MUSLIM_MALE_NAMES) : rng.pick(MUSLIM_FEMALE_NAMES));
     surname = options?.surname ?? rng.pick(MUSLIM_SURNAMES);
-    motherName = `${rng.pick(MUSLIM_FEMALE_NAMES)} ${surname}`;
-    fatherName = `${rng.pick(MUSLIM_MALE_NAMES)} ${surname}`;
+    motherName = `${parentGivenName(MUSLIM_FEMALE_NAMES, name, rng)} ${surname}`;
+    fatherName = `${parentGivenName(MUSLIM_MALE_NAMES, name, rng)} ${surname}`;
   } else {
     name = options?.name ?? (gender === 'male' ? rng.pick(HINDU_MALE_NAMES) : rng.pick(HINDU_FEMALE_NAMES));
     surname = options?.surname ?? rng.pick(HINDU_SURNAMES);
-    motherName = `${rng.pick(HINDU_FEMALE_NAMES)} ${surname}`;
-    fatherName = `${rng.pick(HINDU_MALE_NAMES)} ${surname}`;
+    motherName = `${parentGivenName(HINDU_FEMALE_NAMES, name, rng)} ${surname}`;
+    fatherName = `${parentGivenName(HINDU_MALE_NAMES, name, rng)} ${surname}`;
   }
 
   const motherLooks = rng.rangeInt(45, 90);
@@ -68,6 +87,7 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
     name,
     surname,
     gender,
+    appearance: { ...DEFAULT_APPEARANCE },
     religion,
     birthYear,
     stats,
@@ -137,6 +157,9 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
 
   // Apply custom life overrides if requested
   if (options) {
+    if (options.appearance) {
+      character.appearance = { ...DEFAULT_APPEARANCE, ...options.appearance };
+    }
     if (options.gender) character.gender = options.gender;
     if (options.religion) {
       character.religion = options.religion;
@@ -156,11 +179,10 @@ export function createCharacter(seed: number, options?: CustomCharacterOptions):
 
     character.history[0] = {
       age: 0,
-      text: `${character.birthYear} সালে পুরান ঢাকায় ${character.name} ${character.surname} নামে তোমার জন্ম হইলো! ${
-        character.religion === 'islam'
+      text: `${character.birthYear} সালে পুরান ঢাকায় ${character.name} ${character.surname} নামে তোমার জন্ম হইলো! ${character.religion === 'islam'
           ? 'পাড়ার মুরব্বিরা কইলো—"মাশাল্লাহ, এক্কেরে চাঁদের টুকরা, তয় চিল্লাচিল্লি দেখলে মনে হয় আস্ত সাইরেন!"'
           : 'পাড়ার মুরব্বিরা উলুধ্বনি দিয়া কইলো—"ভগবানের কী লীলা, ফুটফুটে একখান পরীর লাহান বাচ্চা, তয় চিল্লাচিল্লিতে পুরা বাড়ি কাঁপাইতাছে!"'
-      }`,
+        }`,
       tone: 'funny',
     };
 

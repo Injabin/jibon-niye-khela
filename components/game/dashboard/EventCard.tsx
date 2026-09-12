@@ -2,74 +2,32 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
-import type { EventChoice, LifeEventDef, StatEffects } from '@/lib/engine/types';
+import type { LifeEventDef } from '@/lib/engine/types';
 import { motion as motionTokens } from '@/lib/theme';
+import { TONE_META } from '@/lib/theme/concepts';
 import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
-import { Sparkles, AlertCircle, Smile, HelpCircle, ArrowRight } from 'lucide-react';
-
-function choiceWeight(choice: EventChoice): number {
-  const w: StatEffects = choice.effects;
-  let total = 0;
-  total += Math.abs(w.health ?? 0);
-  total += Math.abs(w.happiness ?? 0);
-  total += Math.abs(w.smarts ?? 0);
-  total += Math.abs(w.looks ?? 0);
-  total += Math.abs(w.fame ?? 0);
-  total += Math.abs(w.karma ?? 0);
-  total += Math.abs(w.money ?? 0) / 100;
-  return total;
-}
+import { Icon } from '@/components/ui/Icon';
 
 interface EventCardProps {
   event: LifeEventDef;
   onChoose: (choiceId: string) => void;
 }
 
-const TONE_CONFIG: Record<
+const TONE_BADGE: Record<
   LifeEventDef['tone'],
-  {
-    badgeColor: string;
-    borderAccent: string;
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-  }
+  { badge: string; border: string }
 > = {
-  good: {
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    borderAccent: 'border-emerald-500/30',
-    icon: Sparkles,
-    label: 'সৌভাগ্যের পালা',
-  },
-  bad: {
-    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    borderAccent: 'border-rose-500/30',
-    icon: AlertCircle,
-    label: 'মাইঙ্কা চিপা',
-  },
-  funny: {
-    badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-    borderAccent: 'border-violet-500/30',
-    icon: Smile,
-    label: 'অ্যাখ্যানের অদৃষ্ট কাণ্ড',
-  },
-  neutral: {
-    badgeColor: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
-    borderAccent: 'border-white/10',
-    icon: HelpCircle,
-    label: 'জীবনের সাধারন ঘটনা',
-  },
+  good: { badge: 'bg-tone-good/10 text-tone-text-good border-tone-good/25', border: 'border-tone-good/30' },
+  bad: { badge: 'bg-tone-bad/10 text-tone-text-bad border-tone-bad/25', border: 'border-tone-bad/30' },
+  funny: { badge: 'bg-tone-funny/10 text-tone-text-funny border-tone-funny/25', border: 'border-tone-funny/30' },
+  neutral: { badge: 'bg-tone-neutral/10 text-tone-text-neutral border-tone-neutral/25', border: 'border-tone-neutral/30' },
 };
 
 export function EventCard({ event, onChoose }: EventCardProps) {
   const overlayRef = useRef<HTMLElement>(null);
   const reducedMotion = useEffectiveReducedMotion();
-  const toneCfg = TONE_CONFIG[event.tone];
-  const ToneIcon = toneCfg.icon;
-
-  const mostConsequentialIndex = event.choices.reduce(
-    (best, choice, index, all) => (choiceWeight(choice) > choiceWeight(all[best]) ? index : best),
-    0,
-  );
+  const toneMeta = TONE_META[event.tone];
+  const toneClasses = TONE_BADGE[event.tone];
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
@@ -152,7 +110,7 @@ export function EventCard({ event, onChoose }: EventCardProps) {
       transition={{ duration: reducedMotion ? 0 : motionTokens.micro, ease: 'easeOut' }}
     >
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-md pointer-events-none"
+        className="absolute inset-0 bg-surface-overlay backdrop-blur-md pointer-events-none"
         data-testid="event-backdrop"
         aria-hidden="true"
       />
@@ -160,58 +118,54 @@ export function EventCard({ event, onChoose }: EventCardProps) {
         ref={overlayRef as React.Ref<HTMLElement>}
         role="group"
         aria-roledescription="life event"
-        aria-label={`জীবনের ঘটনা — ${toneCfg.label}`}
+        aria-label={`জীবনের ঘটনা — ${toneMeta.label}`}
         tabIndex={-1}
         onKeyDown={onKeyDown}
         initial={reducedMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}
         animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
         exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.98 }}
         transition={{ duration: reducedMotion ? 0 : motionTokens.quick, ease: 'easeOut' }}
-        className={`relative w-full max-w-lg rounded-2xl bg-zinc-900/90 backdrop-blur-2xl border ${toneCfg.borderAccent} p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.7)] pointer-events-auto flex flex-col gap-6`}
+        className={`relative w-full max-w-lg rounded-2xl bg-surface backdrop-blur-xl border ${toneClasses.border} p-6 sm:p-8 shadow-lg pointer-events-auto flex flex-col gap-6`}
         data-testid="event-card"
         data-tone={event.tone}
       >
         <div className="flex items-center justify-between">
           <div
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-medium tracking-wide uppercase ${toneCfg.badgeColor}`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-medium tracking-wide ${toneClasses.badge}`}
           >
-            <ToneIcon className="size-3.5" />
-            <span>{toneCfg.label}</span>
+            <Icon name={toneMeta.icon} size={14} />
+            <span>{toneMeta.label}</span>
           </div>
-          <span className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">
+          <span className="text-[10px] tracking-widest text-text-muted uppercase">
             সিদ্ধান্ত নিতে হবে
           </span>
         </div>
 
-        <p className="text-base sm:text-lg leading-relaxed text-zinc-100 font-normal">
+        <p className="text-base sm:text-lg leading-relaxed text-text font-normal">
           {event.text}
         </p>
 
         <div className="flex flex-col gap-2.5 pt-2">
-          {event.choices.map((choice, index) => {
-            const isPriority = index === mostConsequentialIndex;
-            return (
-              <button
-                key={choice.id}
-                type="button"
-                onClick={() => onChoose(choice.id)}
-                data-testid={`choice-${index}`}
-                className={`group relative flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-left text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 ${
-                  isPriority
-                    ? 'bg-[#b23a3b] hover:bg-[#c44344] text-white border-b-2 border-b-[#7a1c1d] active:border-b-0 active:translate-y-0.5 shadow-md shadow-rose-950/40'
-                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 hover:text-white border border-white/[0.08]'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-white/5 border border-white/5 text-[11px] font-mono text-zinc-400 group-hover:text-white">
-                    {index + 1}
-                  </span>
-                  <span>{choice.text}</span>
-                </div>
-                <ArrowRight className="size-4 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0.5 text-zinc-400 group-hover:text-white" />
-              </button>
-            );
-          })}
+          {event.choices.map((choice, index) => (
+            <button
+              key={choice.id}
+              type="button"
+              onClick={() => onChoose(choice.id)}
+              data-testid={`choice-${index}`}
+              className="group relative flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-surface-raised px-4 py-3.5 text-left text-sm font-medium text-text transition-all duration-150 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/15 text-xs font-bold tabular-nums text-primary-text group-hover:bg-primary/25"
+                  aria-hidden="true"
+                >
+                  {index + 1}
+                </span>
+                <span>{choice.text}</span>
+              </div>
+              <Icon name="dot" size={16} className="shrink-0 text-text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+            </button>
+          ))}
         </div>
       </motion.section>
     </motion.div>

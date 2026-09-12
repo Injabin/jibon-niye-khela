@@ -42,7 +42,7 @@ test.describe('family tree (Gate 4)', () => {
     // Force the pointer action — the node's rendered presence is asserted above.
     await page.getByTestId('tree-node-mother').click({ force: true });
     await expect(page.getByTestId('tree-panel')).toBeVisible();
-    await expect(page.getByTestId('tree-relation')).toContainText('Mother');
+    await expect(page.getByTestId('tree-relation')).toContainText('আম্মা');
 
     const before = Number(await page.getByTestId('tree-bond-value').textContent());
     await page.getByTestId('tree-spend-time').click();
@@ -52,7 +52,7 @@ test.describe('family tree (Gate 4)', () => {
 
     // Refused the same year: the button is disabled and says so.
     await expect(page.getByTestId('tree-spend-time')).toBeDisabled();
-    await expect(page.getByTestId('tree-spend-time')).toContainText('Spent time this year');
+    await expect(page.getByTestId('tree-spend-time')).toContainText('এই বছর');
   });
 
   test('the raised bond persists across a full reload', async ({ page }) => {

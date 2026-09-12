@@ -7,10 +7,12 @@ import { resolveAllEvents } from './helpers';
  * automated checks and drops the screenshots + contrast report into
  * `test-results/ui-theme/`.
  *
- * B — computed border-radius is 4px on the six spot-check components (the
- *      --radius-* tokens resolve every radius utility to 0.25rem, so nothing
- *      is pill/full); WCAG AA for --color-primary on --color-surface and
- *      --color-text-muted on --color-background in BOTH schemes.
+ * B — computed border-radius on the six spot-check components matches the
+ *      cozy 16–24px scale the design locked in (ui-ux-guide.md §10: "16–24px,
+ *      very rounded" against the old 4px Claymore), resolved from the
+ *      --radius-* tokens (rounded-md = 1rem, rounded-xl/2xl = 1.5rem); WCAG AA
+ *      for --color-primary on --color-surface and --color-text-muted on
+ *      --color-background in BOTH schemes.
  * D — sticky header/footer stay pinned at 360×640 and 360×740; newest Year
  *      Card auto-scrolls into view; choice + Age Up buttons measure >= 48px.
  * E — dark scheme axe color-contrast scan + light/dark screenshots at both
@@ -99,7 +101,7 @@ test.describe('Gate UI-1 theme evidence', () => {
     await page.screenshot({ path: 'test-results/ui-theme/360x740-light.png', fullPage: true });
   });
 
-  test('six spot-check components: computed radius 4px + tap height 48px', async ({ page }) => {
+  test('six spot-check components: computed radius 16-24px + tap height 48px', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('new-game').click();
     await expect(page.getByTestId('age-up')).toBeVisible();
@@ -128,9 +130,20 @@ test.describe('Gate UI-1 theme evidence', () => {
       };
     });
 
+    // Design-locked radii for each spot (ui-ux-guide.md §10): rounded-md
+    // corners (16px) on the dense dashboard rows, rounded-xl/2xl (24px) on
+    // the big pastel surfaces and controls.
+    const expected = {
+      header: '16px',
+      eventCard: '24px',
+      choiceButton: '24px',
+      chronicleCard: '24px',
+      tabIconContainer: '24px',
+      ageUp: '24px',
+    };
     for (const [name, v] of Object.entries(checks)) {
       expect(v, name).not.toBeNull();
-      expect(v!.radius, `${name} radius`).toBe('4px');
+      expect(v!.radius, `${name} radius`).toBe(expected[name as keyof typeof expected]);
     }
     expect(Number.parseFloat(checks.choiceButton!.height)).toBeGreaterThanOrEqual(48);
     expect(Number.parseFloat(checks.ageUp!.height)).toBeGreaterThanOrEqual(48);

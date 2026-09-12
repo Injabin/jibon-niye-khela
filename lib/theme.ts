@@ -55,8 +55,8 @@ export const colors = {
   stat: {
     health: "var(--color-stat-health)",
     happiness: "var(--color-stat-happiness)",
-    martial: "var(--color-stat-martial)",
-    honor: "var(--color-stat-honor)",
+    smarts: "var(--color-stat-smarts)",
+    looks: "var(--color-stat-looks)",
   },
 
   wealth: "var(--color-wealth)",

@@ -3,6 +3,11 @@
 
 ## 0. How to read this document (important — read first)
 
+**Phase 4 authority:** `init.md` promotes this guide to the live visual
+system for Jibon Niye Khela. Its cozy pastel palette, rounded geometry,
+Bangla typography, bottom navigation, and avatar guidance take precedence
+over the archived Claymore/Modern Martial documents.
+
 This is a **genre-accurate design system**, written the way a UI designer
 would document the conventions of cozy pet/home-decoration mobile games
 (the category "Adorable Home" belongs to) — soft pastel palettes, rounded
@@ -15,11 +20,9 @@ style family, not a guaranteed exact match. If you want this refined
 against real, current screenshots/hex-picks from the actual app, ask me
 to verify with web search enabled and I'll tighten every value below.
 
-**This document does not replace or override `UI-DESIGN.md`** (the
-locked "Modern Martial" Claymore theme already governing Jibon Niye
-Khela). It exists as a separate reference. See
-`Additional_plus_improved_plan.md` Phase 12 for the explicit, gated
-decision about whether/how any of this gets adopted.
+The archived `UI-DESIGN.md` and its Claymore/Modern Martial rules are
+historical reference only. New Phase 4 work follows this guide and the
+superseding instructions in `init.md`.
 
 **IP note:** do not source, trace, or reuse actual copyrighted art,
 icons, fonts, or audio from the real Adorable Home app. Everything

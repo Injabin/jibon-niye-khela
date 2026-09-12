@@ -106,7 +106,7 @@ export function LandingPage() {
             <Link
               href="/play?start=1"
               data-testid="header-play-btn"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#b23a3b] hover:bg-[#c44344] border-b-2 border-b-[#7a1c1d] active:border-b-0 active:translate-y-0.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-rose-950/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+              className="inline-flex items-center gap-2 rounded-xl bg-danger hover:brightness-110 border-b-2 border-b-black/40 active:border-b-0 active:translate-y-0.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-on-danger shadow-md shadow-danger/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
             >
               <Play className="size-3.5 fill-current" />
               <span>এখনই খেলো</span>
@@ -150,7 +150,7 @@ export function LandingPage() {
               <Link
                 href="/play?start=1"
                 data-testid="new-game"
-                className="group relative flex w-full sm:w-auto items-center justify-center gap-3 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-xl shadow-rose-950/50 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                className="group relative flex w-full sm:w-auto items-center justify-center gap-3 rounded-2xl bg-danger hover:brightness-110 border-b-4 border-b-black/40 active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-on-danger shadow-xl shadow-danger/30 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
               >
                 <Play className="size-4 fill-current transition-transform group-hover:scale-110" />
                 <span>মামা, এখনই খেলো</span>
@@ -260,7 +260,7 @@ export function LandingPage() {
                   {/* Mock Controls */}
                   <div className="flex items-center justify-between border-t border-white/10 pt-3">
                     <span className="text-[11px] text-zinc-400 font-mono">শর্টকাট দেখতে ? চাপো</span>
-                    <span className="rounded-xl bg-[#b23a3b] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white">
+                    <span className="rounded-xl bg-danger px-4 py-2 text-xs font-bold uppercase tracking-wider text-on-danger">
                       বয়স বাড়াও (+১ বছর বাঁশ)
                     </span>
                   </div>
@@ -399,7 +399,7 @@ export function LandingPage() {
               <Link
                 href="/play?start=1"
                 data-testid="bottom-play-cta"
-                className="inline-flex items-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-rose-950/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                className="inline-flex items-center gap-2 rounded-2xl bg-danger hover:brightness-110 border-b-4 border-b-black/40 active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-on-danger shadow-lg shadow-danger/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
               >
                 <Play className="size-4 fill-current" />
                 <span>মাগনা জীবন শুরু কর</span>

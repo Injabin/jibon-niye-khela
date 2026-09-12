@@ -31,16 +31,16 @@ export function ControlDeck({
   onOpenProfile,
 }: ControlDeckProps) {
   return (
-    <footer className="fixed bottom-0 inset-x-0 z-20 border-t border-white/[0.08] bg-zinc-950/90 backdrop-blur-2xl">
+    <footer className="fixed bottom-0 inset-x-0 z-20 border-t border-border bg-surface/95 backdrop-blur-2xl">
       <div className="mx-auto w-full max-w-xl px-3 py-2 flex flex-col gap-2">
-        {/* Tactile Crimson Candy Button for Mobile */}
+        {/* Tactile Primary Candy Button for Mobile */}
         {hasCharacter && (
           <button
             type="button"
             onClick={onAgeUp}
             disabled={!canAgeUp}
             data-testid="age-up"
-            className="group relative flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-black/40 px-4 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            className="group relative flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-primary/25 px-4 text-xs font-bold uppercase tracking-widest text-on-primary transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
           >
             <Sparkles className="size-4" />
             <span>বয়স (+১ বছর)</span>
@@ -54,7 +54,7 @@ export function ControlDeck({
             onClick={onOpenProfile}
             data-testid="deck-tab-profile"
             disabled={!hasCharacter}
-            className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
+            className="flex flex-col items-center justify-center py-2 rounded-xl text-text-muted hover:text-text hover:bg-surface-raised transition-all disabled:opacity-40"
           >
             <User className="size-4" />
             <span className="text-[10px] font-medium mt-1">প্রোফাইল</span>
@@ -65,7 +65,7 @@ export function ControlDeck({
             onClick={() => onOpenActions('school')}
             data-testid="open-actions"
             disabled={!hasCharacter}
-            className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
+            className="flex flex-col items-center justify-center py-2 rounded-xl text-text-muted hover:text-text hover:bg-surface-raised transition-all disabled:opacity-40"
           >
             <Swords className="size-4" />
             <span className="text-[10px] font-medium mt-1">কাজকর্ম</span>
@@ -76,7 +76,7 @@ export function ControlDeck({
             onClick={onOpenFamilyTree}
             data-testid="open-family-tree"
             disabled={!hasCharacter}
-            className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
+            className="flex flex-col items-center justify-center py-2 rounded-xl text-text-muted hover:text-text hover:bg-surface-raised transition-all disabled:opacity-40"
           >
             <Users className="size-4" />
             <span className="text-[10px] font-medium mt-1">আত্মীয়-স্বজন</span>
@@ -87,7 +87,7 @@ export function ControlDeck({
             onClick={() => onOpenActions('assets')}
             data-testid="deck-tab-assets"
             disabled={!hasCharacter}
-            className="flex flex-col items-center justify-center py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-40"
+            className="flex flex-col items-center justify-center py-2 rounded-xl text-text-muted hover:text-text hover:bg-surface-raised transition-all disabled:opacity-40"
           >
             <Coins className="size-4" />
             <span className="text-[10px] font-medium mt-1">ধন-সম্পদ</span>
@@ -95,13 +95,13 @@ export function ControlDeck({
         </nav>
 
         {/* Secondary utilities bar */}
-        <div className="flex items-center justify-between border-t border-white/[0.04] pt-1.5 px-1 text-[11px]">
+        <div className="flex items-center justify-between border-t border-border pt-1.5 px-1 text-[11px]">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onOpenSettings}
               data-testid="open-settings"
-              className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="flex items-center gap-1 text-text-muted hover:text-text transition-colors"
             >
               <Settings className="size-3" />
               <span>সেটিংস</span>
@@ -112,7 +112,7 @@ export function ControlDeck({
                 type="button"
                 onClick={onOpenShortcuts}
                 data-testid="deck-open-shortcuts"
-                className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="flex items-center gap-1 text-text-muted hover:text-text transition-colors"
               >
                 <Keyboard className="size-3" />
                 <span>শর্টকাট</span>
@@ -126,27 +126,27 @@ export function ControlDeck({
               onClick={onExport}
               disabled={!hasCharacter}
               data-testid="export-save"
-              className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1 text-text-muted hover:text-text transition-colors disabled:opacity-40"
             >
               <Download className="size-3" />
               <span>সেভ নামাও</span>
             </button>
-            <span className="text-zinc-700">•</span>
+            <span className="text-text-muted/40">•</span>
             <button
               type="button"
               onClick={onImportClick}
-              className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition-colors"
+              className="flex items-center gap-1 text-text-muted hover:text-text transition-colors"
             >
               <Upload className="size-3" />
               <span>সেভ দাও</span>
             </button>
-            <span className="text-zinc-700">•</span>
+            <span className="text-text-muted/40">•</span>
             <button
               type="button"
               onClick={onReset}
               disabled={!hasCharacter}
               data-testid="reset"
-              className="flex items-center gap-1 text-zinc-400 hover:text-rose-400 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1 text-text-muted hover:text-danger-text transition-colors disabled:opacity-40"
             >
               <RotateCcw className="size-3" />
               <span>রিসেট</span>

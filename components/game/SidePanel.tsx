@@ -84,7 +84,7 @@ export function SidePanel({
             onClick={onOpenFamilyTree}
             className="mt-2 w-full rounded-md border border-border px-3 py-1.5 text-[12px] font-medium text-text-muted transition-colors hover:bg-surface-raised hover:text-text"
           >
-            পরিবার গাছ দেখুন →
+            ফ্যামিলি ট্রি  →
           </button>
         </div>
       )}

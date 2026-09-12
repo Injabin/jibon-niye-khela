@@ -11,11 +11,11 @@ test.describe('Gate 10 — Keyboard Shortcuts & Pause System', () => {
 
     // 1. Open Settings modal
     await page.getByTestId('open-settings').click();
-    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'সেটিংস' })).toBeVisible();
 
     // Press Escape -> Should close Settings modal, NOT open Pause Menu
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeHidden();
+    await expect(page.getByRole('dialog', { name: 'সেটিংস' })).toBeHidden();
     await expect(page.getByTestId('pause-menu')).toBeHidden();
 
     // 2. Now with nothing open, press Escape -> Should open Pause Menu
@@ -230,11 +230,11 @@ test.describe('Gate 10 — Keyboard Shortcuts & Pause System', () => {
 
     // Click Settings inside Pause Menu
     await page.getByTestId('pause-settings').click();
-    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'সেটিংস' })).toBeVisible();
 
     // Close Settings
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog', { name: 'Settings' })).toBeHidden();
+    await expect(page.getByRole('dialog', { name: 'সেটিংস' })).toBeHidden();
 
     // Open Pause Menu again and Quit to Landing
     await page.keyboard.press('Escape');

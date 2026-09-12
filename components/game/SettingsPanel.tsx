@@ -41,7 +41,7 @@ function SwitchRow({
           data-testid={testId}
         />
         <span className="h-6 w-11 rounded-full border border-border bg-border transition-colors peer-checked:bg-primary" />
-        <span className="pointer-events-none absolute left-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
+        <span className="pointer-events-none absolute left-1 h-4 w-4 rounded-full bg-on-primary transition-transform peer-checked:translate-x-5" />
       </span>
     </label>
   );
@@ -89,11 +89,13 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
   const sfxVolume = settingsStore((s) => s.sfxVolume);
   const musicVolume = settingsStore((s) => s.musicVolume);
   const reducedMotion = settingsStore((s) => s.reducedMotion);
+  const theme = settingsStore((s) => s.theme);
   const setSfxEnabled = settingsStore((s) => s.setSfxEnabled);
   const setMusicEnabled = settingsStore((s) => s.setMusicEnabled);
   const setSfxVolume = settingsStore((s) => s.setSfxVolume);
   const setMusicVolume = settingsStore((s) => s.setMusicVolume);
   const setReducedMotionMode = settingsStore((s) => s.setReducedMotionMode);
+  const setThemeMode = settingsStore((s) => s.setThemeMode);
 
   const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
 
@@ -102,7 +104,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-black/40"
+            className="fixed inset-0 z-40 bg-surface-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -159,6 +161,36 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             />
 
             <div className="mt-4 border-t border-border pt-3">
+              <span className="text-sm font-medium text-text">চেহারা-রঙ (থিম)</span>
+              <Fieldset label="থিম">
+                {(
+                  [
+                    ['system', 'ডিভাইসের সাথে'],
+                    ['light', 'আলো'],
+                    ['dark', 'অন্ধকার'],
+                  ] as const
+                ).map(([mode, label]) => (
+                  <label
+                    key={mode}
+                    className="flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-text has-[:checked]:bg-primary/10 has-[:checked]:border-primary/50"
+                  >
+                    <input
+                      type="radio"
+                      name="theme-mode"
+                      value={mode}
+                      checked={theme === mode}
+                      onChange={() => setThemeMode(mode)}
+                      className="accent-primary"
+                      data-testid={`settings-theme-${mode}`}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </Fieldset>
+              <SystemThemeHint mode={theme} />
+            </div>
+
+            <div className="mt-4 border-t border-border pt-3">
               <span className="text-sm font-medium text-text">মোশন কমানো</span>
               <Fieldset label="মোশনের মাত্রা">
                 {(
@@ -208,6 +240,15 @@ function SystemMotionHint({ mode }: { mode: string }) {
   return (
     <p className="mt-2 text-xs text-text-muted" data-testid="settings-system-motion-hint">
       খালি তোমার ডিভাইসের কম মোশন সেটিংটাই ফলো করতাছে।
+    </p>
+  );
+}
+
+function SystemThemeHint({ mode }: { mode: string }) {
+  if (mode !== 'system') return null;
+  return (
+    <p className="mt-2 text-xs text-text-muted" data-testid="settings-system-theme-hint">
+      ডিভাইসের আলো-অন্ধকার সেটিংটাই ফলো করতাছে।
     </p>
   );
 }

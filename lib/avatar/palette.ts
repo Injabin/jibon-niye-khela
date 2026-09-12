@@ -123,4 +123,34 @@ export const AVATAR_STAGES: readonly LifeStage[] = [
   'senior',
 ];
 
+/** Custom-life picker swatches (AvatarHair / AvatarOutfit ids → hex). */
+export const CUSTOM_LIFE_HAIR_SWATCHES: Record<string, string> = {
+  cocoa: HAIR.brown,
+  midnight: HAIR.black,
+  chestnut: '#9a6246',
+  silver: '#a8a3ad',
+};
+
+export const CUSTOM_LIFE_OUTFIT_SWATCHES: Record<string, string> = {
+  sunshine: '#f6c85f',
+  mint: '#8fd9c1',
+  lavender: '#b9a8e8',
+  coral: '#f19a8e',
+};
+
+/** Lighter collar accents paired with each outfit base. */
+export const CUSTOM_LIFE_OUTFIT_ACCENTS: Record<string, string> = {
+  sunshine: '#fff0b3',
+  mint: '#d8f7e9',
+  lavender: '#eee8ff',
+  coral: '#ffe0d9',
+};
+
+/** Fixed inked features of the SVG portrait (not theme-bound). */
+export const AVATAR_EYE = '#3a2f2b';
+export const AVATAR_EYE_GLINT = '#ffffff';
+export const AVATAR_MOUTH = '#8a4a3a';
+export const AVATAR_GLASSES = '#7c6f61';
+export const AVATAR_CROWS_FEET = '#b98a66';
+
 export { FEMALE_BIAS };

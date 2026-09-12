@@ -2,6 +2,33 @@ import type { LifeEventDef } from '@/lib/engine/types';
 
 export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
   {
+    id: 'adult_gold_necklace_anniversary',
+    text: 'বিয়ের বর্ষপূর্তিতে বউ আবদার করছে, চকবাজারের খাঁটি সোনার একখান নেকলেস বানায়া দিতে হইবো!',
+    minAge: 25,
+    maxAge: 55,
+    weight: 9,
+    tone: 'neutral',
+    category: 'adult',
+    source: 'fallback',
+    requiredFlags: ['has_spouse'],
+    choices: [
+      {
+        id: 'buy_gold_necklace',
+        text: 'টাকা ঢাইলা সোনার নেকলেস কিন্যা বউরে খুশি কর!',
+        outcomeText: 'বউ তো নেকলেস পইড়া মহা খুশি, তোমার কপালে চুম্মা দিয়া ভরপুর খাতির যত্ন করলো!',
+        tone: 'good',
+        effects: { money: -300, happiness: 30, karma: 10 },
+      },
+      {
+        id: 'refuse_necklace',
+        text: 'টাকার টানাটানির কথা বইলা মাফ চাও!',
+        outcomeText: 'বউ মুখ কালা কইরা তিন দিন কথা বন্ধ রাখলো, খাওয়া-দাওয়াতেও মহা গ্যাঞ্জাম!',
+        tone: 'bad',
+        effects: { happiness: -20 },
+      },
+    ],
+  },
+  {
     id: 'adult_buy_flat_mirpur',
     text: 'লাইফের সব জমানো ট্যাকা আর বউয়ের গয়না বেইচা মিরপুরে একখান তিন রুমের ফ্লাট কিনার ফাপড় নিছোস!',
     minAge: 35,

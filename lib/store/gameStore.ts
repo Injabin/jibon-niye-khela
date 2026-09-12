@@ -27,7 +27,7 @@ import { applyToSchool, enterHigherEducation, studyHarder, hireTutor, dropOutOfS
 import type { MajorField } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { AssetKind, Character, CustomCharacterOptions, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
+import type { AssetKind, AvatarAppearance, Character, CustomCharacterOptions, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
 import {
   generateDatingPool,
   askOutCandidate,
@@ -288,6 +288,8 @@ export interface GameStoreActions {
   togglePause(): void;
   /** Dismiss the current rejection popup after the player has read it. */
   clearRejection(): void;
+  /** Update the presentation-only avatar layers and persist the save. */
+  setAvatarAppearance(appearance: Partial<AvatarAppearance>): boolean;
 }
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -885,6 +887,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     commitCrime(crimeId) {
       return runIdleAction((character, rng) => {
+        if (character.age < 10) {
+          return { ok: false, text: 'তুই এখনো পিচ্চি! দশ বছর না হইলে এই ধান্ধায় নামা যাইবো না, আগে বড় হ।' };
+        }
         const out = commitCrime(character, rng, crimeId);
         return { ok: true, text: out.text };
       });
@@ -1632,6 +1637,19 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     clearRejection() {
       set({ rejection: null });
+    },
+
+    setAvatarAppearance(appearance) {
+      const s = get();
+      if (!s.character || !s.character.alive) return false;
+      const character = structuredClone(s.character);
+      character.appearance = {
+        hair: appearance.hair ?? character.appearance?.hair ?? 'cocoa',
+        outfit: appearance.outfit ?? character.appearance?.outfit ?? 'sunshine',
+      };
+      set({ character });
+      persist();
+      return true;
     },
 
     resetGame() {

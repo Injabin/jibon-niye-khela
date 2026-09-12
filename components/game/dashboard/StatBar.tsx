@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { motion as motionTokens } from '@/lib/theme';
 import { STAT_META, type StatKey } from '@/lib/theme/concepts';
-import { Heart, Sun, Swords, Shield } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 
 function useAnimatedNumber(target: number) {
   const [display, setDisplay] = useState(target);
@@ -44,42 +44,10 @@ interface StatBarProps {
   statKey: StatKey;
 }
 
-const STAT_THEMES: Record<
-  StatKey,
-  {
-    fillColor: string;
-    icon: React.ComponentType<{ className?: string }>;
-    textColor: string;
-  }
-> = {
-  health: {
-    fillColor: 'bg-[#b23a3b]',
-    icon: Heart,
-    textColor: 'text-[#e57373]',
-  },
-  happiness: {
-    fillColor: 'bg-[#5a7a94]',
-    icon: Sun,
-    textColor: 'text-[#8ca8c0]',
-  },
-  smarts: {
-    fillColor: 'bg-[#8a8f96]',
-    icon: Swords,
-    textColor: 'text-[#a8acb3]',
-  },
-  looks: {
-    fillColor: 'bg-[#d4af37]',
-    icon: Shield,
-    textColor: 'text-[#e0c04f]',
-  },
-};
-
 export function StatBar({ label, value, statKey }: StatBarProps) {
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
   const display = useAnimatedNumber(clamped);
   const meta = STAT_META[statKey];
-  const theme = STAT_THEMES[statKey];
-  const IconComponent = theme.icon;
 
   const prevValue = useRef(value);
   const [pulse, setPulse] = useState<'up' | 'down' | null>(null);
@@ -100,19 +68,17 @@ export function StatBar({ label, value, statKey }: StatBarProps) {
     <div className="flex flex-col gap-1.5" data-testid={`stat-${statKey}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <IconComponent className={`size-3.5 ${theme.textColor}`} />
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-            {label}
-          </span>
+          <Icon name={meta.icon} size={14} className="size-3.5" styleColor={meta.fillVar} />
+          <span className="text-[11px] font-semibold text-text-muted">{label}</span>
         </div>
-        <span className="text-xs font-semibold tabular-nums text-white">
+        <span className="text-xs font-semibold tabular-nums text-text">
           {display}
-          <span className="text-[10px] font-normal text-zinc-400">/100</span>
+          <span className="text-[10px] font-normal text-text-muted">/100</span>
         </span>
       </div>
 
       <motion.div
-        className="relative h-2.5 w-full overflow-hidden rounded-full bg-white/[0.06] border border-white/[0.05] p-[1px]"
+        className="relative h-2.5 w-full overflow-hidden rounded-full border border-border bg-surface-raised p-[1px]"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}
@@ -122,7 +88,8 @@ export function StatBar({ label, value, statKey }: StatBarProps) {
         transition={{ duration: motionTokens.micro, ease: 'easeInOut' }}
       >
         <motion.div
-          className={`h-full rounded-full ${theme.fillColor} transition-all`}
+          className="h-full rounded-full"
+          style={{ backgroundColor: meta.fillVar }}
           data-testid={`stat-fill-${statKey}`}
           animate={{ width: `${clamped}%` }}
           transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
@@ -131,3 +98,6 @@ export function StatBar({ label, value, statKey }: StatBarProps) {
     </div>
   );
 }
+
+export type { StatKey };
+export { STAT_META };

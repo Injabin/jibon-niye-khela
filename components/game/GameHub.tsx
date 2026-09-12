@@ -31,7 +31,6 @@ import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
 import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, X } from 'lucide-react';
 
-// Lazy-loaded family tree
 const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
   ssr: false,
   loading: () => null,
@@ -70,6 +69,16 @@ const toneCue: Record<LifeEventDef['tone'], SfxEvent> = {
   funny: 'funny_event',
 };
 
+const STAGE_HINT: Record<ReturnType<typeof lifeStageForAge>, { label: string; hint: string }> = {
+  infant: { label: 'শিশুকাল', hint: 'আম্মা-আব্বার যত্নে বড়ো হও' },
+  child: { label: 'ছেলেবেলা', hint: 'স্কুলে ভর্তি হইয়া পড়ালেখায় মন দাও' },
+  teen: { label: 'কৈশোর', hint: 'রেজাল্ট ভালো করো, পাক্কা বন্ধু গড়ো' },
+  'young-adult': { label: 'তরুণ বয়স', hint: 'পড়াশোনা, চাকরি কিংবা ব্যবসা — যেভাবে পারো আগায়া যাও' },
+  adult: { label: 'যৌবন', hint: 'সংসার, কারবার আর খাতির-পাতির পাল্লা সামলাও' },
+  'middle-aged': { label: 'মধ্যবয়স', hint: 'সম্পদ গছাও, বাচ্চাদের ভবিষ্যতের ফিকির করো' },
+  senior: { label: 'বার্ধক্য', hint: 'শরীর সামলাও — গতরে গতরে গল্প জমাইয়া রাখো' },
+};
+
 export function GameHub() {
   const character = useGameStore((s) => s.character);
   const familyTree = useGameStore((s) => s.familyTree);
@@ -96,12 +105,12 @@ export function GameHub() {
   const setPaused = useGameStore((s) => s.setPaused);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [actionsTab, setActionsTab] = useState<Tab>('school');
   const [profileOpen, setProfileOpen] = useState(false);
   const [customLifeOpen, setCustomLifeOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -240,6 +249,19 @@ export function GameHub() {
   const heirs = dead && character ? eligibleHeirs(character, familyTree) : [];
   const canAgeUp = Boolean(character && character.alive && pendingEvents.length === 0 && !isGeneratingEvent);
 
+  // When any overlay is up, the dashboard panels behind it must stay fully
+  // neutral + inactive: `inert` disables clicks, keyboard focus and :hover
+  // highlights so stale focus/hover rings never bleed through the scrim.
+  const anyOverlayOpen = Boolean(
+    settingsOpen ||
+      actionsOpen ||
+      profileOpen ||
+      customLifeOpen ||
+      shortcutsOpen ||
+      familyTreeOpen ||
+      isPaused,
+  );
+
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // 1. Text input safety: do not fire game shortcuts if typing in any form input
@@ -293,11 +315,6 @@ export function GameHub() {
           setProfileOpen(false);
           return;
         }
-        if (familyTreeOpen) {
-          e.preventDefault();
-          setFamilyTreeOpen(false);
-          return;
-        }
 
         if (isPaused) {
           e.preventDefault();
@@ -329,8 +346,7 @@ export function GameHub() {
           !settingsOpen &&
           !customLifeOpen &&
           !actionsOpen &&
-          !profileOpen &&
-          !familyTreeOpen
+          !profileOpen
         ) {
           e.preventDefault();
           onAgeUp();
@@ -346,7 +362,6 @@ export function GameHub() {
     customLifeOpen,
     actionsOpen,
     profileOpen,
-    familyTreeOpen,
     isPaused,
     character,
     canAgeUp,
@@ -356,9 +371,9 @@ export function GameHub() {
 
   if (!isHydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
+      <div className="flex min-h-screen items-center justify-center bg-background text-text-muted">
         <div className="flex items-center gap-3">
-          <div className="size-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+          <div className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <p className="text-sm font-medium">দুনিয়া গুছানো হইতেছে…</p>
         </div>
       </div>
@@ -366,14 +381,20 @@ export function GameHub() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-zinc-950 text-zinc-100 selection:bg-emerald-500/20 selection:text-emerald-200 font-sans">
+    <div className="relative min-h-screen w-full bg-background text-text selection:bg-primary/20 selection:text-primary-text font-sans">
       <h1 className="sr-only">জীবন নিয়ে খেলা — এক লাইফ সিমুলেশন</h1>
 
       {/* Ambient background glow accents for depth and specular reflection */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 left-1/4 size-[650px] rounded-full bg-emerald-500/[0.035] blur-[140px]" />
-        <div className="absolute top-1/3 -right-20 size-[500px] rounded-full bg-teal-500/[0.025] blur-[120px]" />
-        <div className="absolute -bottom-40 left-1/3 size-[650px] rounded-full bg-sky-500/[0.02] blur-[140px]" />
+      <div
+        inert={anyOverlayOpen}
+        aria-hidden={anyOverlayOpen || undefined}
+        data-game-background="true"
+      >
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute -top-40 left-1/4 size-[650px] rounded-full bg-primary/[0.04] blur-[140px]" />
+          <div className="absolute top-1/3 -right-20 size-[500px] rounded-full bg-secondary/[0.035] blur-[120px]" />
+          <div className="absolute -bottom-40 left-1/3 size-[650px] rounded-full bg-accent/[0.03] blur-[140px]" />
+        </div>
       </div>
 
       <AnimatePresence>
@@ -386,18 +407,18 @@ export function GameHub() {
             transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
           >
             <div
-              className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-950/95 p-4 text-sm font-medium text-rose-50 shadow-2xl shadow-black/50 backdrop-blur-xl"
+              className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border border-danger-border bg-surface p-4 text-sm font-medium text-text shadow-overlay backdrop-blur-xl"
               role="alert"
               aria-live="assertive"
               data-testid="rejection-popup"
             >
-              <ThumbsDown className="mt-0.5 size-5 shrink-0 text-rose-300" aria-hidden="true" />
+              <ThumbsDown className="mt-0.5 size-5 shrink-0 text-danger-text" aria-hidden="true" />
               <p className="min-w-0 flex-1 leading-relaxed">{rejection}</p>
               <button
                 type="button"
                 onClick={clearRejection}
                 data-testid="dismiss-rejection"
-                className="shrink-0 rounded-lg p-1 text-rose-200 transition-colors hover:bg-rose-400/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
+                className="shrink-0 rounded-lg p-1 text-danger-text transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
                 aria-label="রিজেকশনের বার্তা বন্ধ করো"
               >
                 <X className="size-4" aria-hidden="true" />
@@ -408,31 +429,35 @@ export function GameHub() {
       </AnimatePresence>
 
       {/* Top bar on Mobile (< 768px) */}
-      {isMobile && character && (
-        <div className="relative z-20">
-          <StickyHeader character={character} compact />
-        </div>
-      )}
+      <div
+        inert={anyOverlayOpen}
+        aria-hidden={anyOverlayOpen || undefined}
+        data-game-background="true"
+      >
+        {isMobile && character && (
+          <div className="relative z-20">
+            <StickyHeader character={character} compact />
+          </div>
+        )}
 
       {/* Main Layout:
           - Mobile (< 768px): 1-Column stack (tight side margins, pb-36)
           - Tablet (768px–1279px): 2-Column split (LeftSidebar col-span-5 : Chronicle col-span-7)
           - Desktop (≥ 1280px): 3-Region layout (LeftSidebar col-span-3 : Chronicle col-span-6 : RightRail col-span-3)
       */}
-      <div className="relative z-10 mx-auto w-full max-w-[1700px] px-3 sm:px-4 md:px-6 xl:px-8 py-3 sm:py-4 lg:py-6">
+      <div className="relative z-10 mx-auto h-[100dvh] w-full max-w-[1700px] overflow-hidden px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:py-4 xl:px-8">
         <div
-          className={`grid items-start ${isMobile
-              ? 'grid-cols-1'
-              : isTablet
-                ? 'grid-cols-12 gap-5'
-                : 'grid-cols-12 gap-6'
+          className={`grid h-full min-h-0 items-stretch ${isMobile
+            ? 'grid-cols-1'
+            : isTablet
+              ? 'grid-cols-12 gap-5'
+              : 'grid-cols-12 gap-6'
             }`}
         >
           {/* Left Column (Sticky Sidebar): 5 cols on Tablet, 3 cols on Desktop */}
           {!isMobile && (
             <div
-              className={`${isTablet ? 'col-span-5' : 'col-span-3'
-                } sticky top-6 h-[calc(100vh-3rem)]`}
+              className={`${isTablet ? 'col-span-5' : 'col-span-3'} sticky top-0 h-full min-h-0`}
             >
               <LeftSidebar
                 character={character}
@@ -458,28 +483,53 @@ export function GameHub() {
           <main
             id="chronicle-scroll"
             className={`${isMobile
-                ? 'pb-36'
-                : isTablet
-                  ? 'col-span-7 h-[calc(100vh-3rem)] overflow-y-auto pr-2'
-                  : 'col-span-6 h-[calc(100vh-3rem)] overflow-y-auto pr-2'
+              ? 'pb-36'
+              : isTablet
+                ? 'col-span-7 h-full overflow-y-auto pr-2'
+                : 'col-span-6 h-full overflow-y-auto pr-2'
               } flex flex-col min-h-0 scrollbar-none`}
           >
+            {/* Life-stage Hub Row (gives the center column its own identity) */}
+            {character && character.alive && !isMobile && (
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised/50 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                    জীবনের ধাপ
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-bold tracking-tight text-text">
+                      {STAGE_HINT[lifeStageForAge(character.age)].label}
+                    </span>
+                    <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary-text">
+                      বয়স {character.age}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate text-xs text-text-muted">
+                    {STAGE_HINT[lifeStageForAge(character.age)].hint}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary-text sm:hidden">
+                  বয়স {character.age}
+                </span>
+              </div>
+            )}
+
             {/* Ambient Alerts / Feedback */}
             {message && (
               <div
-                className="mb-4 flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-md text-xs font-medium text-zinc-200 shadow-sm"
+                className="mb-4 flex items-center gap-2.5 rounded-xl border border-border bg-surface-raised/60 p-3.5 text-xs font-medium text-text shadow-sm"
                 data-testid="message"
               >
-                <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span className="size-1.5 rounded-full bg-primary" />
                 <span>{message}</span>
               </div>
             )}
             {error && (
               <div
-                className="mb-4 flex items-center gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5 backdrop-blur-md text-xs font-medium text-rose-300 shadow-sm"
+                className="mb-4 flex items-center gap-2.5 rounded-xl border border-danger-border bg-danger/10 p-3.5 text-xs font-medium text-danger-text shadow-sm"
                 data-testid="error"
               >
-                <AlertCircle className="size-4 text-rose-400 shrink-0" />
+                <AlertCircle className="size-4 text-danger-text shrink-0" />
                 <span>{error}</span>
               </div>
             )}
@@ -490,15 +540,15 @@ export function GameHub() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
-                className="my-auto flex flex-col items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 sm:p-12 text-center backdrop-blur-xl shadow-2xl"
+                className="my-auto flex flex-col items-center justify-center rounded-2xl border border-border bg-surface-raised/50 p-8 sm:p-12 text-center shadow-overlay"
               >
-                <div className="flex size-14 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 mb-4 shadow-[0_0_25px_rgba(16,185,129,0.2)]">
+                <div className="flex size-14 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary-text mb-4">
                   <Sparkles className="size-7" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-text">
                   নতুন জীবন শুরু করো
                 </h2>
-                <p className="mt-2 max-w-sm text-sm text-zinc-400 font-normal leading-relaxed">
+                <p className="mt-2 max-w-sm text-sm text-text-muted font-normal leading-relaxed">
                   সিদ্ধান্ত নিয়া, সম্পর্ক গড়ো, ভাগ্য গুছাও — আর দেখো জীবন কোন্ কোন্ অপ্রত্যাশিত মোড়ে ঘুইরা যায়!
                 </p>
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -506,7 +556,7 @@ export function GameHub() {
                     type="button"
                     onClick={startFreshLife}
                     data-testid="new-game"
-                    className="inline-flex items-center gap-2 rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-4 border-b-[#7a1c1d] active:border-b-0 active:translate-y-1 shadow-lg shadow-rose-950/40 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-primary/25 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
                   >
                     <Sparkles className="size-4" />
                     <span>যাত্রা শুরু করো</span>
@@ -515,7 +565,7 @@ export function GameHub() {
                     type="button"
                     onClick={() => setCustomLifeOpen(true)}
                     data-testid="open-custom-life-btn"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-tone-good/30 bg-tone-good/10 hover:bg-tone-good/20 text-tone-text-good px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tone-text-good"
                   >
                     <Sliders className="size-4" />
                     <span>নিজের মতো জীবন</span>
@@ -524,7 +574,7 @@ export function GameHub() {
                     type="button"
                     onClick={() => setSettingsOpen(true)}
                     data-testid="open-settings"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-border bg-surface hover:bg-surface-raised text-text px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
                   >
                     <Settings className="size-4" />
                     <span>সেটিংস</span>
@@ -564,7 +614,7 @@ export function GameHub() {
                     type="button"
                     onClick={startFreshLife}
                     data-testid="new-life"
-                    className="rounded-2xl bg-[#b23a3b] hover:bg-[#c44344] border-b-2 border-b-[#7a1c1d] active:border-b-0 active:translate-y-0.5 shadow-md shadow-rose-950/40 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all duration-150"
+                    className="rounded-2xl bg-primary hover:brightness-110 border-b-2 border-b-primary-text active:border-b-0 active:translate-y-0.5 shadow-md shadow-primary/25 px-6 py-3 text-xs font-bold uppercase tracking-wider text-on-primary transition-all duration-150"
                   >
                     আবার নতুন জীবন শুরু করো
                   </button>
@@ -572,14 +622,14 @@ export function GameHub() {
                     type="button"
                     onClick={() => setCustomLifeOpen(true)}
                     data-testid="new-custom-life"
-                    className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-6 py-3 text-xs font-bold uppercase tracking-wider text-emerald-300 transition-all duration-150"
+                    className="rounded-2xl border border-tone-good/30 bg-tone-good/10 hover:bg-tone-good/20 px-6 py-3 text-xs font-bold uppercase tracking-wider text-tone-text-good transition-all duration-150"
                   >
                     নিজের মতো জীবন
                   </button>
                   <button
                     type="button"
                     onClick={resetGame}
-                    className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium text-zinc-300 hover:bg-white/10 hover:text-white transition-all"
+                    className="rounded-xl border border-danger-border bg-danger/10 px-6 py-3 text-xs font-medium text-danger-text hover:bg-danger/20 transition-all"
                   >
                     রিসেট
                   </button>
@@ -588,12 +638,19 @@ export function GameHub() {
             )}
           </main>
 
-          {/* Right Column (Secondary Stats & Relationships Rail): 3 cols on Desktop */}
+          {/* Right Column (Secondary Stats Rail): 3 cols on Desktop */}
           {isDesktop && (
-            <div className="relative z-40 col-span-3 sticky top-6 h-[calc(100vh-3rem)]">
+            <div className="relative z-40 col-span-3 sticky top-0 h-full min-h-0">
               <RightRail
                 character={character}
                 onOpenFamilyTree={() => setFamilyTreeOpen(true)}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onOpenShortcuts={() => setShortcutsOpen(true)}
+                onExport={onExport}
+                onImport={() => fileInputRef.current?.click()}
+                onReset={resetGame}
+                onStartFreshLife={startFreshLife}
+                onOpenCustomLife={() => setCustomLifeOpen(true)}
               />
             </div>
           )}
@@ -601,21 +658,22 @@ export function GameHub() {
       </div>
 
       {/* Mobile Control Deck (< 768px) */}
-      {isMobile && (
-        <ControlDeck
-          hasCharacter={Boolean(character)}
-          canAgeUp={canAgeUp}
-          onAgeUp={onAgeUp}
-          onExport={onExport}
-          onImportClick={() => fileInputRef.current?.click()}
-          onOpenSettings={() => setSettingsOpen(true)}
-          onOpenShortcuts={() => setShortcutsOpen(true)}
-          onReset={resetGame}
-          onOpenActions={openActions}
-          onOpenFamilyTree={() => setFamilyTreeOpen(true)}
-          onOpenProfile={() => setProfileOpen(true)}
-        />
-      )}
+        {isMobile && (
+          <ControlDeck
+            hasCharacter={Boolean(character)}
+            canAgeUp={canAgeUp}
+            onAgeUp={onAgeUp}
+            onExport={onExport}
+            onImportClick={() => fileInputRef.current?.click()}
+            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenShortcuts={() => setShortcutsOpen(true)}
+            onReset={resetGame}
+            onOpenActions={openActions}
+            onOpenFamilyTree={() => setFamilyTreeOpen(true)}
+            onOpenProfile={() => setProfileOpen(true)}
+          />
+        )}
+      </div>
 
       {/* Hidden file input for import */}
       <input
@@ -639,9 +697,17 @@ export function GameHub() {
           open={profileOpen}
           onClose={() => setProfileOpen(false)}
           character={character}
-          onOpenFamilyTree={() => {
+          onOpenSettings={() => {
             setProfileOpen(false);
-            setFamilyTreeOpen(true);
+            setSettingsOpen(true);
+          }}
+          onOpenShortcuts={() => {
+            setProfileOpen(false);
+            setShortcutsOpen(true);
+          }}
+          onOpenCustomLife={() => {
+            setProfileOpen(false);
+            setCustomLifeOpen(true);
           }}
         />
       )}
@@ -658,9 +724,11 @@ export function GameHub() {
         open={isPaused}
         onResume={() => setPaused(false)}
         onOpenSettings={() => {
+          setPaused(false);
           setSettingsOpen(true);
         }}
         onOpenShortcuts={() => {
+          setPaused(false);
           setShortcutsOpen(true);
         }}
         onExport={onExport}

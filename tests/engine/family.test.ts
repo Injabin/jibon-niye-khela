@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '@/lib/engine/character';
 import { BOND_MAX, BOND_PER_VISIT, generateFamilyTree, layoutFamilyTree, relationLabel } from '@/lib/engine/family';
+import { HINDU_FEMALE_NAMES, HINDU_MALE_NAMES, MUSLIM_FEMALE_NAMES, MUSLIM_MALE_NAMES } from '@/content/names';
 import type { FamilyMember } from '@/lib/engine/family';
 
 function build(seed: number) {
@@ -62,6 +63,51 @@ describe('family tree generation (M4 #3)', () => {
       expect(names.has(member.name)).toBe(false);
       names.add(member.name);
     }
+  });
+
+  it('never lets a relative collide with the character full name (M4 #3 regression)', () => {
+    for (let seed = 1; seed <= 250; seed++) {
+      const { character, tree } = build(seed);
+      const selfName = `${character.name} ${character.surname}`;
+      for (const member of tree.members) {
+        if (member.role === 'self') continue;
+        expect(member.name, `relative collided with self on seed ${seed}`).not.toBe(selfName);
+      }
+      const names = new Set(tree.members.map((m) => m.name));
+      expect(names.size, `duplicate names on seed ${seed}`).toBe(tree.members.length);
+    }
+  });
+
+  it('reuses the character relationship parents so the tree and the panel agree', () => {
+    for (let seed = 1; seed <= 120; seed++) {
+      const { character, tree } = build(seed);
+      const mother = tree.members.find((m) => m.role === 'mother')!;
+      const father = tree.members.find((m) => m.role === 'father')!;
+      const motherRel = character.relationships.find((r) => r.relation === 'mother');
+      const fatherRel = character.relationships.find((r) => r.relation === 'father');
+      expect(mother.name, `tree mother vs relationship on seed ${seed}`).toBe(motherRel?.name);
+      expect(father.name, `tree father vs relationship on seed ${seed}`).toBe(fatherRel?.name);
+    }
+  });
+
+  it('only draws household names from the character religion pool', () => {
+    const { character, tree } = build(42);
+    const malePool =
+      character.religion === 'hinduism' ? HINDU_MALE_NAMES : MUSLIM_MALE_NAMES;
+    const femalePool =
+      character.religion === 'hinduism' ? HINDU_FEMALE_NAMES : MUSLIM_FEMALE_NAMES;
+    let checked = 0;
+    for (const member of tree.members) {
+      const given = member.name.split(' ')[0];
+      const pool = member.gender === 'male' ? malePool : femalePool;
+      expect(pool, `name ${member.name} drawn from the wrong religion pool`).toContain(
+        given as (typeof pool)[number],
+      );
+      checked += 1;
+    }
+    // The character itself is also drawn from the religion pool, so every
+    // one of the five household nodes must land inside it.
+    expect(checked).toBe(tree.members.length);
   });
 
   it('every edge references an existing member and every non-self member is reachable', () => {

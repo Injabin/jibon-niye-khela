@@ -16,6 +16,8 @@ import { localStorageStorage } from '@/lib/save/storage';
 
 export type ReducedMotionMode = 'system' | 'reduced' | 'full';
 
+export type ThemeMode = 'system' | 'light' | 'dark';
+
 export const SETTINGS_STORAGE_KEY = 'jibon-niye-khela/settings';
 
 const DEFAULT_SETTINGS = {
@@ -24,6 +26,7 @@ const DEFAULT_SETTINGS = {
   sfxVolume: 0.8,
   musicVolume: 0.5,
   reducedMotion: 'system' as ReducedMotionMode,
+  theme: 'system' as ThemeMode,
 };
 
 export interface SettingsState {
@@ -32,6 +35,7 @@ export interface SettingsState {
   sfxVolume: number;
   musicVolume: number;
   reducedMotion: ReducedMotionMode;
+  theme: ThemeMode;
   isHydrated: boolean;
 }
 
@@ -43,6 +47,7 @@ export interface SettingsActions {
   setSfxVolume(volume: number): void;
   setMusicVolume(volume: number): void;
   setReducedMotionMode(mode: ReducedMotionMode): void;
+  setThemeMode(mode: ThemeMode): void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -58,6 +63,9 @@ function sanitize(raw: Partial<SettingsState> | null | undefined): SettingsState
   if (typeof raw.musicVolume === 'number') parsed.musicVolume = clampVolume(raw.musicVolume);
   if (raw.reducedMotion === 'system' || raw.reducedMotion === 'reduced' || raw.reducedMotion === 'full') {
     parsed.reducedMotion = raw.reducedMotion;
+  }
+  if (raw.theme === 'system' || raw.theme === 'light' || raw.theme === 'dark') {
+    parsed.theme = raw.theme;
   }
   return parsed;
 }
@@ -85,8 +93,8 @@ export function createSettingsStore(
 
   return create<SettingsStore>()((set, get) => {
     function persist(): void {
-      const { sfxEnabled, musicEnabled, sfxVolume, musicVolume, reducedMotion } = get();
-      storage.write(JSON.stringify({ sfxEnabled, musicEnabled, sfxVolume, musicVolume, reducedMotion }));
+      const { sfxEnabled, musicEnabled, sfxVolume, musicVolume, reducedMotion, theme } = get();
+      storage.write(JSON.stringify({ sfxEnabled, musicEnabled, sfxVolume, musicVolume, reducedMotion, theme }));
     }
 
     return {
@@ -132,6 +140,11 @@ export function createSettingsStore(
 
       setReducedMotionMode(mode) {
         set({ reducedMotion: mode });
+        persist();
+      },
+
+      setThemeMode(mode) {
+        set({ theme: mode });
         persist();
       },
     };

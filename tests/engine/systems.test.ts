@@ -280,6 +280,16 @@ describe('assets engine (DESIGN.md §5.5)', () => {
 });
 
 describe('crime engine (DESIGN.md §5.6)', () => {
+  it('blocks crime attempts below age 10', () => {
+    const { character, rng } = createCharacter(19);
+    character.age = 9;
+    const result = commitCrime(character, rng, 'shoplift');
+    expect(result.text).toContain('১০ বছর');
+    expect(result.reward).toBe(0);
+    expect(character.criminalRecord).toHaveLength(0);
+    expect(character.flags).not.toContain('in_jail');
+  });
+
   it('running many crimes yields both the paid-fast and arrested branches', () => {
     let arrested = 0;
     let paid = 0;

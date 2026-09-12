@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Baloo_Da_2, Hind_Siliguri } from "next/font/google";
 import { MotionProvider } from "@/components/app/MotionProvider";
+import { ThemeProvider } from "@/components/app/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { SETTINGS_STORAGE_KEY } from "@/lib/store/settingsStore";
 import "./globals.css";
 
 const baloo = Baloo_Da_2({
@@ -33,7 +35,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#9e2a2b",
+  themeColor: "#fbf3ee",
   viewportFit: "cover",
 };
 
@@ -47,8 +49,15 @@ export default function RootLayout({
       lang="bn"
       className={`${baloo.variable} ${hind.variable} ${hind.className} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100 font-sans">
-        <MotionProvider>{children}</MotionProvider>
+      <body className="min-h-full flex flex-col bg-background text-text font-sans">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var r=localStorage.getItem(${JSON.stringify(SETTINGS_STORAGE_KEY)});var t=r?JSON.parse(r).theme:'system';var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();`,
+          }}
+        />
+        <ThemeProvider>
+          <MotionProvider>{children}</MotionProvider>
+        </ThemeProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

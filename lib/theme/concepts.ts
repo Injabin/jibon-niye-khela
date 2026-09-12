@@ -38,16 +38,16 @@ export interface StatMeta {
 const statFill = {
   health: 'var(--color-stat-health)',
   happiness: 'var(--color-stat-happiness)',
-  martial: 'var(--color-stat-martial)',
-  honor: 'var(--color-stat-honor)',
+  smarts: 'var(--color-stat-smarts)',
+  looks: 'var(--color-stat-looks)',
 } as const;
 
 /** §0 mapping: engine keys stay; rank/display name + icon change to Dhakaiya Bangla. */
 export const STAT_META: Record<StatKey, StatMeta> = {
   health: { key: 'health', readable: 'স্বাস্থ্য', label: 'স্বাস্থ্য', icon: 'heart', fillVar: statFill.health },
   happiness: { key: 'happiness', readable: 'সুখ-খুশি', label: 'সুখ', icon: 'sun', fillVar: statFill.happiness },
-  smarts: { key: 'smarts', readable: 'বুদ্ধি', label: 'বুদ্ধি', icon: 'dot', fillVar: statFill.martial },
-  looks: { key: 'looks', readable: 'চেহারা', label: 'চেহারা', icon: 'shield', fillVar: statFill.honor },
+  smarts: { key: 'smarts', readable: 'বুদ্ধি', label: 'বুদ্ধি', icon: 'sword', fillVar: statFill.smarts },
+  looks: { key: 'looks', readable: 'চেহারা', label: 'চেহারা', icon: 'shield', fillVar: statFill.looks },
 };
 
 export interface ToneMeta {

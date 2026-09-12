@@ -67,6 +67,15 @@ export function commitCrime(character: Character, rng: RNG, crimeId: string): Cr
   if (!character.alive) {
     return { arrested: false, reward: 0, jailYears: 0, text: 'গোরস্তানের নিচে পা নাই, অপরাধ করবো কিসের? ভূতের ভাজা সপ্ন দেইখো না!', tone: 'bad' };
   }
+  if (character.age < 10) {
+    return {
+      arrested: false,
+      reward: 0,
+      jailYears: 0,
+      text: 'তুই এখনো পিচ্চি! ১০ বছর না হইলে এই ধান্ধায় নামা যাইবো না, আগে বড় হ।',
+      tone: 'neutral',
+    };
+  }
   const crime = CRIMES.find((c) => c.id === crimeId);
   if (!crime) {
     return { arrested: false, reward: 0, jailYears: 0, text: 'এমন অপরাধের কথা পুলিশও শুনে নাই!', tone: 'neutral' };

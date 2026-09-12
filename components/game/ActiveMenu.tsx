@@ -16,7 +16,7 @@ import type { SchoolDef } from '@/content/education/schools';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
-import { Flame, UserPlus } from 'lucide-react';
+import { Flame, UserPlus, CircleCheck, TriangleAlert } from 'lucide-react';
 import type { AssetKind, Character, LoanKind } from '@/lib/engine/types';
 import type { DatingCandidate } from '@/lib/engine/romance';
 
@@ -26,7 +26,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'school', label: 'পড়াশোনা' },
   { id: 'career', label: 'চাকরি ও রুজি' },
   { id: 'romance', label: 'প্রেম-ভালোবাসা' },
-  { id: 'assets', label: 'ধন-সম্পদ' },
+  { id: 'assets', label: 'সম্পদ ও ট্যাকা-পয়সা' },
   { id: 'crime', label: 'ধান্ধাবাজি' },
   { id: 'health', label: 'স্বাস্থ্য ও জীবনযাপন' },
 ];
@@ -66,6 +66,10 @@ export function ActiveMenu({
 }) {
   const character = useGameStore((s) => s.character);
   const [tab, setTab] = useState<Tab>(initialTab);
+
+  const actionMessage = useGameStore((s) => s.message);
+  const actionRejection = useGameStore((s) => s.rejection);
+  const feedbackText = actionMessage ?? actionRejection;
 
   const enrollHigherEducation = useGameStore((s) => s.enrollHigherEducation);
   const applyToSchool = useGameStore((s) => s.applyToSchool);
@@ -116,7 +120,7 @@ export function ActiveMenu({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay p-3 sm:p-6 backdrop-blur-md"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -126,7 +130,7 @@ export function ActiveMenu({
         >
           <motion.section
             ref={overlayRef as React.Ref<HTMLElement>}
-            className="relative flex h-full max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/95 shadow-2xl shadow-black/80 backdrop-blur-2xl"
+            className="relative flex h-full max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-border bg-surface text-text shadow-2xl backdrop-blur-2xl"
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
@@ -139,11 +143,11 @@ export function ActiveMenu({
             onKeyDown={trapKeyDown}
             tabIndex={-1}
           >
-            <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3.5">
+<div className="flex items-center justify-between border-b border-border px-5 py-3.5">
               <div>
-                <h2 className="text-base font-bold tracking-tight text-white">হাতেকলমে জীবনের ধান্ধা</h2>
-                <p className="text-xs text-zinc-400">পড়াশোনা, চাকরি, সম্পদ, রোমান্স ও যাবতীয় কারবার</p>
-                <p className="mt-0.5 text-[11px] font-semibold text-primary">
+                <h2 className="text-base font-bold tracking-tight text-text">হাতেকলমে জীবনের ধান্ধা</h2>
+                <p className="text-xs text-text-muted">পড়াশোনা, চাকরি, সম্পদ, রোমান্স ও যাবতীয় কারবার</p>
+                <p className="mt-0.5 text-[11px] font-semibold text-primary-text">
                   এই বছরে বাকি কাজ: {Math.max(0, 3 - (character.activityBudgetUsed ?? 0))}টা / ৩টা
                 </p>
               </div>
@@ -152,7 +156,7 @@ export function ActiveMenu({
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5" role="tablist">
+            <div className="flex flex-wrap gap-1.5 border-b border-border bg-surface px-4 py-2.5" role="tablist">
               {TABS.map((tabDef) => (
                 <button
                   key={tabDef.id}
@@ -161,11 +165,10 @@ export function ActiveMenu({
                   aria-selected={tab === tabDef.id}
                   data-testid={`actions-tab-${tabDef.id}`}
                   onClick={() => setTab(tabDef.id)}
-                  className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    tab === tabDef.id
-                      ? 'bg-primary text-white'
+                  className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-all active:scale-[0.98] ${tab === tabDef.id
+                      ? 'bg-primary text-on-primary'
                       : 'text-text-muted hover:bg-surface-raised hover:text-text'
-                  }`}
+                    }`}
                 >
                   {tabDef.label}
                 </button>
@@ -173,6 +176,33 @@ export function ActiveMenu({
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
+              <AnimatePresence mode="wait">
+                {feedbackText && (
+                  <motion.div
+                    key={feedbackText}
+                    role={actionMessage ? 'status' : 'alert'}
+                    data-testid="actions-feedback"
+                    aria-live="polite"
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
+                    className={`mb-3 flex items-start gap-2 rounded-xl border p-3 text-xs font-medium shadow-sm ${
+                      actionMessage
+                        ? 'border-tone-good/30 bg-tone-good/10 text-tone-text-good'
+                        : 'border-danger-border bg-danger/10 text-danger-text'
+                    }`}
+                  >
+                    {actionMessage ? (
+                      <CircleCheck className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                    ) : (
+                      <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                    )}
+                    <span className="leading-relaxed">{feedbackText}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {tab === 'school' && (
                 <SchoolTab
                   character={character}
@@ -286,24 +316,24 @@ function PeerCohort({ character, kind }: { character: Character; kind: PeerRelat
       ? 'স্কুল-কলেজের দৈনন্দিন সাথী — খাতির গড়লে এরা পরে পাকা বন্ধু হইতে পারে'
       : 'কাজের জায়গার মানুষ — সাথে তাল মিলাইলে জীবন আর রুজি দুইই সহজ';
 
-  return (
-    <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4" data-testid={`peer-cohort-${kind}`}>
+return (
+    <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4" data-testid={`peer-cohort-${kind}`}>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{label}</p>
-        <p className="text-[11px] text-zinc-500">{hint}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">{label}</p>
+        <p className="text-[11px] text-text-muted/80">{hint}</p>
       </div>
-      <div className="space-y-2.5">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {peers.map((peer) => (
           <div
             key={peer.id}
-            className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 space-y-2"
+            className="space-y-2 rounded-xl border border-border bg-surface-raised/60 p-3"
             data-testid={`peer-card-${peer.id}`}
           >
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-white">{peer.name}</p>
-                <p className="text-[11px] text-zinc-400">
-                  বয়স {peer.age}
+                <p className="truncate text-sm font-bold text-text">{peer.name}</p>
+                <p className="text-[11px] text-text-muted">
+                  বয়স {peer.age}
                   {kind === 'coworker' && peer.jobId
                     ? ` · ${jobLabel(peer.jobId)}`
                     : ''}
@@ -311,25 +341,25 @@ function PeerCohort({ character, kind }: { character: Character; kind: PeerRelat
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <span className="block text-[10px] uppercase tracking-wider text-zinc-400">খাতির</span>
-                <span className="font-mono text-xs font-bold text-emerald-400">{peer.meter}%</span>
+                <span className="block text-[10px] uppercase tracking-wider text-text-muted">খাতির</span>
+                <span className="font-mono text-xs font-bold text-primary-text">{peer.meter}%</span>
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'chat')} data-testid={`peer-${peer.id}-chat`}>
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'chat')} data-testid={`peer-${peer.id}-chat`} className="px-3 py-1.5 text-xs">
                 আড্ডা মারা
               </Button>
-              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'spend_time')} data-testid={`peer-${peer.id}-hangout`}>
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'spend_time')} data-testid={`peer-${peer.id}-hangout`} className="px-3 py-1.5 text-xs">
                 লগে ঘুরা
               </Button>
-              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'gift')} data-testid={`peer-${peer.id}-gift`}>
-                তোহফা দেও (৳৩০০)
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'gift')} data-testid={`peer-${peer.id}-gift`} className="px-3 py-1.5 text-xs">
+                তোহফা দে
               </Button>
-              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'befriend')} data-testid={`peer-${peer.id}-befriend`}>
+              <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'befriend')} data-testid={`peer-${peer.id}-befriend`} className="px-3 py-1.5 text-xs">
                 বন্ধু বানাও
               </Button>
               {character.age >= 16 && (
-                <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'ask_out_peer')} data-testid={`peer-${peer.id}-askout`}>
+                <Button variant="secondary" onClick={() => interactWithPerson(peer.id, 'ask_out_peer')} data-testid={`peer-${peer.id}-askout`} className="px-3 py-1.5 text-xs">
                   প্রেমের প্রস্তাব
                 </Button>
               )}
@@ -369,30 +399,30 @@ function SchoolTab({
   const [selectedSubject, setSelectedSubject] = useState<MajorField | null>(null);
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="rounded-2xl border border-border bg-surface-raised/60 p-4">
         <p className="text-sm text-text">
-          ধাপ: <span className="font-medium text-white">{stageName}</span> · জিপিএ{' '}
-          <span className="font-bold text-amber-400 font-mono">{education.gpa.toFixed(1)}</span>
+          ধাপ: <span className="font-medium text-text">{stageName}</span> · জিপিএ{' '}
+          <span className="font-bold text-tone-text-good font-mono">{education.gpa.toFixed(1)}</span>
           {education.graduated ? ' · পাস করছত' : ''}
         </p>
-        <p className="text-xs text-zinc-400 mt-1">
+        <p className="text-xs text-text-muted mt-1">
           {education.enrolled
             ? education.school
               ? `${education.school.name}তে পড়তাছো — এহন ইসকুল-কলেজের নজরকাড়া নাম!`
               : 'নিয়মিত শিক্ষাপ্রতিষ্ঠানে পড়াশোনা চলতাছে।'
             : education.graduated
-            ? 'পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!'
-            : education.stage === 'dropped'
-            ? 'পড়াশোনা ছাইড়া দিয়া এহন মুক্ত বিহঙ্গের লাহান ঘুরতাছো!'
-            : 'পড়াশোনায় ভর্তি নাই।'}
+              ? 'পড়াশোনার পাট তো চুকাইয়া ফেলছত, এহন আর স্কুল-কলেজে যাওয়ার কাম নাই!'
+              : education.stage === 'dropped'
+                ? 'পড়াশোনা ছাইড়া দিয়া এহন মুক্ত বিহঙ্গের লাহান ঘুরতাছো!'
+                : 'পড়াশোনায় ভর্তি নাই।'}
         </p>
       </div>
 
       {currentStage && !education.graduated && education.stage !== 'dropped' && (
-        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">স্কুল বাছাও</p>
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">স্কুল বাছাও</p>
+            <p className="text-[11px] text-text-muted/70">
               নামকরা স্কুলে পড়লে বুদ্ধি বেশি বাড়ে, কিন্তু ভর্তি-পরীক্ষা ও ফি-র চ্যালেঞ্জ আছে!
             </p>
           </div>
@@ -405,13 +435,13 @@ function SchoolTab({
               return (
                 <div
                   key={school.id}
-                  className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3"
+                  className="rounded-xl border border-border bg-surface-raised/50 p-3"
                   data-testid={`school-card-${school.id}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-white">{school.name}</p>
-                      <p className="text-[11px] text-zinc-400">
+                      <p className="truncate text-sm font-bold text-text">{school.name}</p>
+                      <p className="text-[11px] text-text-muted">
                         {school.area} · {PRESTIGE_LABELS[school.prestige]}
                         {school.tuition > 0 ? ` · ফি ৳${school.tuition}` : ' · ফ্রি'}
                         {school.minSmarts !== undefined ? ` · বুদ্ধি ${school.minSmarts}+ লাগে` : ''}
@@ -434,8 +464,8 @@ function SchoolTab({
       )}
 
       {education.enrolled && (
-        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">পড়াশোনার বিশেষ কারবার</p>
+        <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">পড়াশোনার বিশেষ কারবার</p>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onStudyHarder} data-testid="study-harder">
               পড়াশোনায় জান দেওয়া (জিপিএ ও বুদ্ধি +)
@@ -459,9 +489,9 @@ function SchoolTab({
       )}
 
       {!education.enrolled && !education.graduated && schoolDone && (
-        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">উচ্চশিক্ষায় ভর্তি</p>
-          <p className="text-[11px] text-zinc-500">
+        <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">উচ্চশিক্ষায় ভর্তি</p>
+          <p className="text-[11px] text-text-muted/70">
             তোমার বুদ্ধি {character.stats.smarts} — নিচের বিষয়গুলোর মাঝে বাছাও (উপরে বুদ্ধি মান থাকলে শুধু ওইগুলাই চলে)
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -474,13 +504,12 @@ function SchoolTab({
                   disabled={!eligible}
                   onClick={() => setSelectedSubject(selectedSubject === m ? null : m)}
                   data-testid={`subject-${m}`}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                    selectedSubject === m
-                      ? 'bg-primary text-white'
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${selectedSubject === m
+                      ? 'bg-primary text-on-primary'
                       : eligible
-                      ? 'bg-white/[0.05] text-text hover:bg-white/[0.08]'
-                      : 'bg-white/[0.02] text-zinc-600 line-through'
-                  }`}
+                        ? 'bg-surface-raised/70 text-text hover:bg-surface-raised'
+                        : 'bg-surface text-text-muted/60 line-through'
+                    }`}
                 >
                   {SUBJECTS[m].label} · {SUBJECTS[m].institute} ({SUBJECTS[m].minSmarts}+)
                 </button>
@@ -528,14 +557,14 @@ function CareerTab({
   const career = character.career;
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="rounded-2xl border border-border bg-surface-raised/60 p-4">
         <p className="text-sm text-text">
           {career.jobId ? (
             <>
               বর্তমান পদ:{' '}
-              <span className="font-bold text-white">{careerTitle(character)}</span>{' '}
-              · চাকুরির বয়স <span className="font-mono text-zinc-300">{career.yearsAtJob}</span> বছর · পারফরম্যান্স{' '}
-              <span className="font-mono font-bold text-emerald-400">{career.performance}%</span>
+              <span className="font-bold text-text">{careerTitle(character)}</span>{' '}
+              · চাকুরির বয়স <span className="font-mono text-text">{career.yearsAtJob}</span> বছর · পারফরম্যান্স{' '}
+              <span className="font-mono font-bold text-tone-text-good">{career.performance}%</span>
             </>
           ) : (
             'বেকার বইসা আছত — নিচের রুজির তালিকা থেইকা কোনো কাম বেছে নেও।'
@@ -544,8 +573,8 @@ function CareerTab({
       </div>
 
       {career.jobId && (
-        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">চাকরির বিশেষ কাজকর্ম</p>
+        <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">চাকরির বিশেষ কাজকর্ম</p>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onWorkOvertime} data-testid="work-overtime">
               ওভারটাইম খাটা (পারফরম্যান্স +১৫)
@@ -564,8 +593,8 @@ function CareerTab({
       )}
 
       {character.age >= 13 && (
-        <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
             সাইড হাসল ও পার্টটাইম রুজি-রোজগার
           </p>
           <div className="flex flex-wrap gap-2">
@@ -588,7 +617,7 @@ function CareerTab({
           {board.map((job) => (
             <li
               key={job.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
+              className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 transition-transform active:scale-[0.98]"
               data-testid={`job-row-${job.id}`}
             >
               <div className="min-w-0">
@@ -634,13 +663,13 @@ function AssetsTab({
   const insolvent = worth < 0;
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="rounded-2xl border border-border bg-surface-raised/60 p-4">
         <p className="text-sm text-text">
           হাতে-পকেটে: <span className="font-medium">৳{coins(character.money)}</span> · সঞ্চয়:{' '}
           <span className="font-medium">৳{coins(finance.savings)}</span>
         </p>
         <p className="mt-0.5 text-xs text-text-muted">
-          সর্বমোট সম্পত্তি (মোট ট্যাকা − ধার): <span className="font-medium text-white">৳{coins(worth)}</span>
+          সর্বমোট সম্পত্তি (মোট ট্যাকা − ধার): <span className="font-medium text-text">৳{coins(worth)}</span>
         </p>
       </div>
 
@@ -744,6 +773,7 @@ function CrimeTab({
   onCommit: (crimeId: string) => boolean;
 }) {
   const inJail = character.flags.includes('in_jail');
+  const crimeLockedByAge = character.age < 10;
   const bailOut = useGameStore((s) => s.bailOut);
   const prisonGym = useGameStore((s) => s.prisonGym);
   const prisonLibrary = useGameStore((s) => s.prisonLibrary);
@@ -752,16 +782,22 @@ function CrimeTab({
   const prisonEscape = useGameStore((s) => s.prisonEscape);
   const prisonActions = inJail
     ? [
-        { id: 'prison-gym', label: 'জিমে কসরত (স্বাস্থ্য ও হিম্মত বাড়ে)', action: prisonGym },
-        { id: 'prison-library', label: 'জেল পুস্তকালয়ে পড়াশোনা (বুদ্ধি বাড়ে)', action: prisonLibrary },
-        { id: 'prison-fight', label: 'কয়েদির লগে ঝাঁঝা ঝাঁঝা (হিম্মত ±)', action: prisonFight },
-        { id: 'prison-good-behavior', label: 'সদাচরণ — প্যারোল/সাজা হ্রাস', action: prisonGoodBehavior },
-        { id: 'prison-escape', label: 'রাতের অন্ধকারে পালানোর ফন্দি (বিটার ঝুঁকি!)', action: prisonEscape },
-        { id: 'prison-bail', label: 'জামিন / আপস — টাকা দিয়া খালাস', action: bailOut },
-      ]
+      { id: 'prison-gym', label: 'জিমে কসরত (স্বাস্থ্য ও হিম্মত বাড়ে)', action: prisonGym },
+      { id: 'prison-library', label: 'জেল পুস্তকালয়ে পড়াশোনা (বুদ্ধি বাড়ে)', action: prisonLibrary },
+      { id: 'prison-fight', label: 'কয়েদির লগে ঝাঁঝা ঝাঁঝা (হিম্মত ±)', action: prisonFight },
+      { id: 'prison-good-behavior', label: 'সদাচরণ — প্যারোল/সাজা হ্রাস', action: prisonGoodBehavior },
+      { id: 'prison-escape', label: 'রাতের অন্ধকারে পালানোর ফন্দি (বিটার ঝুঁকি!)', action: prisonEscape },
+      { id: 'prison-bail', label: 'জামিন / আপস — টাকা দিয়া খালাস', action: bailOut },
+    ]
     : [];
+
   return (
     <div className="space-y-3">
+      {crimeLockedByAge && (
+        <div className="rounded-2xl border border-tone-neutral/30 bg-tone-neutral/10 p-3 text-sm text-tone-text-neutral" role="status" data-testid="crime-age-lock">
+          অপরাধের কারবারে নামার আগে অন্তত ১০ বছর বয়স হইতে হবে।
+        </div>
+      )}
       {inJail && (
         <div className="space-y-2 rounded-md border border-danger-border bg-danger/10 p-3">
           <p className="text-sm text-danger-text">
@@ -785,7 +821,7 @@ function CrimeTab({
       )}
       <ul className="space-y-2">
         {CRIMES.map((crime) => (
-          <li key={crime.id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+          <li key={crime.id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 transition-transform active:scale-[0.98]">
             <div className="min-w-0">
               <p className="text-sm font-medium text-text">{crime.label}</p>
               <p className="text-xs text-text-muted">
@@ -795,7 +831,7 @@ function CrimeTab({
             <Button
               variant="secondary"
               onClick={() => onCommit(crime.id)}
-              disabled={inJail}
+              disabled={inJail || crimeLockedByAge}
               data-testid={`crime-${crime.id}`}
             >
               ঝুঁকি নেও
@@ -841,18 +877,18 @@ function HealthTab({
   const isMuslim = character.religion === 'islam';
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <p className="text-sm text-zinc-200">
-          স্বাস্থ্য <span className="font-bold text-emerald-400 font-mono">{character.stats.health}%</span> · সুখ{' '}
-          <span className="font-bold text-amber-400 font-mono">{character.stats.happiness}%</span> · চেহারা{' '}
-          <span className="font-bold text-rose-400 font-mono">{character.stats.looks}%</span> · কর্ম{' '}
-          <span className="font-bold text-teal-400 font-mono">{character.reputation.karma}%</span>
+      <div className="rounded-2xl border border-border bg-surface-raised/60 p-4">
+        <p className="text-sm text-text">
+          স্বাস্থ্য <span className="font-bold text-primary-text font-mono">{character.stats.health}%</span> · সুখ{' '}
+          <span className="font-bold text-tone-text-neutral font-mono">{character.stats.happiness}%</span> · চেহারা{' '}
+          <span className="font-bold text-tone-text-good font-mono">{character.stats.looks}%</span> · কর্ম{' '}
+          <span className="font-bold text-tone-text-funny font-mono">{character.reputation.karma}%</span>
         </p>
       </div>
 
       {/* 1. Healing & Treatment */}
-      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">চিকিৎসা ও নিরাময়</p>
+      <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">চিকিৎসা ও নিরাময়</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={onVisitDoctor} data-testid="visit-doctor">
             ডাক্তারখানায় দেখাও (স্বাস্থ্য +১৫, সুখ +৫, −৳৫০)
@@ -864,8 +900,8 @@ function HealthTab({
       </div>
 
       {/* 2. Fitness */}
-      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">শরীরচর্চা ও ফিটনেস</p>
+      <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">শরীরচর্চা ও ফিটনেস</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={onDoGymWorkout} data-testid="gym-workout">
             আখড়া ও বডিবিল্ডিং জিম (কসরত ও বুকডন, −৳১৫০)
@@ -874,8 +910,8 @@ function HealthTab({
       </div>
 
       {/* 3. Entertainment */}
-      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">বিনোদন ও ফুর্তি</p>
+      <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">বিনোদন ও ফুর্তি</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={onWatchMovie} data-testid="watch-movie">
             মধুমিতা সিনেমা হলে ছবি দেখা (সুখ +১৬, −৳২৫০)
@@ -884,8 +920,8 @@ function HealthTab({
       </div>
 
       {/* 4. Spiritual & Faith */}
-      <div className="space-y-2.5 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+      <div className="space-y-2.5 rounded-2xl border border-border bg-surface-raised/40 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
           {isMuslim ? 'ইবাদত ও আধ্যাত্মিকতা' : 'পূজা-অর্চনা ও ধর্মীয় আচার'}
         </p>
         <div className="flex flex-wrap gap-2">
@@ -928,10 +964,10 @@ function RomanceTab({
 
   if (character.age < 16) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-white/5 bg-white/[0.02]">
-        <Flame className="size-8 text-rose-400 mb-3 opacity-60" />
-        <h3 className="text-sm font-bold text-white">কৈশোরের দিনকাল</h3>
-        <p className="text-xs text-zinc-400 max-w-xs mt-1.5 leading-relaxed">
+      <div className="flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-border bg-surface-raised/40">
+        <Flame className="size-8 text-tone-bad mb-3 opacity-60" />
+        <h3 className="text-sm font-bold text-text">কৈশোরের দিনকাল</h3>
+        <p className="text-xs text-text-muted max-w-xs mt-1.5 leading-relaxed">
           ১৬ বছর বয়স না হইলে সিরিয়াস প্রেম-পিরিতির ধান্ধা বন্ধ! এহন বন্ধুদের লগে আড্ডা মারো আর মন দিয়া পড়াশোনা করো।
         </p>
       </div>
@@ -951,11 +987,11 @@ function RomanceTab({
     <div className="space-y-6">
       {/* 1. Active Relationships */}
       <div>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
           বর্তমান প্রেম ও সম্পর্ক
         </h3>
         {romanticPartners.length === 0 ? (
-          <p className="text-xs text-zinc-500 py-2">
+          <p className="text-xs text-text-muted/80 py-2">
             তোর জীবনে এহন কোনো ক্রাশ বা ভালোবাসার মানুষ নাই!
           </p>
         ) : (
@@ -963,42 +999,42 @@ function RomanceTab({
             {romanticPartners.map((partner) => (
               <div
                 key={partner.id}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3"
+                className="rounded-2xl border border-border bg-surface-raised/60 p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">{partner.name}</span>
-                      <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rose-500/15 text-rose-300 border border-rose-500/25">
+                      <span className="text-sm font-bold text-text">{partner.name}</span>
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-tone-good/10 text-tone-text-good border border-tone-good/25">
                         {relLabel(partner.relation)}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-0.5">
+<p className="text-xs text-text-muted mt-0.5">
                       বয়স {partner.age} {partner.occupation ? `· ${partner.occupation}` : ''}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 block font-medium">খাতির</span>
-                    <span className="text-xs font-bold text-emerald-400 font-mono">{partner.meter}%</span>
+                    <span className="text-[10px] uppercase tracking-wider text-text-muted block font-medium">খাতির</span>
+                    <span className="text-xs font-bold text-primary-text font-mono">{partner.meter}%</span>
                   </div>
                 </div>
 
                 {/* Relational bond meter */}
                 <div>
-                  <div className="flex justify-between text-[10px] text-zinc-400 mb-1">
+                  <div className="flex justify-between text-[10px] text-text-muted mb-1">
                     <span>প্রেমের গভীরতা</span>
                     <span className="font-mono">{partner.meter}/100</span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-400 transition-all"
+                      className="h-full rounded-full bg-primary transition-all"
                       style={{ width: `${partner.meter}%` }}
                     />
                   </div>
                 </div>
 
                 {/* Actions based on relationship state */}
-                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/[0.05]">
+                <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border">
                   {partner.relation === 'crush' && (
                     <Button
                       variant="secondary"
@@ -1060,7 +1096,7 @@ function RomanceTab({
                       variant="secondary"
                       onClick={() => onHaveBaby(partner.id)}
                       data-testid={`baby-${partner.id}`}
-                      className="bg-emerald-500/10 text-emerald-300 border-emerald-500/25 hover:bg-emerald-500/20"
+                      className="bg-tone-good/10 text-tone-text-good border-tone-good/25 hover:bg-tone-good/20"
                     >
                       বাচ্চা নেওয়ার চেষ্টা
                     </Button>
@@ -1070,7 +1106,7 @@ function RomanceTab({
                       type="button"
                       onClick={() => onCheat(partner.id)}
                       data-testid={`cheat-${partner.id}`}
-                      className="rounded-xl border border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors"
+                      className="rounded-xl border border-tone-bad/25 bg-tone-bad/10 hover:bg-tone-bad/20 px-3 py-1.5 text-xs font-semibold text-tone-text-bad transition-colors"
                     >
                       পরকীয়ার চক্কর
                     </button>
@@ -1079,7 +1115,7 @@ function RomanceTab({
                     type="button"
                     onClick={() => onBreakup(partner.id)}
                     data-testid={`breakup-${partner.id}`}
-                    className="rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-300 transition-colors ml-auto"
+                    className="rounded-xl border border-danger-border bg-danger/10 hover:bg-danger/20 px-3 py-1.5 text-xs font-semibold text-danger-text transition-colors ml-auto"
                   >
                     {partner.relation === 'spouse' ? 'তালাক / বিচ্ছেদ' : 'ব্রেকআপ করো'}
                   </button>
@@ -1091,19 +1127,19 @@ function RomanceTab({
       </div>
 
       {/* 2. Meet Someone / Dating Candidates */}
-      <div className="space-y-3 pt-4 border-t border-white/[0.08]">
+      <div className="space-y-3 pt-4 border-t border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
               নতুন কারো লগে পরিচয়
             </h3>
-            <p className="text-xs text-zinc-500">শহরের ও মহল্লার পাত্র-পাত্রীর খোঁজখবর</p>
+            <p className="text-xs text-text-muted/70">শহরের ও মহল্লার পাত্র-পাত্রীর খোঁজখবর</p>
           </div>
           <button
             type="button"
             onClick={handleSearch}
             data-testid="search-dating-pool-btn"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-300 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-tone-good/30 bg-tone-good/10 hover:bg-tone-good/20 px-3 py-1.5 text-xs font-bold text-tone-text-good transition-colors"
           >
             <UserPlus className="size-3.5" />
             <span>সন্ধান করো</span>
@@ -1115,14 +1151,14 @@ function RomanceTab({
             {candidates.map((candidate, idx) => (
               <div
                 key={`${candidate.name}-${idx}`}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-3 hover:bg-white/[0.04] transition-colors"
+                className="flex items-center justify-between rounded-xl border border-border bg-surface-raised/40 p-3 hover:bg-surface-raised/70 transition-colors"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white">{candidate.name}</span>
-                    <span className="text-[10px] text-zinc-400">বয়স {candidate.age}</span>
+                    <span className="text-xs font-bold text-text">{candidate.name}</span>
+                    <span className="text-[10px] text-text-muted">বয়স {candidate.age}</span>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-0.5">
+                  <p className="text-xs text-text-muted mt-0.5">
                     {candidate.archetype} · রূপ: {candidate.looks} · বুদ্ধি: {candidate.smarts}
                   </p>
                 </div>

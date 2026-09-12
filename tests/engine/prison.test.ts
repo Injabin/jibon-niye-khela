@@ -58,7 +58,17 @@ function arrested(character: Character, rng: RNG) {
 describe('arrest sets the jail lifecycle', () => {
   it('commitCrime rotates the in_jail flag when caught', () => {
     const { character, rng } = fresh(3);
+    character.age = 20;
     arrested(character, rng);
+  });
+
+  it('prevents child under age 10 from committing crimes', () => {
+    const { character, rng } = fresh(3);
+    character.age = 5;
+    const out = commitCrime(character, rng, 'heist');
+    expect(out.arrested).toBe(false);
+    expect(out.text).toContain('১০ বছর');
+    expect(isJailed(character)).toBe(false);
   });
 
   it('crime.ts isJailed and prison.ts isJailed agree', () => {
