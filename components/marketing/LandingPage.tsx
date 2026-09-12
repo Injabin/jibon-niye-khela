@@ -70,37 +70,37 @@ export function LandingPage() {
   ];
 
   return (
-    <div className="relative min-h-screen w-full bg-zinc-950 text-zinc-100 font-sans selection:bg-rose-500/30 selection:text-rose-200 overflow-x-hidden">
+    <div className="relative min-h-screen w-full bg-[#fbf3ee] text-zinc-900 font-sans selection:bg-rose-500/30 selection:text-rose-900 overflow-x-hidden">
       {/* Background ambient lighting accents */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-40 left-1/4 size-[700px] rounded-full bg-rose-900/[0.08] blur-[150px]" />
-        <div className="absolute top-1/2 -right-32 size-[600px] rounded-full bg-amber-600/[0.04] blur-[160px]" />
-        <div className="absolute -bottom-40 left-1/3 size-[650px] rounded-full bg-emerald-600/[0.04] blur-[150px]" />
+        <div className="absolute -top-40 left-1/4 size-[700px] rounded-full bg-rose-400/[0.18] blur-[150px]" />
+        <div className="absolute top-1/2 -right-32 size-[600px] rounded-full bg-amber-300/[0.25] blur-[160px]" />
+        <div className="absolute -bottom-40 left-1/3 size-[650px] rounded-full bg-emerald-300/[0.2] blur-[150px]" />
       </div>
 
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-zinc-950/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-[#fbf3ee]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
             className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg p-1"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-400 group-hover:scale-105 transition-transform duration-200 shadow-[0_0_15px_rgba(244,63,94,0.25)]">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-600 group-hover:scale-105 transition-transform duration-200 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
               <Heart className="size-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-black uppercase tracking-wider text-white group-hover:text-rose-200 transition-colors">
+              <span className="text-sm font-black uppercase tracking-wider text-zinc-900 group-hover:text-rose-600 transition-colors">
                 Jibon Niye Khela
               </span>
-              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-500">
                 ঢাকাইয়া লাইফ সিম
               </span>
             </div>
           </Link>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-zinc-300">
-              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-zinc-300/70 bg-white/70 px-3 py-1 text-[11px] font-medium text-zinc-700">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
               ১০০% ফ্রি ব্রাউজারে
             </span>
             <Link
@@ -124,24 +124,24 @@ export function LandingPage() {
         >
           <div className="flex flex-col items-center text-center">
             {/* Top Pill Announcement */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.15)]">
-              <Flame className="size-3.5 text-rose-400" />
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-700 shadow-[0_0_20px_rgba(244,63,94,0.12)]">
+              <Flame className="size-3.5 text-rose-600" />
               <span>চান্দি গরম করা ঢাকাইয়া লাইফ সিমুলেশন</span>
             </div>
 
             {/* Headline */}
             <h1
               id="hero-heading"
-              className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl max-w-4xl leading-[1.1]"
+              className="text-4xl font-extrabold tracking-tight text-zinc-900 sm:text-6xl lg:text-7xl max-w-4xl leading-[1.1]"
             >
               পয়দা হও। বাঁশ খাও। আবার মরো। <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-300 to-rose-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-amber-500 to-rose-600">
                 Jibon Niye Khela
               </span>
             </h1>
 
             {/* Hook Line */}
-            <p className="mt-6 max-w-2xl text-base sm:text-lg text-zinc-300 font-normal leading-relaxed">
+            <p className="mt-6 max-w-2xl text-base sm:text-lg text-zinc-700 font-normal leading-relaxed">
               একদম খাঁটি পুরান ঢাকার ফ্লেভারে ভরা লাইফ সিম। পড়াশোনা, ট্যাকা-পয়সার অভাব, প্রেমিকার গ্যাঞ্জাম আর জিন্দেগির সব প্যারার মুখোমুখি হইতে নামিয়া পড়ো!
             </p>
 
@@ -160,106 +160,106 @@ export function LandingPage() {
               <Link
                 href="/play?custom=1"
                 data-testid="open-custom-life-btn"
-                className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] px-6 py-4 text-sm font-semibold tracking-wider text-zinc-200 hover:text-white transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white/70 hover:bg-white px-6 py-4 text-sm font-semibold tracking-wider text-zinc-700 hover:text-zinc-900 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
               >
-                <Sliders className="size-4 text-zinc-400" />
+                <Sliders className="size-4 text-zinc-500" />
                 <span>কাস্টম বাঁশ (লাইফ)</span>
               </Link>
             </div>
 
             {/* Trust Badges */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-400">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-600">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-emerald-400" /> সাইন-আপ করার ল্যাঁচানি নাই
+                <CheckCircle2 className="size-3.5 text-emerald-600" /> সাইন-আপ করার ল্যাঁচানি নাই
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-emerald-400" /> মাগনা ফ্রি একদম
+                <CheckCircle2 className="size-3.5 text-emerald-600" /> মাগনা ফ্রি একদম
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-emerald-400" /> কোনো ফালতু অ্যাড নাই
+                <CheckCircle2 className="size-3.5 text-emerald-600" /> কোনো ফালতু অ্যাড নাই
               </span>
             </div>
 
             {/* Atmospheric Visual Showcase (Real Reskinned UI Frame) */}
-            <div className="mt-14 w-full max-w-5xl rounded-2xl border border-white/10 bg-zinc-900/60 p-2 sm:p-4 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-3 px-2">
+            <div className="mt-14 w-full max-w-5xl rounded-2xl border border-zinc-300/70 bg-white/75 p-2 sm:p-4 shadow-2xl backdrop-blur-2xl ring-1 ring-zinc-300/40">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-3 mb-3 px-2">
                 <div className="flex items-center gap-2">
                   <div className="size-3 rounded-full bg-rose-500/80" />
                   <div className="size-3 rounded-full bg-amber-500/80" />
                   <div className="size-3 rounded-full bg-emerald-500/80" />
                 </div>
-                <div className="rounded-md border border-white/10 bg-black/40 px-4 py-1 text-[11px] font-mono text-zinc-400">
+                <div className="rounded-md border border-zinc-300 bg-white px-4 py-1 text-[11px] font-mono text-zinc-600">
                   jibonniyekhela.app / chronicle
                 </div>
                 <div className="w-12" />
               </div>
 
               {/* Realistic Hero Visual / UI Snapshot */}
-              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/5 bg-zinc-950 shadow-inner">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 shadow-inner">
                 {/* Visual mockup of the game dashboard */}
                 <div className="absolute inset-0 flex flex-col p-4 sm:p-6 justify-between select-none">
                   {/* Mock Header */}
-                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-center text-amber-300">
+                      <div className="size-10 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-center text-amber-700">
                         <Award className="size-5" />
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-bold text-white">মকবুল হোসেন</div>
-                        <div className="text-xs text-zinc-400 font-mono">বয়স ২৪ • বেকার ও ফাপড়বাজ</div>
+                        <div className="text-sm font-bold text-zinc-900">মকবুল হোসেন</div>
+                        <div className="text-xs text-zinc-600 font-mono">বয়স ২৪ • বেকার ও ফাপড়বাজ</div>
                       </div>
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-xs font-mono">
-                      <span className="text-rose-400 font-bold">স্বাস্থ্য ৫০%</span>
-                      <span className="text-blue-400 font-bold">দিল খুশ ৩০%</span>
-                      <span className="text-amber-400 font-bold">ঘিলু ১০%</span>
-                      <span className="text-yellow-400 font-bold">ফুটানি ২০%</span>
+                      <span className="text-rose-600 font-bold">স্বাস্থ্য ৫০%</span>
+                      <span className="text-sky-600 font-bold">দিল খুশ ৩০%</span>
+                      <span className="text-amber-600 font-bold">ঘিলু ১০%</span>
+                      <span className="text-yellow-600 font-bold">ফুটানি ২০%</span>
                     </div>
                   </div>
 
                   {/* Mock Center Event & Stats */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 my-auto items-center">
-                    <div className="hidden md:block col-span-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
-                      <div className="text-[10px] uppercase font-mono text-zinc-400">স্ট্যাট</div>
+                    <div className="hidden md:block col-span-3 rounded-xl border border-zinc-200 bg-white p-4 text-left">
+                      <div className="text-[10px] uppercase font-mono text-zinc-500">স্ট্যাট</div>
                       <div className="mt-3 space-y-2 text-xs">
-                        <div className="flex justify-between text-zinc-300"><span>মগজের ঘিলু</span><span className="text-amber-400 font-bold">10</span></div>
-                        <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[10%]" /></div>
-                        <div className="flex justify-between text-zinc-300"><span>আলগা ভাব</span><span className="text-amber-400 font-bold">90</span></div>
-                        <div className="w-full bg-zinc-800 h-1.5 rounded-full"><div className="bg-amber-400 h-1.5 rounded-full w-[90%]" /></div>
+                        <div className="flex justify-between text-zinc-700"><span>মগজের ঘিলু</span><span className="text-amber-600 font-bold">10</span></div>
+                        <div className="w-full bg-zinc-200 h-1.5 rounded-full"><div className="bg-amber-500 h-1.5 rounded-full w-[10%]" /></div>
+                        <div className="flex justify-between text-zinc-700"><span>আলগা ভাব</span><span className="text-amber-600 font-bold">90</span></div>
+                        <div className="w-full bg-zinc-200 h-1.5 rounded-full"><div className="bg-amber-500 h-1.5 rounded-full w-[90%]" /></div>
                       </div>
                     </div>
 
-                    <div className="col-span-1 md:col-span-6 rounded-2xl border border-rose-500/30 bg-zinc-900/90 p-5 sm:p-6 text-center shadow-2xl backdrop-blur-xl">
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-300 mb-3">
+                    <div className="col-span-1 md:col-span-6 rounded-2xl border border-rose-500/30 bg-white p-5 sm:p-6 text-center shadow-2xl">
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-700 mb-3">
                         <Sparkles className="size-3.5" />
                         <span>আজকের মাইঙ্কা চিপা</span>
                       </div>
-                      <h2 className="text-base sm:text-lg font-bold text-white">
+                      <h2 className="text-base sm:text-lg font-bold text-zinc-900">
                         পকেটে নাই একখান ট্যাকা, এদিকে ওয়াইফি কইতাছে কাচ্চি খাওয়াইতে! তুমি এখন কী করবা?
                       </h2>
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold">
-                        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-zinc-200">
+                        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-zinc-700">
                           [১] দোস্তর থিকা ধার করা (-ট্যাকা, +রোমিও গিরি)
                         </div>
-                        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-zinc-200">
+                        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-zinc-700">
                           [২] ইমোশনাল কবিতা লেখা (+ফাপড়, +শান্তি)
                         </div>
                       </div>
                     </div>
 
-                    <div className="hidden md:block col-span-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left">
-                      <div className="text-[10px] uppercase font-mono text-zinc-400">সংসার & গ্যাঞ্জাম</div>
-                      <div className="mt-3 text-xs text-zinc-300 space-y-1.5">
-                        <div>পেশা: <span className="text-white font-semibold">ফেলুদা</span></div>
-                        <div>ওয়াইফি: <span className="text-rose-300 font-semibold">লাল বাত্তি</span></div>
-                        <div>অবস্থা: <span className="text-amber-300 font-semibold">ফকির</span></div>
+                    <div className="hidden md:block col-span-3 rounded-xl border border-zinc-200 bg-white p-4 text-left">
+                      <div className="text-[10px] uppercase font-mono text-zinc-500">সংসার & গ্যাঞ্জাম</div>
+                      <div className="mt-3 text-xs text-zinc-700 space-y-1.5">
+                        <div>পেশা: <span className="text-zinc-900 font-semibold">ফেলুদা</span></div>
+                        <div>ওয়াইফি: <span className="text-rose-600 font-semibold">লাল বাত্তি</span></div>
+                        <div>অবস্থা: <span className="text-amber-600 font-semibold">ফকির</span></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Mock Controls */}
-                  <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                    <span className="text-[11px] text-zinc-400 font-mono">শর্টকাট দেখতে ? চাপো</span>
+                  <div className="flex items-center justify-between border-t border-zinc-200 pt-3">
+                    <span className="text-[11px] text-zinc-600 font-mono">শর্টকাট দেখতে ? চাপো</span>
                     <span className="rounded-xl bg-danger px-4 py-2 text-xs font-bold uppercase tracking-wider text-on-danger">
                       বয়স বাড়াও (+১ বছর বাঁশ)
                     </span>
@@ -271,30 +271,30 @@ export function LandingPage() {
         </section>
 
         {/* 2. CORE FEATURES & GAMEPLAY SECTION */}
-        <section
+<section
           aria-labelledby="features-heading"
-          className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 border-t border-white/[0.08]"
+          className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 border-t border-zinc-200/80"
         >
           <div className="text-center max-w-3xl mx-auto">
             <h2
               id="features-heading"
-              className="text-xs font-mono uppercase tracking-widest text-rose-400"
+              className="text-xs font-mono uppercase tracking-widest text-rose-600"
             >
               কেন এই গেম খেলবা?
             </h2>
-            <p className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            <p className="mt-2 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">
               খেইল্লা দেহো, চান্দি গরম না হইলে কইয়ো!
             </p>
-            <p className="mt-4 text-sm sm:text-base text-zinc-400">
+            <p className="mt-4 text-sm sm:text-base text-zinc-600">
               কোনো বোরিং স্ট্যাটিক গল্প না—তোমার করা প্রতিটা ভুলের ফল পাইবা হাতে-নাতে।
             </p>
           </div>
 
           {/* Gameplay Video Showcase & Live Reactive Demo */}
-          <div className="mt-12 overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/60 p-4 sm:p-6 shadow-2xl backdrop-blur-xl">
+          <div className="mt-12 overflow-hidden rounded-2xl border border-zinc-300/70 bg-white/75 p-4 sm:p-6 shadow-2xl backdrop-blur-xl">
             <div className="flex flex-col lg:flex-row items-center gap-8">
               {/* Captured Gameplay Video */}
-              <div className="w-full lg:w-7/12 relative aspect-video rounded-xl overflow-hidden border border-white/10 bg-black">
+              <div className="w-full lg:w-7/12 relative aspect-video rounded-xl overflow-hidden border border-zinc-300 bg-zinc-900">
                 <video
                   autoPlay
                   loop
@@ -308,7 +308,7 @@ export function LandingPage() {
                   <source src="/media/gameplay-demo.webm" type="video/webm" />
                 </video>
                 <div className="absolute top-3 left-3 rounded-md bg-black/70 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-emerald-400 border border-emerald-500/30 backdrop-blur-md">
-                  ● রিয়েল ঢাকাইয়া গ্যাঞ্জাম ফুটেজ
+                  ● রিয়েল ঢাকাইয়া গ্যাঞ্জাম ফুটেজ
                 </div>
               </div>
 
@@ -319,17 +319,17 @@ export function LandingPage() {
                   return (
                     <div
                       key={feat.title}
-                      className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 sm:p-5 transition-colors hover:border-rose-500/30 hover:bg-white/[0.04]"
+                      className="rounded-xl border border-zinc-200 bg-white/80 p-4 sm:p-5 transition-colors hover:border-rose-500/40 hover:bg-white"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-400 shrink-0">
+                        <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-600 shrink-0">
                           <Icon className="size-4" />
                         </div>
-                        <h3 className="text-base font-bold text-white tracking-tight">
+                        <h3 className="text-base font-bold text-zinc-900 tracking-tight">
                           {feat.title}
                         </h3>
                       </div>
-                      <p className="mt-2 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                      <p className="mt-2 text-xs sm:text-sm text-zinc-600 leading-relaxed">
                         {feat.description}
                       </p>
                     </div>
@@ -345,7 +345,7 @@ export function LandingPage() {
               <span
                 key={tag}
                 data-testid={`tag-${tag.toLowerCase().replace(/\s+/g, '-')}`}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-1.5 text-xs font-medium text-zinc-300 hover:border-white/20 transition-colors"
+                className="rounded-full border border-zinc-200 bg-white/70 px-4 py-1.5 text-xs font-medium text-zinc-700 hover:border-zinc-400 transition-colors"
               >
                 {tag}
               </span>
@@ -356,13 +356,13 @@ export function LandingPage() {
         {/* 3. GAMEPLAY PILLARS */}
         <section
           aria-labelledby="pillars-heading"
-          className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 border-t border-white/[0.08]"
+          className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 border-t border-zinc-200/80"
         >
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 id="pillars-heading" className="text-xs font-mono uppercase tracking-widest text-zinc-400">
+            <h2 id="pillars-heading" className="text-xs font-mono uppercase tracking-widest text-zinc-500">
               সিস্টেম & মেকানিক্স
             </h2>
-            <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
               যেভাবে জিন্দেগি তেজপাতা বানাবা
             </p>
           </div>
@@ -373,13 +373,13 @@ export function LandingPage() {
               return (
                 <div
                   key={pillar.title}
-                  className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 hover:border-white/20 hover:bg-white/[0.04] transition-all"
+                  className="rounded-2xl border border-zinc-200 bg-white/80 p-6 hover:border-rose-500/40 hover:bg-white transition-all"
                 >
-                  <div className="flex size-11 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 mb-4">
+                  <div className="flex size-11 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-600 mb-4">
                     <Icon className="size-5" />
                   </div>
-                  <h3 className="text-base font-bold text-white mb-2">{pillar.title}</h3>
-                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{pillar.desc}</p>
+                  <h3 className="text-base font-bold text-zinc-900 mb-2">{pillar.title}</h3>
+                  <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">{pillar.desc}</p>
                 </div>
               );
             })}
@@ -388,11 +388,11 @@ export function LandingPage() {
 
         {/* 4. FINAL CALL TO ACTION */}
         <section className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20 text-center">
-          <div className="rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-950/40 to-zinc-950 p-8 sm:p-14 shadow-2xl backdrop-blur-2xl">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+          <div className="rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-100 to-amber-50 p-8 sm:p-14 shadow-2xl">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-900">
               নিজের চান্দি গরম করার জন্য প্রস্তুত তো?
             </h2>
-            <p className="mt-3 max-w-xl mx-auto text-sm sm:text-base text-zinc-300">
+            <p className="mt-3 max-w-xl mx-auto text-sm sm:text-base text-zinc-700">
               কোনো সাইন-আপ নাই, কোনো ট্যাকা লাগে না। খালি ক্লিক করো আর ব্রাউজারে ইনস্ট্যান্ট বাঁশ খাওয়া শুরু করো।
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -410,16 +410,16 @@ export function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.08] bg-zinc-950 py-10 text-xs text-zinc-400">
+      <footer className="border-t border-zinc-200/80 bg-white/70 py-10 text-xs text-zinc-600">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Heart className="size-4 text-rose-400" />
-            <span className="font-semibold text-white">Jibon Niye Khela</span>
+            <Heart className="size-4 text-rose-600" />
+            <span className="font-semibold text-zinc-900">Jibon Niye Khela</span>
             <span>— খাঁটি ঢাকাইয়া ব্রাউজার লাইফ সিমুলেশন।</span>
           </div>
           <div className="flex items-center gap-6">
-            <span className="font-mono text-[11px] text-zinc-400">
-              ডেস্কটপ: <kbd className="rounded border border-white/20 bg-white/5 px-1 py-0.5 font-mono text-zinc-300">?</kbd> চাপলে শর্টকাট
+            <span className="font-mono text-[11px] text-zinc-600">
+              ডেস্কটপ: <kbd className="rounded border border-zinc-300 bg-white px-1 py-0.5 font-mono text-zinc-700">?</kbd> চাপলে শর্টকাট
             </span>
           </div>
         </div>

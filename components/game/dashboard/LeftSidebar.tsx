@@ -6,7 +6,6 @@ import type { Character } from '@/lib/engine/types';
 import { Avatar } from '@/components/avatar/Avatar';
 import { StatBar } from './StatBar';
 import {
-  Sparkles,
   User,
   Swords,
   Coins,
@@ -26,8 +25,6 @@ import { useLayoutTier } from '@/lib/hooks/useLayoutTier';
 
 interface LeftSidebarProps {
   character: Character | null;
-  canAgeUp: boolean;
-  onAgeUp: () => void;
   onOpenProfile: () => void;
   onOpenActions: (tab?: Tab) => void;
   onOpenFamilyTree?: () => void;
@@ -40,8 +37,6 @@ interface LeftSidebarProps {
 
 export function LeftSidebar({
   character,
-  canAgeUp,
-  onAgeUp,
   onOpenProfile,
   onOpenActions,
   onOpenFamilyTree,
@@ -71,30 +66,30 @@ export function LeftSidebar({
 
   return (
     <aside
-      className="flex h-full min-h-0 flex-col justify-between overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-overlay"
+      className="flex h-full min-h-0 flex-col justify-between overflow-hidden rounded-3xl border border-border bg-surface p-4 shadow-overlay"
       aria-label="চরিত্র আর নিয়ন্ত্রণ"
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-4 scrollbar-cozy">
+      <div className="flex flex-col gap-2.5 pb-4">
         {/* Profile Card with Full Prominent Avatar Display */}
         <div
-          className="flex flex-col items-center p-3 rounded-2xl bg-surface-raised/50 border border-border"
+          className="flex flex-col items-center px-3 py-2.5 rounded-2xl bg-surface-raised/50 border border-border"
           data-testid="character-summary"
         >
           {/* Avatar Hero Frame — Centered, uncropped, fully visible */}
           <div
-            className="h-24 w-24 flex items-center justify-center overflow-visible"
+            className="h-20 w-20 flex items-center justify-center overflow-visible"
           >
             <Avatar character={character} className="h-full w-full object-contain" />
           </div>
 
-          <div className="text-center mt-2 w-full">
+          <div className="text-center mt-1.5 w-full">
             <h2 className="truncate text-base font-bold text-text tracking-tight">
               {character.name} {character.surname}
             </h2>
             <p className="text-[11px] font-medium text-text-muted truncate">
               {rankForLife(character)}
             </p>
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center justify-center gap-2 mt-1.5">
               <span className="text-xs font-semibold tabular-nums text-text">
                 {character.age} <span className="text-[10px] font-normal text-text-muted">বছর বয়স</span>
               </span>
@@ -110,24 +105,12 @@ export function LeftSidebar({
         </div>
 
         {/* 4 Rounded-Full Stat Progress Bars */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           <StatBar label="স্বাস্থ্য" value={character.stats.health} statKey="health" />
           <StatBar label="সুখ" value={character.stats.happiness} statKey="happiness" />
           <StatBar label="বুদ্ধি" value={character.stats.smarts} statKey="smarts" />
           <StatBar label="চেহারা" value={character.stats.looks} statKey="looks" />
         </div>
-
-        {/* Tactile Primary Candy Button */}
-        <button
-          type="button"
-          onClick={onAgeUp}
-          disabled={!canAgeUp}
-          data-testid="age-up"
-          className="group relative flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-primary/25 px-4 text-xs font-bold uppercase tracking-widest text-on-primary transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
-        >
-          <Sparkles className="size-4" />
-          <span>বয়স বাড়াও (+১ বছর)</span>
-        </button>
 
         {/* Minimal Vertical Navigation with smooth transition hover states */}
         <nav className="flex flex-col gap-1.5 border-t border-border pt-2" aria-label="নেভিগেশন">
@@ -135,7 +118,7 @@ export function LeftSidebar({
             type="button"
             onClick={onOpenProfile}
             data-testid="deck-tab-profile"
-            className="flex items-center justify-between rounded-xl px-3 py-1.5 text-xs font-medium text-text hover:text-text hover:bg-surface-raised active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-text"
+            className="flex items-center justify-between rounded-xl px-3 py-1 text-xs font-medium text-text hover:text-text hover:bg-surface-raised active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-text"
           >
             <div className="flex items-center gap-2.5">
               <User className="size-4 text-text-muted" />
@@ -145,7 +128,7 @@ export function LeftSidebar({
           </button>
 
           {/* কাজকর্ম ও ব্যস্ততা Section & Options */}
-          <div className="space-y-2 overflow-hidden rounded-2xl border border-border bg-surface-raised/40 p-3 pb-4">
+          <div className="space-y-2 overflow-hidden rounded-2xl border border-border bg-surface-raised/40 p-3 pb-2.5">
             <button
               type="button"
               onClick={() => onOpenActions(character.age >= 18 ? 'career' : 'school')}
@@ -164,7 +147,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('school')}
                 data-testid="left-tab-school"
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
+                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
               >
                 <GraduationCap className="size-3 shrink-0 text-tone-text-neutral" />
                 <span className="truncate">পড়াশোনা</span>
@@ -173,7 +156,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('career')}
                 data-testid="left-tab-career"
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
+                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
               >
                 <Briefcase className="size-3 shrink-0 text-tone-text-good" />
                 <span className="truncate">চাকরি ও রুজি</span>
@@ -182,7 +165,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('romance')}
                 data-testid="left-tab-romance"
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
+                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
               >
                 <Heart className="size-3 shrink-0 text-primary-text" />
                 <span className="truncate">প্রেম-ভালোবাসা</span>
@@ -191,7 +174,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('health')}
                 data-testid="left-tab-health"
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
+                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
               >
                 <Activity className="size-3 shrink-0 text-tone-text-good" />
                 <span className="truncate">স্বাস্থ্য ও জিম</span>
@@ -200,7 +183,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('crime')}
                 data-testid="left-tab-crime"
-                className="col-span-2 flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all"
+                className="col-span-2 flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all"
               >
                 <div className="flex min-w-0 items-center gap-1.5">
                   <Flame className="size-3 shrink-0 text-tone-text-bad" />
@@ -214,7 +197,7 @@ export function LeftSidebar({
           </div>
 
           {/* সম্পদ ও ট্যাকা-পয়সা Section & Options */}
-          <div className="space-y-2 overflow-hidden rounded-2xl border border-border bg-surface-raised/40 p-3 pb-4">
+          <div className="space-y-2 overflow-hidden rounded-2xl border border-border bg-surface-raised/40 p-3 pb-2.5">
             <button
               type="button"
               onClick={() => onOpenActions('assets')}
@@ -233,7 +216,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('assets')}
                 data-testid="left-tab-assets-buy"
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
+                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
               >
                 <Car className="size-3 shrink-0 text-tone-text-good" />
                 <span className="truncate">গাড়ি, বাড়ি ও সোনা</span>
@@ -242,7 +225,7 @@ export function LeftSidebar({
                 type="button"
                 onClick={() => onOpenActions('assets')}
                 data-testid="left-tab-assets-bank"
-                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1.5 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
+                className="flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-raised/50 px-2.5 py-1 text-[11px] font-medium text-text hover:bg-surface-raised active:scale-[0.98] transition-all text-left"
               >
                 <Landmark className="size-3 shrink-0 text-tone-text-neutral" />
                 <span className="truncate">ব্যাংক ও লোন</span>
@@ -281,7 +264,7 @@ export function LeftSidebar({
           )}
 
           {(onOpenShortcuts || onExport || onImportClick || onReset) && (
-            <div className="flex items-center gap-1 px-3 pt-1">
+            <div className="flex items-center gap-1 px-3 pt-0.5">
               {onOpenShortcuts && (
                 <button
                   type="button"

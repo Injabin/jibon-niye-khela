@@ -1106,7 +1106,7 @@ function RomanceTab({
                       type="button"
                       onClick={() => onCheat(partner.id)}
                       data-testid={`cheat-${partner.id}`}
-                      className="rounded-xl border border-tone-bad/25 bg-tone-bad/10 hover:bg-tone-bad/20 px-3 py-1.5 text-xs font-semibold text-tone-text-bad transition-colors"
+                      className="rounded-xl border border-tone-bad/25 bg-tone-bad/10 hover:bg-tone-bad/20 px-3 py-1.5 text-xs font-semibold text-tone-text-bad transition-all duration-150 active:scale-[0.98]"
                     >
                       পরকীয়ার চক্কর
                     </button>
@@ -1115,7 +1115,7 @@ function RomanceTab({
                     type="button"
                     onClick={() => onBreakup(partner.id)}
                     data-testid={`breakup-${partner.id}`}
-                    className="rounded-xl border border-danger-border bg-danger/10 hover:bg-danger/20 px-3 py-1.5 text-xs font-semibold text-danger-text transition-colors ml-auto"
+                    className="rounded-xl border border-danger-border bg-danger/10 hover:bg-danger/20 px-3 py-1.5 text-xs font-semibold text-danger-text transition-all duration-150 ml-auto active:scale-[0.98]"
                   >
                     {partner.relation === 'spouse' ? 'তালাক / বিচ্ছেদ' : 'ব্রেকআপ করো'}
                   </button>
@@ -1139,7 +1139,7 @@ function RomanceTab({
             type="button"
             onClick={handleSearch}
             data-testid="search-dating-pool-btn"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-tone-good/30 bg-tone-good/10 hover:bg-tone-good/20 px-3 py-1.5 text-xs font-bold text-tone-text-good transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-tone-good/30 bg-tone-good/10 hover:bg-tone-good/20 px-3 py-1.5 text-xs font-bold text-tone-text-good transition-all duration-150 active:scale-[0.98]"
           >
             <UserPlus className="size-3.5" />
             <span>সন্ধান করো</span>

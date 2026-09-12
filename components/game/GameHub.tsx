@@ -259,7 +259,8 @@ export function GameHub() {
       customLifeOpen ||
       shortcutsOpen ||
       familyTreeOpen ||
-      isPaused,
+      isPaused ||
+      Boolean(currentEvent),
   );
 
   useEffect(() => {
@@ -461,8 +462,6 @@ export function GameHub() {
             >
               <LeftSidebar
                 character={character}
-                canAgeUp={canAgeUp}
-                onAgeUp={onAgeUp}
                 onOpenProfile={() => setProfileOpen(true)}
                 onOpenActions={openActions}
                 onOpenFamilyTree={() => setFamilyTreeOpen(true)}
@@ -591,19 +590,6 @@ export function GameHub() {
               />
             )}
 
-            {/* Interactive Dilemma / Event Card */}
-            {character && character.alive && (
-              <AnimatePresence>
-                {currentEvent && (
-                  <EventCard
-                    key={currentEvent.id}
-                    event={currentEvent}
-                    onChoose={(choiceId) => onChoose(currentEvent, choiceId)}
-                  />
-                )}
-              </AnimatePresence>
-            )}
-
             {/* Life Summary Screen on Death */}
             {dead && character && (
               <div className="flex flex-col gap-6 py-4">
@@ -634,6 +620,22 @@ export function GameHub() {
                     রিসেট
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Sticky Age-Up Dock — anchored bottom-center of the center pane */}
+            {character && character.alive && !isMobile && (
+              <div className="sticky bottom-0 z-10 mt-auto flex justify-center rounded-t-2xl bg-background/85 px-2 pb-2 pt-2 backdrop-blur-sm">
+                <button
+                  type="button"
+                  onClick={onAgeUp}
+                  disabled={!canAgeUp}
+                  data-testid="age-up"
+                  className="group relative inline-flex h-11 w-auto items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-primary/25 px-5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
+                >
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  <span>বয়স বাড়াও (+১ বছর)</span>
+                </button>
               </div>
             )}
           </main>
@@ -674,6 +676,20 @@ export function GameHub() {
           />
         )}
       </div>
+
+      {/* Interactive Dilemma / Event Card — rendered above the inert background so
+          the wrapped dashboard stays fully inactive while a life question is open */}
+      {character && character.alive && (
+        <AnimatePresence>
+          {currentEvent && (
+            <EventCard
+              key={currentEvent.id}
+              event={currentEvent}
+              onChoose={(choiceId) => onChoose(currentEvent, choiceId)}
+            />
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Hidden file input for import */}
       <input

@@ -52,7 +52,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-text font-sans">
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var r=localStorage.getItem(${JSON.stringify(SETTINGS_STORAGE_KEY)});var t=r?JSON.parse(r).theme:'system';var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();`,
+            __html: `(function(){try{var r=localStorage.getItem(${JSON.stringify(SETTINGS_STORAGE_KEY)});var t=r?JSON.parse(r).theme:'system';var forceLight=window.location.pathname==='/';var d=!forceLight&&(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches));document.documentElement.dataset.theme=d?'dark':'light';}catch(e){document.documentElement.dataset.theme='light';}})();`,
           }}
         />
         <ThemeProvider>

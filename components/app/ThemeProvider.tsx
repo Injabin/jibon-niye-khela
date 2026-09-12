@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { settingsStore, type ThemeMode } from '@/lib/store/settingsStore';
 
 const SYSTEM_DARK_QUERY = '(prefers-color-scheme: dark)';
@@ -21,23 +22,29 @@ export function resolveEffectiveTheme(theme: ThemeMode): 'light' | 'dark' {
  * <html data-theme="…">, and keeps the OS preference live while the user
  * stays on 'system'. `app/layout.tsx` runs a tiny inline bootstrap script
  * before first paint so the persisted preference never causes a flash.
+ *
+ * The marketing landing page (`/`) is brand-invariant: it is always forced
+ * to light regardless of the stored/system preference so prospective players
+ * never see a dark shell before choosing to enter the game.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = settingsStore((s) => s.theme);
+  const pathname = usePathname();
+  const forceLight = pathname === '/';
 
   useEffect(() => {
     const apply = () => {
-      document.documentElement.dataset.theme = resolveEffectiveTheme(theme);
+      document.documentElement.dataset.theme = forceLight ? 'light' : resolveEffectiveTheme(theme);
     };
     apply();
 
-    if (theme !== 'system') return;
+    if (forceLight || theme !== 'system') return;
 
     const media = window.matchMedia(SYSTEM_DARK_QUERY);
     const onChange = () => apply();
     media.addEventListener('change', onChange);
     return () => media.removeEventListener('change', onChange);
-  }, [theme]);
+  }, [theme, forceLight]);
 
   return <>{children}</>;
 }

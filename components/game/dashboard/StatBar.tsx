@@ -78,7 +78,7 @@ export function StatBar({ label, value, statKey }: StatBarProps) {
       </div>
 
       <motion.div
-        className="relative h-2.5 w-full overflow-hidden rounded-full border border-border bg-surface-raised p-[1px]"
+        className="relative h-2 w-full overflow-hidden rounded-full border border-border bg-surface-raised p-[1px]"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}
