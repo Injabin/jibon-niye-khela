@@ -9,7 +9,6 @@ import {
   User,
   Swords,
   Coins,
-  Users,
   ChevronRight,
   GraduationCap,
   Briefcase,
@@ -27,7 +26,6 @@ interface LeftSidebarProps {
   character: Character | null;
   onOpenProfile: () => void;
   onOpenActions: (tab?: Tab) => void;
-  onOpenFamilyTree?: () => void;
   onOpenSettings?: () => void;
   onOpenShortcuts?: () => void;
   onExport?: () => void;
@@ -39,16 +37,15 @@ export function LeftSidebar({
   character,
   onOpenProfile,
   onOpenActions,
-  onOpenFamilyTree,
   onOpenSettings,
   onOpenShortcuts,
   onExport,
   onImportClick,
   onReset,
 }: LeftSidebarProps) {
-  // Desktop already exposes family + settings through the RightRail; these
-  // links show only on tablet so a single `open-family-tree`/`open-settings`
-  // control exists per viewport. (Mobile uses the ControlDeck.)
+  // Desktop already exposes settings through the RightRail; this link shows
+  // only on tablet so a single `open-settings` control exists per viewport.
+  // (Mobile uses the ControlDeck.)
   const showRailLinks = useLayoutTier() === 'tablet';
   if (!character) {
     return (
@@ -233,22 +230,7 @@ export function LeftSidebar({
             </div>
           </div>
 
-{showRailLinks && onOpenFamilyTree && (
-            <button
-              type="button"
-              onClick={onOpenFamilyTree}
-              data-testid="open-family-tree"
-              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-text-muted hover:text-text hover:bg-surface-raised active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-text"
-            >
-              <div className="flex items-center gap-2.5">
-                <Users className="size-4 text-text-muted" />
-                <span>পরিবার ও আত্মীয়স্বজন</span>
-              </div>
-              <ChevronRight className="size-3.5 text-text-muted" />
-            </button>
-          )}
-
-          {showRailLinks && onOpenSettings && (
+{showRailLinks && onOpenSettings && (
             <button
               type="button"
               onClick={onOpenSettings}

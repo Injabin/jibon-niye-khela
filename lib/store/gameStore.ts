@@ -23,11 +23,11 @@ import {
   prisonGym,
   prisonLibrary,
 } from '@/lib/engine/prison';
-import { applyToSchool, enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
+import { applyToSchool, enrollAtUniversity, enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
 import type { MajorField } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { AssetKind, AvatarAppearance, Character, CustomCharacterOptions, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
+import type { AssetKind, AvatarAppearance, Character, CustomCharacterOptions, Gender, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
 import {
   generateDatingPool,
   askOutCandidate,
@@ -42,8 +42,17 @@ import {
   hookupWithEx,
   begGetBackTogether,
   insultEx,
+  rollRomanceDrama,
+  resolveRomanceDramaChoice,
+  rollPeerRomanceInterest,
+  rollPartnerInitiative,
   type DatingCandidate,
 } from '@/lib/engine/romance';
+import { buildPeerRomanceInterestEvent } from '@/content/events/peerRomance';
+import {
+  buildSingleAskoutEvent,
+  buildPartnerBabyProposalEvent,
+} from '@/content/events/partnerInitiatives';
 import {
   spendTimeWithPerson,
   chatWithPerson,
@@ -57,11 +66,15 @@ import {
   giveChildAllowance,
   befriendPeer,
   askOutPeer,
+  makePeaceWithPerson,
+  ESTRANGED_METER,
   type RelationshipActionResult,
 } from '@/lib/engine/relationships';
 import { achievementsStore } from '@/lib/store/achievementsStore';
 import { soundManager } from '@/lib/audio/SoundManager';
 import { fetchEventForYear } from '@/lib/ai/contentOrchestrator';
+import { buildFuneralEvent } from '@/content/events/funeral';
+import { buildRomanceDramaEvent } from '@/content/events/infidelity';
 import { getFallbackEvent } from '@/lib/ai/fallbackBank';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
@@ -112,11 +125,70 @@ function syncRelationshipDeaths(character: Character, tree: FamilyTree | null): 
       rel.alive = false;
       character.history.push({
         age: character.age,
-        text: `${rel.name} মারা গেছে। দোয়া করিলাম অর আত্মার মাগফিরাতের জন্য!`,
+        text:
+          character.religion === 'hinduism'
+            ? `${rel.name} মারা গেছে। ওম শান্তি — অর আত্মার শান্তি কামনা করিলাম।`
+            : `${rel.name} মারা গেছে। দোয়া করিলাম অর আত্মার মাগফিরাতের জন্য!`,
         tone: 'bad',
       });
     }
   }
+}
+
+/**
+ * Part D: turns this year's family-tree deaths into religion-aware funeral
+ * events the player resolves first (with cost-tier choices). Deaths are owned
+ * solely by ageFamilyMembers — this only reads the diff, never re-rolls.
+ */
+function collectFuneralEvents(
+  oldTree: FamilyTree | null,
+  newTree: FamilyTree | null,
+  character: Character
+): LifeEventDef[] {
+  if (!oldTree || !newTree) return [];
+  const died = newTree.members.filter(
+    (m) => !m.alive && oldTree.members.some((o) => o.id === m.id && o.alive)
+  );
+  return died.map((m) =>
+    buildFuneralEvent({
+      name: m.name,
+      roleLabel: relationLabel(m),
+      religion: character.religion === 'islam' ? 'islam' : 'hinduism',
+    })
+  );
+}
+
+/**
+ * Part F: annual romance-drama roll. Detects NPC infidelity / multi-romance
+ * exposure deterministically through the year's RNG stream; silent affairs
+ * mutate the character directly, caught ones return a forced question event.
+ */
+function collectRomanceDramaEvents(character: Character, rng: RNG): LifeEventDef[] {
+  const drama = rollRomanceDrama(character, rng);
+  return drama ? [buildRomanceDramaEvent(character, drama)] : [];
+}
+
+/**
+ * PART H: annual NPC-initiated romantic interest roll. An established
+ * classmate (16–17) or coworker (while employed) with a pre-existing bond of
+ * ≥50 may shoot their shot — pure selection, acceptance/decline resolve later.
+ */
+function collectPeerRomanceInterestEvents(character: Character, rng: RNG): LifeEventDef[] {
+  const interest = rollPeerRomanceInterest(character, rng);
+  return interest ? [buildPeerRomanceInterestEvent(character, interest)] : [];
+}
+
+/**
+ * PART I: annual partner-initiative roll. A single player may be asked out by
+ * the highest-bond lone NPC, or a childless committed couple may face a baby
+ * proposal — pure selection, outcomes resolve through the drama resolver.
+ */
+function collectPartnerInitiativeEvents(character: Character, rng: RNG): LifeEventDef[] {
+  const initiative = rollPartnerInitiative(character, rng);
+  if (!initiative) return [];
+  return initiative.kind === 'single_askout'
+    ? [buildSingleAskoutEvent(character, initiative)]
+    : [buildPartnerBabyProposalEvent(character, initiative)];
 }
 
 export interface GameStoreState {
@@ -176,6 +248,8 @@ export interface GameStoreActions {
   enrollHigherEducation(path: 'undergraduate' | 'vocational', major?: MajorField): boolean;
   /** Active-menu education action (H): apply the child to a catalog school. */
   applyToSchool(schoolId: string): boolean;
+  /** Active-menu education action (E — Part E): enroll at a real Dhaka university. */
+  applyToUniversity(universityId: string, major?: MajorField): boolean;
   /** Active-menu career action (DESIGN.md §5.2): apply to an eligible job. */
   applyForJob(jobId: string): boolean;
   /** Quit the current job, returning to the unemployed state. */
@@ -513,18 +587,29 @@ export const useGameStore = create<GameStore>()((set, get) => {
         s.familyTree && result.character.alive
           ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
-      if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
+      const funeralEvents: LifeEventDef[] = [];
+      const dramaEvents: LifeEventDef[] = [];
+      const peerInterestEvents: LifeEventDef[] = [];
+      const partnerInitiativeEvents: LifeEventDef[] = [];
+      if (result.character.alive) {
+        funeralEvents.push(...collectFuneralEvents(s.familyTree, familyTree, result.character));
+        dramaEvents.push(...collectRomanceDramaEvents(result.character, rng));
+        peerInterestEvents.push(...collectPeerRomanceInterestEvents(result.character, rng));
+        partnerInitiativeEvents.push(...collectPartnerInitiativeEvents(result.character, rng));
+        syncRelationshipDeaths(result.character, familyTree);
+      }
 
       // Context-first pipeline (B): engine-drawn events outrank the fallback on
       // the sync path too. Engine events were already recorded in
       // recentEventHistory by drawYearlyEvents, so only the fallback branch
       // needs extra bookkeeping (handled by selectYearFallbacks).
-      let events: LifeEventDef[] = [];
+      const events: LifeEventDef[] = [...funeralEvents, ...dramaEvents, ...peerInterestEvents, ...partnerInitiativeEvents];
       if (result.character.alive) {
-        events =
-          result.firedEvents.length > 0
+        events.push(
+          ...(result.firedEvents.length > 0
             ? result.firedEvents
-            : selectYearFallbacks(result.character, s.seed + result.character.age);
+            : selectYearFallbacks(result.character, s.seed + result.character.age))
+        );
       }
 
       set({
@@ -562,7 +647,17 @@ export const useGameStore = create<GameStore>()((set, get) => {
         s.familyTree && result.character.alive
           ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
-      if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
+      const funeralEvents: LifeEventDef[] = [];
+      const dramaEvents: LifeEventDef[] = [];
+      const peerInterestEvents: LifeEventDef[] = [];
+      const partnerInitiativeEvents: LifeEventDef[] = [];
+      if (result.character.alive) {
+        funeralEvents.push(...collectFuneralEvents(s.familyTree, familyTree, result.character));
+        dramaEvents.push(...collectRomanceDramaEvents(result.character, rng));
+        peerInterestEvents.push(...collectPeerRomanceInterestEvents(result.character, rng));
+        partnerInitiativeEvents.push(...collectPartnerInitiativeEvents(result.character, rng));
+        syncRelationshipDeaths(result.character, familyTree);
+      }
 
       if (!result.character.alive) {
         set({
@@ -585,13 +680,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       // 1. Context events first (B): engine-drawn events outrank Gemini for this
       //    year. No AI call, no spinner, and the events were already appended to
-      //    recentEventHistory by drawYearlyEvents.
-      if (result.firedEvents.length > 0) {
+      //    recentEventHistory by drawYearlyEvents. Funeral rites (Part D) lead.
+      if (result.firedEvents.length > 0 || funeralEvents.length > 0 || dramaEvents.length > 0 || peerInterestEvents.length > 0 || partnerInitiativeEvents.length > 0) {
         set({
           character: result.character,
           rngState: rng.getState(),
           familyTree,
-          pendingEvents: result.firedEvents,
+          pendingEvents: [...funeralEvents, ...dramaEvents, ...peerInterestEvents, ...partnerInitiativeEvents, ...result.firedEvents],
           currentEventIndex: 0,
           lastOutcomeTone: null,
           pendingSting: null,
@@ -640,7 +735,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character: result.character,
-        pendingEvents: eventToFire ? [eventToFire] : [...result.firedEvents],
+        pendingEvents: [
+          ...funeralEvents,
+          ...dramaEvents,
+          ...peerInterestEvents,
+          ...(eventToFire ? [eventToFire] : [...result.firedEvents]),
+        ],
         currentEventIndex: 0,
         lastOutcomeTone: null,
         pendingSting: null,
@@ -665,17 +765,53 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
-      resolveEventChoice(character, event, choiceId);
+      let dramaOutcome: { spouseId?: string; childBirthed?: boolean } | null = null;
+      if (event.drama) {
+        dramaOutcome = resolveRomanceDramaChoice(character, event, choiceId, rng, s.familyTree);
+      } else {
+        resolveEventChoice(character, event, choiceId);
+      }
       checkForDeath(character, rng);
 
       // A content event granted "has_child" (M5 #4): the new child joins the
       // household tree right here, so a birth is recorded even though events
-      // only carry a flag. Runs on the same RNG stream as the resolve.
+      // only carry a flag. Runs on the same RNG stream as the resolve. NOT
+      // re-run when the resolver itself already birthed the child (Part I).
       let familyTree = s.familyTree;
-      if (character.alive && familyTree) {
+      if (character.alive && familyTree && !dramaOutcome?.childBirthed) {
         const hadChildBefore = s.character.flags.includes('has_child');
         if (!hadChildBefore && character.flags.includes('has_child')) {
           familyTree = birthChild(familyTree, character, rng);
+        }
+      }
+
+      // An NPC-initiated wedding (I) converted a living partner into a spouse:
+      // that spouse joins the household lineage so funerals/heirs keep working.
+      if (character.alive && familyTree && dramaOutcome?.spouseId) {
+        const spouse = character.relationships.find((r) => r.id === dramaOutcome.spouseId);
+        if (
+          spouse &&
+          spouse.relation === 'spouse' &&
+          !familyTree.members.some((m) => m.id === spouse.id)
+        ) {
+          const spouseGender: Gender = character.gender === 'male' ? 'female' : 'male';
+          familyTree = {
+            ...familyTree,
+            members: [
+              ...familyTree.members,
+              {
+                id: spouse.id,
+                name: spouse.name,
+                gender: spouseGender,
+                role: 'spouse',
+                age: spouse.age,
+                alive: true,
+                bond: spouse.meter,
+                metAge: spouse.metAge,
+                lastSpentAge: -1,
+              },
+            ],
+          };
         }
       }
 
@@ -793,6 +929,21 @@ export const useGameStore = create<GameStore>()((set, get) => {
           break;
         }
         case 'ask_money': {
+          if (member.bond <= ESTRANGED_METER) {
+            ok = false;
+            happyDelta = -4;
+            bondDelta = -2;
+            text = `${roleBangla} ${member.name} দরজার ফাঁক দিয়া চিপা চিপি কইলেন—"তোর লগে হেঁইলা কথা নাই! ধার-ঋণের খাতায় তোর নাম উঠাইবো না!" মাখন মারা তো দূর, মুখ দেখালেন না।`;
+            break;
+          }
+          const isParental = member.role === 'mother' || member.role === 'father' || member.role === 'grandparent';
+          if (isParental && character.age >= 22 && character.career.jobId == null) {
+            ok = false;
+            happyDelta = -4;
+            bondDelta = -4;
+            text = `${roleBangla} ${member.name} কঠিন মুখে কইলেন—"বছর-দুয়েক পরের বড় মানুষ, তয় রুজি-রুটির মাথা নাই! আগে কামে যাও, টাকার ধান্দা পরে দেখিবা!" (-৫ সুখ)`;
+            break;
+          }
           if (member.bond >= 40) {
             const amount = rng.pick([100, 200, 300, 500]);
             moneyDelta = amount;
@@ -867,6 +1018,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
     applyToSchool(schoolId) {
       return runIdleAction((character, rng) => {
         const out = applyToSchool(character, schoolId, rng);
+        return { ok: out.accepted, text: out.text };
+      });
+    },
+
+    applyToUniversity(universityId, major) {
+      return runIdleAction((character, rng) => {
+        const out = enrollAtUniversity(character, rng, universityId, major);
         return { ok: out.accepted, text: out.text };
       });
     },
@@ -1422,6 +1580,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
           break;
         case 'ask_out_peer':
           result = askOutPeer(character, relationshipId, rng);
+          break;
+        case 'make_peace':
+          result = makePeaceWithPerson(character, relationshipId, rng);
           break;
         default:
           return false;

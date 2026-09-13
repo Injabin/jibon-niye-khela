@@ -23,7 +23,6 @@ import {
   Flame,
   HeartHandshake,
   HeartCrack,
-  Network,
   Settings,
   Keyboard,
   Download,
@@ -34,7 +33,6 @@ import {
 
 interface RightRailProps {
   character: Character | null;
-  onOpenFamilyTree: () => void;
   onOpenSettings: () => void;
   onOpenShortcuts: () => void;
   onExport: () => void;
@@ -69,7 +67,6 @@ const ASSET_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 
 export function RightRail({
   character,
-  onOpenFamilyTree,
   onOpenSettings,
   onOpenShortcuts,
   onExport,
@@ -233,11 +230,7 @@ export function RightRail({
 
         </div>
 
-        <div className="space-y-2 border-t border-border pt-3" data-testid="right-rail-options">
-          <button type="button" onClick={onOpenFamilyTree} data-testid="open-family-tree" className="game-action game-action-secondary w-full justify-between active:scale-[0.98]">
-            <span className="flex items-center gap-2"><Network className="size-4" />পরিবার ও আত্মীয়স্বজন</span>
-            <span className="text-text-muted">ফ্যামিলি ট্রি</span>
-          </button>
+<div className="space-y-2 border-t border-border pt-3" data-testid="right-rail-options">
           <div className="grid grid-cols-2 gap-2">
             {onStartFreshLife && (
               <button type="button" onClick={onStartFreshLife} data-testid="new-life-btn" className="game-action game-action-primary w-full active:scale-[0.98]">

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import type { Relationship } from '@/lib/engine/types';
 import { relLabel } from '@/lib/ui/relations';
+import { isEstranged } from '@/lib/engine/relationships';
 import { useGameStore } from '@/lib/store/gameStore';
 import { Button } from '@/components/ui/Button';
 import { ModalOverlay } from '@/components/ui/ModalOverlay';
@@ -50,7 +51,6 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
   const giveGift = useGameStore((s) => s.giveGift);
   const propose = useGameStore((s) => s.propose);
   const haveBaby = useGameStore((s) => s.haveBaby);
-  const cheat = useGameStore((s) => s.cheat);
   const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
 
   if (!relationship || !character) return null;
@@ -214,13 +214,6 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
               )}
               <button
                 type="button"
-                onClick={() => cheat(liveRel.id)}
-                className="rounded-xl border border-tone-bad/30 bg-tone-bad/10 py-2 text-xs font-semibold text-tone-text-bad transition-all hover:bg-tone-bad/20 active:scale-[0.98]"
-              >
-                পরকীয়ার চক্কর
-              </button>
-              <button
-                type="button"
                 onClick={() => breakupOrDivorce(liveRel.id)}
                 className="rounded-xl border border-danger-border bg-danger/10 py-2 text-xs font-semibold text-danger-text transition-all hover:bg-danger/20 active:scale-[0.98]"
               >
@@ -368,6 +361,17 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                 <Gift className="size-3.5 text-tone-funny" />
                 <span>তোহফা দেওয়া (৳৩০০)</span>
               </Button>
+
+              {isEstranged(liveRel) && (
+                <Button
+                  variant="secondary"
+                  onClick={() => interactWithPerson(liveRel.id, 'make_peace')}
+                  className="col-span-2 flex items-center justify-center gap-2 py-2 text-xs text-tone-text-good"
+                >
+                  <HeartHandshake className="size-3.5 text-tone-good" />
+                  <span>মিলন-মীমাংসা (শান্তি করা)</span>
+                </Button>
+              )}
             </div>
           </div>
         )}

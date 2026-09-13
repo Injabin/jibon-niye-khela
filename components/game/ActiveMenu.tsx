@@ -13,6 +13,7 @@ import { jobLabel } from '@/lib/ui/jobs';
 import { eligibleSubjects, SUBJECTS, type MajorField } from '@/lib/engine/events/categories/education';
 import { PRESTIGE_LABELS, schoolsForStage, stageForAge } from '@/content/education/schools';
 import type { SchoolDef } from '@/content/education/schools';
+import { UNIVERSITIES, UNIVERSITY_PRESTIGE_LABELS } from '@/content/education/universities';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
@@ -73,6 +74,7 @@ export function ActiveMenu({
 
   const enrollHigherEducation = useGameStore((s) => s.enrollHigherEducation);
   const applyToSchool = useGameStore((s) => s.applyToSchool);
+  const applyToUniversity = useGameStore((s) => s.applyToUniversity);
   const studyHarder = useGameStore((s) => s.studyHarder);
   const hireTutor = useGameStore((s) => s.hireTutor);
   const dropOutOfSchool = useGameStore((s) => s.dropOutOfSchool);
@@ -104,7 +106,6 @@ export function ActiveMenu({
   const askOut = useGameStore((s) => s.askOut);
   const makeOfficial = useGameStore((s) => s.makeOfficial);
   const propose = useGameStore((s) => s.propose);
-  const cheat = useGameStore((s) => s.cheat);
   const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
   const datePartner = useGameStore((s) => s.datePartner);
   const giveGift = useGameStore((s) => s.giveGift);
@@ -207,6 +208,7 @@ export function ActiveMenu({
                 <SchoolTab
                   character={character}
                   onEnroll={enrollHigherEducation}
+                  onApplyUniversity={applyToUniversity}
                   onApplySchool={applyToSchool}
                   onStudyHarder={studyHarder}
                   onHireTutor={hireTutor}
@@ -233,7 +235,6 @@ export function ActiveMenu({
                   onAskOut={askOut}
                   onMakeOfficial={makeOfficial}
                   onPropose={propose}
-                  onCheat={cheat}
                   onBreakup={breakupOrDivorce}
                   onGetCandidates={getDatingCandidates}
                   onDate={datePartner}
@@ -375,6 +376,7 @@ function SchoolTab({
   character,
   onEnroll,
   onApplySchool,
+  onApplyUniversity,
   onStudyHarder,
   onHireTutor,
   onDropOut,
@@ -384,6 +386,7 @@ function SchoolTab({
   character: Character;
   onEnroll: (path: 'undergraduate' | 'vocational', major?: MajorField) => boolean;
   onApplySchool: (schoolId: string) => boolean;
+  onApplyUniversity: (universityId: string, major?: MajorField) => boolean;
   onStudyHarder: () => boolean;
   onHireTutor: () => boolean;
   onDropOut: () => boolean;
@@ -516,13 +519,52 @@ function SchoolTab({
               );
             })}
           </div>
+          <p className="text-[11px] text-text-muted/70">
+            ভার্সিটি বাছাও — সরকারি ভার্সিটিগুলো ফ্রি, প্রাইভেটে ফি লাগে; নামকরা হতে হলে বুদ্ধির ঘাটতি মানা মুশকিল!
+          </p>
+          <div className="space-y-2">
+            {UNIVERSITIES.map((uni) => {
+              const blocked =
+                (selectedSubject && uni.majors && !uni.majors.includes(selectedSubject)) ||
+                (uni.minSmarts !== undefined && character.stats.smarts < uni.minSmarts) ||
+                character.money < uni.tuition;
+              const missingMajor = selectedSubject && uni.majors && !uni.majors.includes(selectedSubject);
+              return (
+                <div
+                  key={uni.id}
+                  className={`rounded-xl border p-3 ${blocked
+                      ? 'border-border/60 bg-surface/40 opacity-70'
+                      : 'border-border bg-surface-raised/50'}`}
+                  data-testid={`university-card-${uni.id}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-text">{uni.name}</p>
+                      <p className="text-xs text-text-muted">
+                        {uni.area} · {UNIVERSITY_PRESTIGE_LABELS[uni.prestige]}
+                        {uni.tuition > 0 ? ` · ফি ৳${uni.tuition}` : ' · ফ্রি'}
+                        {uni.minSmarts !== undefined ? ` · বুদ্ধি ${uni.minSmarts}+ লাগে` : ''}
+                        {uni.majors ? ` · ${uni.majors.map((m) => SUBJECTS[m].label.split(' ')[0]).join(', ')}` : ''}
+                      </p>
+                    </div>
+                    {missingMajor && (
+                      <p className="shrink-0 text-[11px] text-tone-text-bad">এই সাবজেক্ট এখানে নাই</p>
+                    )}
+                    {!missingMajor && (
+                      <Button
+                      disabled={blocked}
+                      onClick={() => onApplyUniversity(uni.id, selectedSubject ?? undefined)}
+                      data-testid={`apply-university-${uni.id}`}
+                    >
+                      ভর্তি হই
+                    </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => onEnroll('undergraduate', selectedSubject ?? undefined)}
-              data-testid="enroll-university"
-            >
-              ভার্সিটিতে ভর্তি হও (৳১,০০০){selectedSubject ? ` — ${SUBJECTS[selectedSubject].label}` : ''}
-            </Button>
             <Button variant="secondary" onClick={() => onEnroll('vocational')} data-testid="enroll-vocational">
               কারিগরি ট্রেডে ভর্তি হও (৳২৫০)
             </Button>
@@ -941,7 +983,6 @@ function RomanceTab({
   onAskOut,
   onMakeOfficial,
   onPropose,
-  onCheat,
   onBreakup,
   onGetCandidates,
   onDate,
@@ -952,7 +993,6 @@ function RomanceTab({
   onAskOut: (candidate: DatingCandidate) => boolean;
   onMakeOfficial: (relationshipId: string) => boolean;
   onPropose: (relationshipId: string) => boolean;
-  onCheat: (relationshipId: string) => boolean;
   onBreakup: (relationshipId: string) => boolean;
   onGetCandidates: () => DatingCandidate[];
   onDate: (relationshipId: string) => boolean;
@@ -1100,16 +1140,6 @@ function RomanceTab({
                     >
                       বাচ্চা নেওয়ার চেষ্টা
                     </Button>
-                  )}
-                  {(partner.relation === 'partner' || partner.relation === 'spouse') && (
-                    <button
-                      type="button"
-                      onClick={() => onCheat(partner.id)}
-                      data-testid={`cheat-${partner.id}`}
-                      className="rounded-xl border border-tone-bad/25 bg-tone-bad/10 hover:bg-tone-bad/20 px-3 py-1.5 text-xs font-semibold text-tone-text-bad transition-all duration-150 active:scale-[0.98]"
-                    >
-                      পরকীয়ার চক্কর
-                    </button>
                   )}
                   <button
                     type="button"

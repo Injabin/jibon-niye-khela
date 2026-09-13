@@ -45,6 +45,14 @@ export function applyStatEffects(character: Character, effects: StatEffects): vo
   if (effects.removeFlag) {
     character.flags = character.flags.filter((f) => f !== effects.removeFlag);
   }
+
+  if (effects.bond) {
+    for (const rel of character.relationships) {
+      if (rel.alive && rel.relation === effects.bond.role) {
+        rel.meter = roundToInt(clamp(rel.meter + effects.bond.amount));
+      }
+    }
+  }
 }
 
 export function healthDecay(age: number): number {
@@ -65,7 +73,15 @@ export function looksDecay(age: number): number {
 
 export function applyYearlyDecay(character: Character): void {
   const { stats } = character;
-  stats.health = roundToInt(clamp(stats.health - healthDecay(character.age)));
+  // The body heals: a living healthy adult passively recovers a little each
+  // year, while mid/late-life decline gradually outweighs that recovery
+  // (healthDecay stays 0 until 50 per the yearly-decay gate). A character at
+  // health 0 is dead-in-waiting and must never be nudged back to 1.
+  const net =
+    stats.health > 0 && character.age <= 55
+      ? 1 - healthDecay(character.age)
+      : -healthDecay(character.age);
+  stats.health = roundToInt(clamp(stats.health + net));
   stats.happiness = roundToInt(clamp(stats.happiness + happinessDrift(stats.happiness)));
   stats.looks = roundToInt(clamp(stats.looks - looksDecay(character.age)));
 }

@@ -10,6 +10,22 @@ export interface RelationshipActionResult {
   tone: Tone;
 }
 
+/** Below this bond, an NPC turns "estranged" (বেইজ্জত) and refuses contact. */
+export const ESTRANGED_METER = 15;
+
+export function isEstranged(rel: { meter: number; alive: boolean }): boolean {
+  return rel.alive && rel.meter <= ESTRANGED_METER;
+}
+
+function estrangedRefusal(name: string, rng: RNG): RelationshipActionResult {
+  const lines = [
+    `${name} তোরে দেইখাই দরজা-জানালা লাগাইয়া দিলো! "তোর মুখ দেইখা আমার মাথা ঘুরায়, ভাগ!" সিধা কথা, কলে কাজ নাই।`,
+    `${name} ফোন রিসিভ কইরা এক লাইন শুধু কইলো—"এতদিন পরে তুই আমার নাগালে? চামচ না পাটাতন, বুঝা গেলো!" আর লাইন কাইটা দিলো।`,
+    `${name} তোরে পথ ঘুরিয়া বাঁচিয়া গেলো। পাশ দিয়া যাইবার সময় এক চিলতে হাত তুলা কইলো—"আমার দোয়া-চাঁদা লাগে নাই, তুই সামনে চল!"`,
+  ];
+  return { ok: false, text: rng.pick(lines), tone: 'bad' };
+}
+
 export const PEER_RELATIONS = ['classmate', 'coworker'] as const;
 export type PeerRelation = (typeof PEER_RELATIONS)[number];
 
@@ -41,6 +57,7 @@ export function spendTimeWithPerson(
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'আড্ডা দিবার মানুষ কই? গলির মোড়ে চারপাশ ঘুড়া, কে আছে দেখো — কেউ নাই!', tone: 'neutral' };
+  if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
 
   rel.meter = clamp(rel.meter + rng.rangeInt(8, 16));
   character.stats.happiness = clamp(character.stats.happiness + rng.rangeInt(5, 12));
@@ -64,6 +81,7 @@ export function chatWithPerson(
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'গল্প-গুজবের মানুষ খুঁইজা পাইলাম না — চায়ের দোকানের ফাঁকা টেবিলে বসা চলবে না!', tone: 'neutral' };
+  if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
 
   rel.meter = clamp(rel.meter + rng.rangeInt(5, 12));
   character.stats.happiness = clamp(character.stats.happiness + rng.rangeInt(4, 8));
@@ -87,6 +105,7 @@ export function complimentPerson(
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'তারিফ-শাহিনার মানুষ কই? সামনে কেউ নাই — আয়নার সামনে গিয়া নিজেরেই বলো!', tone: 'neutral' };
+  if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
 
   rel.meter = clamp(rel.meter + rng.rangeInt(10, 18));
   character.stats.happiness = clamp(character.stats.happiness + 6);
@@ -140,6 +159,40 @@ export function askMoneyFromPerson(
     return { ok: false, text: 'এনার কাছে ধারের আবদার বাতিল — এই ঘরের দেয়ালে খাতা-নামা লিখা দেওয়া আছে!', tone: 'neutral' };
   }
 
+  // Estranged relatives refuse outright and won't even take the call.
+  if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
+
+  const isParental = rel.relation === 'mother' || rel.relation === 'father' || rel.relation === 'grandparent';
+  const isAdult = character.age >= 22;
+  const unemployed = character.career.jobId == null;
+
+  // Grown, unemployed kids get a sermon instead of money.
+  if (isParental && isAdult && unemployed) {
+    rel.meter = clamp(rel.meter - 6);
+    character.stats.happiness = clamp(character.stats.happiness - 4);
+    character.reputation.karma = clamp(character.reputation.karma - 4);
+    const sermon = rng.pick([
+      rel.name + ' চোখ ঠান্ডা কইরা কইলো—"তড়িৎ বড় হইছো, কিন্তু রুটির রুজিই নাই! টাকার হাতল নিজেরে ধরো, মামাবাড়ি নহে এহন!"',
+      rel.name + ' কইলো—"টাকা চাইলে চাকরি খুঁজো, মুরুব্বির পকেটে খালি চায়ের ভাজা! এহনকার পোলায় কাজ নাই, ভরসা নাই!"',
+      rel.name + ' তালে তালে কইলো—"তোর কোমরের এট্টা বড় ইচ্ছা, তয় পকেটে বড় কিছু নাই! বাড়ায় রুটি লাগে, ঘরে খরচ লাগে — আগে কামের পাড়ে যাও!"',
+    ]);
+    character.history.push({ age: character.age, text: sermon, tone: 'bad' });
+    return { ok: false, text: sermon, tone: 'bad' };
+  }
+
+  // Parents/elders keep a ~3 year cooling period between handouts.
+  const ASK_COOLDOWN_YEARS = 3;
+  if (isParental && rel.lastAskMoneyAge != null && character.age - rel.lastAskMoneyAge < ASK_COOLDOWN_YEARS) {
+    rel.meter = clamp(rel.meter - 4);
+    const cooldownText = rng.pick([
+      rel.name + ' ভুরু কুঁচকাইয়া কইলো—"এই তো আড়াই বছর আগে দিলাম, ট্যাকা কি ধনে জন্মায় নাকি? নিজের হাতে আগে কিছু করো!"',
+      rel.name + ' কইলো—"পকেট গরম করবার আসবাব আমার নাই, মাসখানেক আগেই তো খাতা-হিসাব মিলাইছি! এহন না, বেশিতে চাইলি না!"',
+      rel.name + ' হাসি দিয়া কইলো—"মামা, টাকা চাওয়া একটা অভ্যাস না, বছরে দেড়েক বাদে ছয় মাস অন্তর হলেও বাপের সম্পত্তিও হাত ছাড়া হয়!"',
+    ]);
+    character.history.push({ age: character.age, text: cooldownText, tone: 'bad' });
+    return { ok: false, text: cooldownText, tone: 'bad' };
+  }
+
   // Acceptance depends on bond meter
   const success = rng.chance(rel.meter / 120);
 
@@ -147,18 +200,22 @@ export function askMoneyFromPerson(
     const amount = rng.rangeInt(200, 1500);
     character.money += amount;
     character.stats.happiness = clamp(character.stats.happiness + 10);
-    rel.meter = clamp(rel.meter - 4); // minor strain
+    rel.meter = clamp(rel.meter - 6); // minor strain
+    rel.lastAskMoneyAge = character.age;
 
-    const text = `${rel.name}-এর কাছে আবদার কইরা হাত পাতলা। সে একটু বকা দিয়াও হাসিমুখে পকেট থেইকা ৳${amount} তুইলা দিল!`;
+    const text = rel.name + '-এর কাছে আবদার কইরা হাত পাতলা। সে একটু বকা দিয়াও হাসিমুখে পকেট থেইকা ' + amount + ' টাকা তুইলা দিল!';
     character.history.push({ age: character.age, text, tone: 'good' });
     return { ok: true, text, tone: 'good' };
   }
 
   rel.meter = clamp(rel.meter - 8);
+  rel.lastAskMoneyAge = character.age;
   character.stats.happiness = clamp(character.stats.happiness - 6);
+  character.reputation.karma = clamp(character.reputation.karma - 5);
   const rejectLines = [
-    `${rel.name} মুখ বাঁকা কইরা কইলো—"টাকা কি গাছে ধরে? খালি হাত পাতা স্বভাব বাদ দিয়া কাম-কাজে নামো!" এক পয়সাও দিল না!`,
-    `${rel.name} চোখ রাঙাইয়া কইলো—"পড়াশোনা আর রুজির খবর নাই, খালি ট্যাকা ওড়ানোর ধান্ধা! ভাগো এহন থিকা!"`,
+    rel.name + ' মুখ বাঁকা কইরা কইলো—"টাকা কি গাছে ধরে? খালি হাত পাতা স্বভাব বাদ দিয়া কাম-কাজে নামো!" এক পয়সাও দিল না!',
+    rel.name + ' চোখ রাঙাইয়া কইলো—"পড়াশোনা আর রুজির খবর নাই, খালি ট্যাকা ওড়ানোর ধান্ধা! ভাগো এহন থিকা!"',
+    rel.name + ' দীর্ঘশ্বাস ফালাইয়া কইলো—"ঋণের হিসাব ঝুলতাছি, তোকে দিয়া লাভ নাই। নিজের পয়সার ওপর পাহাড় বানাও, খালি ভরসায় থাকি নাই!"',
   ];
   const text = rng.pick(rejectLines);
   character.history.push({ age: character.age, text, tone: 'bad' });
@@ -172,6 +229,14 @@ export function giveMoneyToPerson(
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'টাকা দিবার মানুষ কই? হাত পসারবার আগে সামনে কে দাঁড়াইয়া আছে দেখো!', tone: 'neutral' };
+
+  if (isEstranged(rel)) {
+    return {
+      ok: false,
+      text: `${rel.name} হাত দূরে সইরা কইলো—"তোর অনুগ্রহ লাগে নাই, ধার-ঋণের খাতায় নাম আজ লিখিয়ো না!" টাকা হাতে পসরাইলো না।`,
+      tone: 'bad',
+    };
+  }
 
   if (character.money < amount) {
     return { ok: false, text: `${rel.name}-রে ৳${amount} হাদিয়া দিবার বাসনা, মাগার পকেটে কড়িও জোড়া লাগতাছে না! আগে রোজগারের চাকা ঘোরান!`, tone: 'neutral' };
@@ -194,6 +259,14 @@ export function giveGiftToPerson(
 ): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'তোহফা দিবার মানুষ খুঁইজা পাইলাম না — চকবাজারে মিষ্টির ডাব্বা নিয়া মুড়া ফ্যালবো!', tone: 'neutral' };
+
+  if (isEstranged(rel)) {
+    return {
+      ok: false,
+      text: `${rel.name} তোহফার মোড়কতাই দেখা না দিলো—"ভেজাল মিঠাই থাইকা ঘরে ফেরত নিয়া যা, আমার গায়ে হাত দিও না!"`,
+      tone: 'bad',
+    };
+  }
 
   const GIFT_COST = 300;
   if (character.money < GIFT_COST) {
@@ -232,6 +305,10 @@ export function praiseChild(character: Character, relationshipId: string, rng: R
   const { rel, err } = requireLiveChild(character, relationshipId);
   if (err || !rel) return err ?? { ok: false, text: 'বাহবা দিবার সন্তান কই? আয়নার সামনে নিজের তারিফ কইরা দেখো — এ-ও একখান থেরাপি!', tone: 'neutral' };
 
+  if (isEstranged(rel)) {
+    return { ok: false, text: `${rel.name} হাত ঝাড়া দিয়া কইলো—"তোর বাহবা কইরা লাভ নাই, গতকালের খাতারে তুই নাই!" ঘর থিকা বাইর হইয়া গেলো।`, tone: 'bad' };
+  }
+
   rel.meter = clamp(rel.meter + rng.rangeInt(12, 20));
   character.stats.happiness = clamp(character.stats.happiness + 8);
   character.reputation.karma = clamp(character.reputation.karma + 3);
@@ -250,6 +327,10 @@ export function praiseChild(character: Character, relationshipId: string, rng: R
 export function buyChildTreat(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const { rel, err } = requireLiveChild(character, relationshipId);
   if (err || !rel) return err ?? { ok: false, text: 'মিষ্টি কিনবার সন্তান কই? ঘরে নাই তো — দোকানের সামনে গিয়া নিজেই খাইয়া ফেলো!', tone: 'neutral' };
+
+  if (isEstranged(rel)) {
+    return { ok: false, text: `${rel.name} ফুচকা-দোকানের ভিড়ে হারাইয়া গেলো—"তোর খরচের দায়িত্ব আমার নাই, আগে তোর ফাইল সামলাও!" মিষ্টির প্যাকেট ছুইলো না।`, tone: 'bad' };
+  }
 
   const TREAT_COST = 150;
   if (character.money < TREAT_COST) {
@@ -300,6 +381,10 @@ export function disciplineChild(character: Character, relationshipId: string, rn
 export function giveChildAllowance(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const { rel, err } = requireLiveChild(character, relationshipId);
   if (err || !rel) return err ?? { ok: false, text: 'ঘরে তো সন্তান-সন্ধানই নাই — কেডার পকেট খরচ দিবা? ফ্যানের বাতাসে ট্যাকা উড়ে!', tone: 'neutral' };
+
+  if (isEstranged(rel)) {
+    return { ok: false, text: `${rel.name} পকেট খরচের ডাগর পসারা, তবু চোখ ফেরাইয়া কইলো—"আমার দায় তোমার কাছে নাই, সামনার চায়ের ট্যাকা তোরে দিতে আসবো না!"`, tone: 'bad' };
+  }
 
   const amount = rng.rangeInt(50, 200);
   if (character.money < amount) {
@@ -419,4 +504,67 @@ export function askOutPeer(character: Character, relationshipId: string, rng: RN
   const text = `${rel.name} লাজে কইলো—"এই ব্যাপারে আমার কোনো আগ্রহ নাই, তুমি আরেক জনের জন্য নাইলে খাতির রাখো!" কইরার পরে চুপচাপ থাকার সিদ্ধান্ত নিলা।`;
   character.history.push({ age: character.age, text, tone: 'bad' });
   return { ok: false, text, tone: 'bad' };
+}
+
+/**
+ * Reconciliation with an estranged NPC (Part C). Only makes sense while the
+ * bond is at/below ESTRANGED_METER; a goodwill attempt is capped at one try
+ * every two years to stop spam. High karma earns a better chance.
+ */
+export function makePeaceWithPerson(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
+  const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
+  if (!rel) return { ok: false, text: 'মিলামিশার মানুষ কই? গলির বাতি নিভানি গেঁথা — কারে খুঁইজা মনের কথা কইবো?', tone: 'neutral' };
+
+  if (!isEstranged(rel)) {
+    return { ok: false, text: `${rel.name}-এর লগে তো ঝগড়া-গোল বাধা নাই — শান্তি চাইতে গিয়া কী আর দোষী হইবো? আগে বিরোধ বাধাও!`, tone: 'neutral' };
+  }
+
+  const PEACE_COOLDOWN_YEARS = 2;
+  if (rel.lastMakePeaceAge != null && character.age - rel.lastMakePeaceAge < PEACE_COOLDOWN_YEARS) {
+    const wait = PEACE_COOLDOWN_YEARS - (character.age - rel.lastMakePeaceAge);
+    return {
+      ok: false,
+      text: `${rel.name} হাত তুলা কইলো—"এত তাড়াতাড়ি মিলামিশা নাই! আরো ${wait} বছর বাদে আয়, ততদিন হাতে নয়া খাতা ঘুইরা দেখো!"`,
+      tone: 'funny',
+    };
+  }
+
+  const base = 0.55 + (character.reputation.karma > 60 ? 0.2 : 0);
+  const accepted = rng.chance(base);
+  rel.lastMakePeaceAge = character.age;
+
+  if (!accepted) {
+    rel.meter = clamp(rel.meter - 2);
+    character.stats.happiness = clamp(character.stats.happiness - 2);
+    const text = `${rel.name} মাথা নাড়াইয়া কইলো—"সরি-পাইকো পেশা দিয়া লাভ নাই, হাত যথেষ্ট পোড়াইছো!" মাপ না চাইয়া ফিরত গেলা।`;
+    character.history.push({ age: character.age, text, tone: 'bad' });
+    return { ok: false, text, tone: 'bad' };
+  }
+
+  rel.meter = clamp(rel.meter + 25);
+  character.stats.happiness = clamp(character.stats.happiness + 10);
+  character.reputation.karma = clamp(character.reputation.karma + 5);
+  const text = `${rel.name} কিছুক্ষণ চুপচাপ থাকিয়া শেষে কঠিন মুখে কইলো—"অহন হইবো, কিন্তু এইটাই শেষ সুযোগ!" মনের বরফ গলাইয়া গেলো।`;
+  character.history.push({ age: character.age, text, tone: 'good' });
+  return { ok: true, text, tone: 'good' };
+}
+
+/**
+ * Yearly bond decay for neglected relationships (Part C). Family members born
+ * at lastMetAge 0 are treated as "living at home" and never decay until the
+ * first explicit interaction is tracked; anyone else whose bond has been
+ * untouched for NEGLECT_YEARS loses bond at a rate that grows with neglect.
+ */
+export function applyRelationshipNeglect(character: Character): void {
+  const NEGLECT_YEARS = 2;
+  for (const rel of character.relationships) {
+    if (!rel.alive) continue;
+    if (rel.lastMetAge === undefined) continue;
+    if (rel.lastMetAge === 0 && rel.relation !== 'child') continue; // living-at-home baseline
+    const yearsSince = character.age - rel.lastMetAge;
+    if (yearsSince >= NEGLECT_YEARS) {
+      const decay = Math.max(1, Math.floor(yearsSince / 2));
+      rel.meter = Math.max(0, rel.meter - decay);
+    }
+  }
 }

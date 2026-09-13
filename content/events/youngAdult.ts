@@ -15,7 +15,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
         id: 'ya_uni_enrol',
         text: 'আতেল সাইজা ভার্সিটিতে ভর্তির ফাপড় নে!',
         effects: { addFlag: 'education_university' },
-        outcomeText: 'চান্স পাইছোস ঠিকই, কিন্তু ভার্সিটির ক্যান্টিনের ডাইল খায়া তোর এমুন ডাইরিয়া হইলো, তুই পুরাই হাগু-হিরো!',
+        outcomeText: 'চান্স পাইছোস ঠিকই, কিন্তু {{university}}র ক্যান্টিনের ডাইল খায়া তোর এমুন ডাইরিয়া হইলো, তুই পুরাই হাগু-হিরো!',
         tone: 'funny',
       },
       {
@@ -36,7 +36,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_uni_freshman',
-    text: 'ভার্সিটির পয়লা সপ্তাহ! পোলাপাইন সব ভাব নিতাছে, আর তুই হালায় কনফিউজড হইয়া বাথরুম খুঁজতাছোস!',
+    text: '{{university}}র পয়লা সপ্তাহ! পোলাপাইন সব ভাব নিতাছে, আর তুই হালায় কনফিউজড হইয়া বাথরুম খুঁজতাছোস!',
     minAge: 18,
     maxAge: 24,
     weight: 90,
@@ -63,7 +63,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_uni_allnighter',
-    text: 'কালকা ৩টা অ্যাসাইনমেন্ট আর এক্সাম! আর তুই হালায় রাইত ১২টা পর্যন্ত ফেসবুকে মাইয়াগো ছবিতে কমেন্ট করছোস!',
+    text: 'কালকা {{university}}তে ৩টা অ্যাসাইনমেন্ট আর এক্সাম! আর তুই হালায় রাইত ১২টা পর্যন্ত ফেসবুকে মাইয়াগো ছবিতে কমেন্ট করছোস!',
     minAge: 18,
     maxAge: 25,
     weight: 70,
@@ -90,7 +90,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_grad_decision',
-    text: 'ভার্সিটি তো শেষ করলি! এহন সার্টিফিকেট দিয়া কি মুড়ি খাবি নাকি বিয়া করবি?',
+    text: '{{university}}র ডিগ্রি তো শেষ করলি! এহন সার্টিফিকেট দিয়া কি মুড়ি খাবি নাকি বিয়া করবি?',
     minAge: 21,
     maxAge: 25,
     weight: 80,

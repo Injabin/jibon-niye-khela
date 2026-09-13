@@ -182,14 +182,7 @@ test.describe('Gate 8 — Responsive Layout Overhaul', () => {
     await page.getByTestId('close-actions').click();
     await expect(page.getByTestId('active-menu')).toBeHidden();
 
-    // 2. Family Tree Modal (FamilyTreeView)
-    await page.getByTestId('open-family-tree').first().click();
-    await expect(page.getByTestId('family-tree')).toBeVisible();
-    await assertNoHorizontalScroll(page, `${label} FamilyTreeView`);
-    await page.getByTestId('family-tree-close').click();
-    await expect(page.getByTestId('family-tree')).toBeHidden();
-
-    // 3. Settings Panel (SettingsPanel)
+    // 2. Settings Panel (SettingsPanel)
     await page.getByTestId('open-settings').first().click();
     await expect(page.getByTestId('settings-panel')).toBeVisible();
     await assertNoHorizontalScroll(page, `${label} SettingsPanel`);

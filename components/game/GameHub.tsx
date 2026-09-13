@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -30,11 +29,6 @@ import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
 import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, X } from 'lucide-react';
-
-const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
-  ssr: false,
-  loading: () => null,
-});
 
 interface Snapshot {
   alive: boolean;
@@ -110,7 +104,6 @@ export function GameHub() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [customLifeOpen, setCustomLifeOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -258,7 +251,6 @@ export function GameHub() {
       profileOpen ||
       customLifeOpen ||
       shortcutsOpen ||
-      familyTreeOpen ||
       isPaused ||
       Boolean(currentEvent),
   );
@@ -464,7 +456,6 @@ export function GameHub() {
                 character={character}
                 onOpenProfile={() => setProfileOpen(true)}
                 onOpenActions={openActions}
-                onOpenFamilyTree={() => setFamilyTreeOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onOpenShortcuts={() => setShortcutsOpen(true)}
                 onExport={onExport}
@@ -645,7 +636,6 @@ export function GameHub() {
             <div className="relative z-40 col-span-3 sticky top-0 h-full min-h-0">
               <RightRail
                 character={character}
-                onOpenFamilyTree={() => setFamilyTreeOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onOpenShortcuts={() => setShortcutsOpen(true)}
                 onExport={onExport}
@@ -671,7 +661,6 @@ export function GameHub() {
             onOpenShortcuts={() => setShortcutsOpen(true)}
             onReset={resetGame}
             onOpenActions={openActions}
-            onOpenFamilyTree={() => setFamilyTreeOpen(true)}
             onOpenProfile={() => setProfileOpen(true)}
           />
         )}
@@ -735,7 +724,6 @@ export function GameHub() {
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ActiveMenu key={actionsTab} open={actionsOpen} onClose={() => setActionsOpen(false)} initialTab={actionsTab} />
-      {familyTreeOpen && <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />}
       <PauseMenu
         open={isPaused}
         onResume={() => setPaused(false)}

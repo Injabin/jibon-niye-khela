@@ -48,6 +48,7 @@ export default function RootLayout({
     <html
       lang="bn"
       className={`${baloo.variable} ${hind.variable} ${hind.className} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-text font-sans">
         <script

@@ -5,6 +5,7 @@ import { applyReputationDrift } from './reputation';
 import { tickSystems } from './events/categories';
 import { rollToddlerTraits } from './traits';
 import { resetActivityBudget } from './activity';
+import { applyRelationshipNeglect } from './relationships';
 import { drawYearlyEvents, resolveEventChoice } from './events/registry';
 import { createCharacter } from './character';
 import type { AgeUpResult, Character, LifeEventDef, Relation } from './types';
@@ -125,6 +126,7 @@ export function ageUp(character: Character, rng: RNG): AgeUpResult {
   rollToddlerTraits(character, rng);
   applyYearlyDecay(character);
   applyReputationDrift(character);
+  applyRelationshipNeglect(character);
   tickSystems(character, rng);
 
   applyDeathChecks(character, rng);

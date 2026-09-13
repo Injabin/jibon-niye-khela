@@ -61,16 +61,6 @@ test.describe('axe-core scan (Gate 6)', () => {
       await assertNoCriticalSerious(page);
     });
 
-    test(`${scheme}: family tree dialog`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: scheme });
-      await page.goto('/');
-      await page.getByTestId('new-game').click();
-      await page.getByTestId('open-family-tree').click();
-      await expect(page.getByTestId('family-tree')).toBeVisible();
-      await settle(page);
-      await assertNoCriticalSerious(page);
-    });
-
     test(`${scheme}: life summary and heir offer (death state)`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto('/');

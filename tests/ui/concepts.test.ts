@@ -15,7 +15,6 @@ const RESKINNED = [
   'components/game/ProfileSheet.tsx',
   'components/game/LifeSummary.tsx',
   'components/game/dashboard/StatBar.tsx',
-  'components/family/FamilyTreeView.tsx',
   'components/game/ActiveMenu.tsx',
   'components/game/GameHub.tsx',
   'components/game/SettingsPanel.tsx',

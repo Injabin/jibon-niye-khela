@@ -104,7 +104,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
         id: 'ad_legal_leave',
         text: 'দিল দরিয়া বানায়া ফ্রি লিগ্যাল এইড করা শুরু কর!',
         effects: { happiness: 8, money: -6, karma: 5 },
-        outcomeText: 'গরিবের কেস লড়তে লড়তে তোর নিজের পকেটেও টান! বউ তোরে ছাইড়া বাপের বাড়ি চইলা গেছে!',
+        outcomeText: 'গরিবের কেস লড়তে লড়তে তোর নিজের পকেটেও টান! অভাব-অনটনের চাপে সংসারে তুমুল গোলমাল!',
         tone: 'good',
       },
     ],
@@ -352,7 +352,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ad_marriage_proposal',
-    text: 'যেই মায়েরে তুই বছরের পর বছর পটাইতে পারোস নাই, সে হঠাত তোরে বিয়া করার ফাপড় নিলো!',
+    text: 'ওরে বাব্বু! {{partner}} হঠাৎ বাসরঘরের ডিমান্ড তুললো—"এবার তোরে ঘরে স্থায়ীভাবে ভরতি করবো!" তোর হাঁটু কাঁপতাছে, বুকের ভেতর ঢেউ!',
     minAge: 22,
     maxAge: 50,
     weight: 75,
@@ -361,19 +361,22 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     tags: ['romance', 'family'],
     moment: 'wedding',
     requiredFlags: ['has_partner'],
+    antiFlags: ['has_spouse'],
+    predicate: (c) => c.money >= 2050,
+    drama: { action: 'marriage_proposal', relationshipIds: [] },
     choices: [
       {
-        id: 'ad_marry_yes',
-        text: 'ডরে মুইতা দিয়া ক: "হ্যাঁ, চলো লিজেন্ডারি কাচ্চি বিয়া করি!"',
-        effects: { happiness: 15, money: -8, addFlag: 'has_spouse' },
-        outcomeText: 'বিয়া করছোস ঠিকই, কিন্তু বউয়ের ফাপড়ে তুই এহন বাসার সব থালা-বাসন ধোস আর কাপড় কাচস!',
+        id: 'mr_accept',
+        text: 'করজোড়ে রাজি: "হ্যাঁ! কাচ্চি-বিরিয়ানি দিয়া বিয়া হইলো!"',
+        effects: {},
+        outcomeText: '',
         tone: 'good',
       },
       {
-        id: 'ad_marry_soon',
-        text: 'সময় ক্ষেপণ করতে কও: "দেখি, গ্রহ-নক্ষত্র ক্লিয়ার হইলে বিয়া করুম!"',
-        effects: { happiness: 3 },
-        outcomeText: 'মাইয়া তোর বাটপারি ধইরা ফালায়া ব্লক মাইরা দিছে! তুই আবার তোর হাতের উপরেই ভরসা করস!',
+        id: 'mr_decline',
+        text: 'সাইড ফিরা কও: "দাদা, আরেকটু হাতে-পাখায় দেখি!"',
+        effects: {},
+        outcomeText: '',
         tone: 'neutral',
       },
     ],
@@ -386,6 +389,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 55,
     tone: 'bad',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'family'],
     requiredFlags: ['has_spouse'],
     choices: [
@@ -406,6 +410,34 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     ],
   },
   {
+    id: 'ad_marital_strain_f',
+    text: 'বিয়ার ৫ বছর পর স্বামীর লগে তোর আর কোনো কথাই হয় না! সোফায় বইসা দুইজন দুই দিকে তাকাইয়া মশার কয়েল গুনো!',
+    minAge: 26,
+    maxAge: 60,
+    weight: 55,
+    tone: 'bad',
+    category: 'adult',
+    gender: 'female',
+    tags: ['romance', 'family'],
+    requiredFlags: ['has_spouse'],
+    choices: [
+      {
+        id: 'ad_strain_talk_f',
+        text: 'কিপ্টামি ছাইড়া ভালো হোটেলে গিয়া রোমান্টিক ডিনার কর!',
+        effects: { happiness: 6 },
+        outcomeText: 'ডিনারে গিয়া স্বামী তোরে এমন সব পুরান পাপের হিসাব দিছে, তোর খাওয়া গলায় আটকাইয়া গেছে!',
+        tone: 'good',
+      },
+      {
+        id: 'ad_strain_numb_f',
+        text: 'সব ছাইড়া রাতদিন অফিসে পইড়া থাকো যাতে বাসায় যাওয়া না লাগে!',
+        effects: { money: 6, happiness: -8 },
+        outcomeText: 'অফিসে প্রমোশন পাইছোস, কিন্তু বাসায় গেলে মনে হয় তুই এক জেলখানায় ঢুকছোস!',
+        tone: 'bad',
+      },
+    ],
+  },
+  {
     id: 'ad_divorce_unravel',
     text: 'বউয়ের লগে থালা-বাসন ফিক্কা ফিক্কি দিয়া দাম্পত্য জীবনের বারোটা বাজছে! ডিভোর্সের নোটিশ আইছে!',
     minAge: 28,
@@ -413,6 +445,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 40,
     tone: 'bad',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'family'],
     requiredFlags: ['has_spouse'],
     choices: [
@@ -433,8 +466,36 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     ],
   },
   {
-    id: 'ad_baby_news',
-    text: 'বউ ডাক্তার দেখাইয়া আইসা খিলখিল হাসে, "তোমার বংশধর আসতাছে!" তোর মাথায় আকাশ ভেঙে পড়লো!',
+    id: 'ad_divorce_unravel_f',
+    text: 'রান্নাঘরে থালা-বাসন গোছানো হতেই স্বামীর লগে ফিক্কা ফিক্কি দিয়া দাম্পত্য জীবনের বারোটা বাজছে! ডিভোর্সের নোটিশ আইছে!',
+    minAge: 28,
+    maxAge: 60,
+    weight: 40,
+    tone: 'bad',
+    category: 'adult',
+    gender: 'female',
+    tags: ['romance', 'family'],
+    requiredFlags: ['has_spouse'],
+    choices: [
+      {
+        id: 'ad_divorce_work_f',
+        text: 'কাউন্সিলিংয়ের নাম কইরা দুজনে থেরাপিস্টের কাছে গিয়া গাইলগালাজ কর!',
+        effects: { happiness: -3, money: -5, smarts: 3 },
+        outcomeText: 'থেরাপিস্ট তোদের কান্ড কাইন্দা নিজের চাকরি ছাইড়া দিছে! ডিভোর্স কনফার্ম!',
+        tone: 'neutral',
+      },
+      {
+        id: 'ad_divorce_split_f',
+        text: 'সব সম্পত্তি আধাআধি ভাগ কইরা আলাদা হ!',
+        effects: { happiness: -15, money: -20, karma: -10 },
+        outcomeText: 'স্বামী তোর গলার চেন, ঘরের চাবি, সব কাইড়া নিয়া তোরে এক কাপড়ে রাস্তায় নামায়া দিছে! তুই এহন জ্যান্ত ফকির!',
+        tone: 'bad',
+      },
+    ],
+  },
+  {
+id: 'ad_baby_news',
+    text: 'বউ ডাক্তার দেখাইয়া আইসা খিলখিল হাসে, "তোমার বংশধর আসতাছে!" তোর মাথায় আকাশ ভেঙে পড়লো!',
     minAge: 22,
     maxAge: 45,
     weight: 70,
@@ -443,6 +504,8 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     tags: ['family', 'milestone'],
     moment: 'birth',
     requiredFlags: ['has_spouse'],
+    gender: 'male',
+    oncePerLife: true,
     choices: [
       {
         id: 'ad_baby_excited',
@@ -456,6 +519,36 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
         text: 'ডরে বাথরুমে গিয়া দরজা আটকাইয়া বইসা থাক!',
         effects: { happiness: 6, smarts: 2, addFlag: 'has_child' },
         outcomeText: 'দরজা ভাইঙ্গা তোরে বাইর কইরা ডায়াপার বদলানোর ডিউটি ধরাইয়া দিছে! পাপা লাইফ শুরু!',
+        tone: 'neutral',
+      },
+    ],
+  },
+  {
+    id: 'ad_baby_news_f',
+    text: 'ডাক্তারের স্ক্যানে ছোট্ট এক যুক্তি দেইখা তোর চোখ ছানাবড়া! {{spouse}} গম্ভীর কইলো—এইবার বংশের পথিকৃৎ আইতাছে!',
+    minAge: 22,
+    maxAge: 45,
+    weight: 70,
+    tone: 'good',
+    category: 'adult',
+    gender: 'female',
+    tags: ['family', 'milestone'],
+    moment: 'birth',
+    requiredFlags: ['has_spouse'],
+    oncePerLife: true,
+    choices: [
+      {
+        id: 'ad_baby_excited_f',
+        text: 'খুশিতে মহল্লায় মিষ্টি বিলাইয়া দিয়া ঋণগ্রস্ত হও!',
+        effects: { happiness: 15, money: -8, addFlag: 'has_child' },
+        outcomeText: 'বাচ্চা জন্ম নিছে ঠিকই, কিন্তু হালায় দেখতে হুবহু তোর পাড়ার চায়ের মামার মতন! শিং আরো বড়, গুজব ছড়াইয়া গেলো!',
+        tone: 'good',
+      },
+      {
+        id: 'ad_baby_later_f',
+        text: 'ডরে বাথরুমে গিয়া দরজা আটকাইয়া বইসা থাক!',
+        effects: { happiness: 6, smarts: 2, addFlag: 'has_child' },
+        outcomeText: 'দরজা ভাইঙ্গা বাইর কইরা ডায়াপার-ফিডিংয়ের ডিউটি ধরাইয়া দিছে! মাম্মি লাইফ শুরু!',
         tone: 'neutral',
       },
     ],
@@ -510,6 +603,149 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
         effects: { happiness: 3 },
         outcomeText: 'পোলা কানাডা থিকা ফোন দিয়া খালি ট্যাকা চায়! তুই কাইন্দা ব্যাংকের লোন শোধ করস!',
         tone: 'neutral',
+      },
+    ],
+  },
+  {
+id: 'ad_partner_meet_family',
+    text: '{{partner}} কঠিন শর্ত দিয়া ফালাইলো—"তোর কইলাস হলে বইলা নাইলে আমি বাইরাই দিয়া যাইবো!" তুই এহন কইলাস-ডিনারের তারিখ ঠিক করছস।',
+    minAge: 20,
+    maxAge: 55,
+    weight: 55,
+    tone: 'neutral',
+    category: 'adult',
+    tags: ['romance', 'family'],
+    relationshipState: ['partnered'],
+    choices: [
+      {
+        id: 'ad_partner_meet_yes',
+        text: 'দাওয়াত কর: বাসায় মিষ্টি খাওয়াইয়া কইলাস-ডিনার সারো!',
+        effects: { happiness: 8, money: -6, bond: { role: 'partner', amount: 15 } },
+        outcomeText: 'আম্মা টিপ্পনী মাইরা কইলো—"এহনকার ছেলেমেয়েদের ঘাড়ে হাত দিয়া ভরসা করা যায় না!" তয় {{partner}}-এর মিষ্টি হাসিতে সবার মন গলাইয়া গেলো!',
+        tone: 'good',
+      },
+      {
+        id: 'ad_partner_meet_dodge',
+        text: 'বাগড়া দাও: "আব্বু বিদেশে, আম্মু অসুস্থ" ফালতু অজুহাতে টালবাহানা করো!',
+        effects: { happiness: -3, bond: { role: 'partner', amount: -12 } },
+        outcomeText: '{{partner}} রাগে ফুঁসি ফুঁসি কইলো—"তোর কইলাস আর আমি এক টেবিলে খাইতে পারি না, নাইলে এইবার তোরে ভিজাইয়া ধুইয়া খাওয়ামো!"',
+        tone: 'bad',
+      },
+    ],
+  },
+  {
+    id: 'ad_spouse_anniversary',
+    text: 'আজকে তোর আর {{spouse}}-এর বিয়ের বার্ষিকী! মোবাইলে অ্যালার্ম বাজতাছে—ফুলের ফরমায়েশ নাকি চুপিচুপি পালাইবি?',
+    minAge: 22,
+    maxAge: 90,
+    weight: 55,
+    tone: 'good',
+    category: 'adult',
+    tags: ['romance', 'family'],
+    relationshipState: ['married'],
+    choices: [
+      {
+        id: 'ad_anniv_celebrate',
+        text: 'ফুল, মিষ্টি আর একখান থিয়েটারে পুরা প্ল্যান সাজাও!',
+        effects: { money: -12, happiness: 12, bond: { role: 'spouse', amount: 15 } },
+        outcomeText: '{{spouse}} কুড়াইয়া নিলো, চোখে পানি চইলা আইলো। সন্ধ্যাবেলা হাত ধরিয়া হাঁটতে হাঁটতে কইলো—"এমন দিন আর আসবি না?"',
+        tone: 'good',
+      },
+      {
+        id: 'ad_anniv_forget',
+        text: 'বার্ষিকী মানে খালি স্ট্যাটাস আপডেট! দূর থাইকা একখান মেসেজ দিয়া কাজ শেষ।',
+        effects: { happiness: -5, bond: { role: 'spouse', amount: -12 } },
+        outcomeText: '{{spouse}} বসার ঘরে চুপচাপ বইসা কইলো—"গতবছরও ভুলে গিয়েছিলি, এবার কপালে চাপড় মাইরা কাইন্দা নিলাম।"',
+        tone: 'bad',
+      },
+    ],
+  },
+  {
+    id: 'ad_spouse_care',
+    text: 'সকালে ঘুম ভাইঙ্গা দেইখা {{spouse}}-এর জ্বর থারমোমিটারে ১০২! ডাক্তারি ব্যবস্থা না করলে দশা খারাপ!',
+    minAge: 24,
+    maxAge: 85,
+    weight: 60,
+    tone: 'bad',
+    category: 'adult',
+    tags: ['family', 'health'],
+    relationshipState: ['married'],
+    choices: [
+      {
+        id: 'ad_care_hospital',
+        text: 'সরাসরি হাসপাতালে নিয়া ভর্তি করো, পয়সা যাই যাক!',
+        effects: { money: -30, happiness: 4, karma: 4, bond: { role: 'spouse', amount: 18 } },
+        outcomeText: 'প্রথম দিকে নিউমোনিয়া ধরা পরছিলো! {{spouse}} সেরে ওঠার পর হাত শক্ত করে ধইরে কইলো—"তুই থাকতে আমি মরুম না মালিক!"',
+        tone: 'good',
+      },
+      {
+        id: 'ad_care_home',
+        text: 'নিজে কাইজা ঘরোয়া ডাক্তারি করো: লেবু-চা, কুইনাইন আর গা গোঁজা তেল!',
+        effects: { money: -4, happiness: -2, bond: { role: 'spouse', amount: 6 } },
+        outcomeText: 'লেবু-চা খাইয়া জ্বর কমলো ঠিকই, কিন্তু {{spouse}} কইলো—"এবার রক্ষা পাইছস, বারবার এই ঘরোয়া ডাক্তারি করলে আমি হাসপাতালেই ভর্তি হইয়া যাইয়াম!"',
+        tone: 'funny',
+      },
+    ],
+  },
+  {
+    id: 'ad_kid_school_fee',
+    text: '{{child}}-এর স্কুল থাইকা চিরকুট আইছে—বার্ষিক পরীক্ষার আগেই বার্ষিক ফি বাকি! ক্লাস সেকশন বন্ধের হুমকি দিছে!',
+    minAge: 25,
+    maxAge: 50,
+    weight: 60,
+    tone: 'bad',
+    category: 'adult',
+    tags: ['family', 'money'],
+    relationshipState: ['has_child'],
+    predicate: (c) =>
+      c.relationships.some(
+        (r) => r.relation === 'child' && r.alive && (r.age ?? c.age) >= 6 && (r.age ?? c.age) <= 17
+      ),
+    choices: [
+      {
+        id: 'ad_fee_pay',
+        text: 'বাজেটে ছ্যাকা দিয়া ফি মিটাও, সাথে সাথে!',
+        effects: { money: -35, happiness: 3, karma: 4, bond: { role: 'child', amount: 10 } },
+        outcomeText: 'ফি দিয়া আইসা {{child}} ফোনে কইলো—"বাব্বু, তোর জালের ওপর ভরসাই বাঁচালো!" চোখে ঝলকানি ঠিকই বোঝা গেলো।',
+        tone: 'good',
+      },
+      {
+        id: 'ad_fee_dodge',
+        text: 'মাস্টারের কাছে গিয়া কান্নাকাটি—"পরের মাসে পাকা দিমু, ফুলের জবান!"',
+        effects: { money: -8, karma: -3, happiness: -4, bond: { role: 'child', amount: -6 } },
+        outcomeText: 'মাস্টার মাথা নাড়িয়া কইলো—"চাকরির কষ্ট দেইখা দিলাম, কিন্তু পরের মাসে ডাবল!" পরের মাসে ডাবল চার্জের তালিকায় নাম লেখাইয়া গেলো। {{child}} মুখ ভার কইরা রইলো।',
+        tone: 'neutral',
+      },
+    ],
+  },
+  {
+    id: 'ad_child_prize',
+    text: '{{child}} দৌড়াইয়া বাসায় আইয়া চিল্লাইতাছে—"আমি সায়েন্স ফেয়ারে ফার্স্ট হইছি!" পুরা পাড়ায় শব্দ পইড়া গেলো।',
+    minAge: 26,
+    maxAge: 55,
+    weight: 55,
+    tone: 'good',
+    category: 'adult',
+    tags: ['family', 'education'],
+    relationshipState: ['has_child'],
+    predicate: (c) =>
+      c.relationships.some(
+        (r) => r.relation === 'child' && r.alive && (r.age ?? c.age) >= 6 && (r.age ?? c.age) <= 18
+      ),
+    choices: [
+      {
+        id: 'ad_prize_proud',
+        text: 'গলায় ঝুলাইয়া পাড়ার সবার সামনে প্রশংসা করো!',
+        effects: { happiness: 10, karma: 3, bond: { role: 'child', amount: 12 } },
+        outcomeText: '{{child}} গর্বে বুক ফুলাইয়া কইলো—"বাব্বু, তুইও আমার হিরো!" রাতের খাবারে তাকেই রাখা হইলো সবার মাঝখানে।',
+        tone: 'good',
+      },
+      {
+        id: 'ad_prize_dismiss',
+        text: 'চোখ না তুলিয়া বলো—"আগে পরীক্ষাতেও ফার্স্ট হই এহন!"',
+        effects: { happiness: -5, bond: { role: 'child', amount: -10 } },
+        outcomeText: '{{child}}-এর মুখ শুকাইয়া গেলো, কাইন্দা ঘরে ঢুকে দরজা লাগাইয়া দিলো। পুরা রাত কেউ কারো লগে কথা বলে নাই।',
+        tone: 'bad',
       },
     ],
   },
@@ -743,7 +979,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
         id: 'ad_quit_cold',
         text: 'এক্কেরে বিড়ি খাওয়া ছাইড়া দিয়া মাইনষের উপ্রে চোটপাট কর!',
         effects: { health: 9, happiness: -2, addFlag: 'quit_bad_habit' },
-        outcomeText: 'বিড়ি ছাড়ছোস ঠিকই, বাট মেজাজ এমুন ত্যাড়া হইছে যে বউ তোরে তালাক দিয়া বাপের বাড়ি চইলা গেছে!',
+        outcomeText: 'বিড়ি ছাড়ছোস ঠিকই, বাট মেজাজ এমুন ত্যাড়া হইছে যে পাড়ার সবাই তোরে ভয়ে এড়াইয়া চলে!',
         tone: 'good',
       },
       {
@@ -1020,8 +1256,8 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     ],
   },
   {
-    id: 'ad_second_child',
-    text: 'বউ আবার প্রেগন্যান্ট! ডিস্ট্রিক্ট হসপিটাল থিকা ডাক্তার দুই আঙ্গুল তুইলা দেখাইলো জোড়া বাচ্চা!',
+id: 'ad_second_child',
+    text: 'বউ আবার প্রেগন্যান্ট! ডিস্ট্রিক্ট হসপিটাল থিকা ডাক্তার দুই আঙ্গুল তুইলা দেখাইলো জোড়া বাচ্চা!',
     minAge: 26,
     maxAge: 46,
     weight: 45,
@@ -1030,6 +1266,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     tags: ['family', 'milestone'],
     moment: 'birth',
     requiredFlags: ['has_child', 'has_spouse'],
+    gender: 'male',
     choices: [
       {
         id: 'ad_second_jump',
@@ -1043,6 +1280,35 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
         text: 'ফাপড় নিয়া রুটিন মাফিক জিজীবিশা চালাও!',
         effects: { happiness: 8, smarts: 2 },
         outcomeText: 'বাচ্চা দুইটা কান্দে আর তুই কান্দস! সারারাত জাগতে জাগতে তোর চোখের নিচে দুইখান বিশাল ব্যাগ ঝুইলা পড়ছে!',
+        tone: 'neutral',
+      },
+    ],
+  },
+  {
+    id: 'ad_second_child_f',
+    text: 'আবারও প্রেগন্যান্ট! ডাক্তার দুই আঙ্গুল তুইলা দেখাইলো জোড়া বাচ্চা—পেটে এবার ডাবল ঝামেলা!',
+    minAge: 26,
+    maxAge: 46,
+    weight: 45,
+    tone: 'good',
+    category: 'adult',
+    gender: 'female',
+    tags: ['family', 'milestone'],
+    moment: 'birth',
+    requiredFlags: ['has_child', 'has_spouse'],
+    choices: [
+      {
+        id: 'ad_second_jump_f',
+        text: 'ডরে কমোডের উপরে পইড়া মাথা ফালাও!',
+        effects: { happiness: 12, money: -10 },
+        outcomeText: 'জোড়া বাচ্চা জন্ম নিছে! খরচ ডাবল, তুই এহন রাস্তার মোড়ে ফকিরের লাহান বইসা কান্দোস!',
+        tone: 'good',
+      },
+      {
+        id: 'ad_second_steady_f',
+        text: 'ফাপড় নিয়া রুটিন মাফিক জিজীবিষা চালাও!',
+        effects: { happiness: 5, money: -5 },
+        outcomeText: 'ডাবল বাচ্চা সামলাইতে তোর মাথা ঘুড়ায়! তয় ছাইড়া না, এক কাপ চা আর হাসির জোরে টিকে আসছোস!',
         tone: 'neutral',
       },
     ],
@@ -1265,6 +1531,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 75,
     tone: 'good',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'lifestyle'],
     choices: [
       {
@@ -1284,6 +1551,34 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     ],
   },
   {
+    id: 'ad_romance_anniversary_surprise_f',
+    text: 'বিয়ার বার্ষিকী আইছে! {{spouse}}-রে সারপ্রাইজ দেওয়ার ধান্দায় আছোস—এখন ফুল জোগাড় নাকি চুপিচুপি পালাইবি?',
+    minAge: 22,
+    maxAge: 90,
+    weight: 55,
+    tone: 'good',
+    category: 'adult',
+    gender: 'female',
+    tags: ['romance', 'lifestyle'],
+    requiredFlags: ['has_spouse'],
+    choices: [
+      {
+        id: 'anni_grand_resort_f',
+        text: 'উৎসবে জমজমাট রিসোর্টে সারপ্রাইজ প্ল্যান করো!',
+        effects: { money: -25, happiness: 14, bond: { role: 'spouse', amount: 15 } },
+        outcomeText: 'রিসোর্টের ফুল-শোতে {{spouse}} চোখের পানি মছলো—তুইই আমার সব!',
+        tone: 'good',
+      },
+      {
+        id: 'anni_cozy_home_cook_f',
+        text: 'বাসাতেই খিচুড়ি-ভর্তা দিয়া ক্লাসিক টাই-কাপ সারাও!',
+        effects: { money: -6, happiness: 8, bond: { role: 'spouse', amount: 10 } },
+        outcomeText: 'খিচুড়ির পাতে পাশে বসা {{spouse}} মোবাইল ভুলে গেলো—মনের সুখই সব চেয়ে বড়!',
+        tone: 'funny',
+      },
+    ],
+  },
+  {
     id: 'ad_romance_inlaw_visit',
     text: 'শ্বশুর-শাশুড়ি বাসায় আইছে ৩ সপ্তাহের হানাদারি দিতে! তোর জান প্রায় খাঁচায়!',
     minAge: 26,
@@ -1291,6 +1586,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 70,
     tone: 'funny',
     category: 'adult',
+    gender: 'male',
     tags: ['family', 'romance'],
     choices: [
       {
@@ -1317,6 +1613,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 60,
     tone: 'bad',
     category: 'adult',
+    gender: 'male',
     tags: ['romance'],
     choices: [
       {
@@ -1343,6 +1640,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 60,
     tone: 'neutral',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'career'],
     choices: [
       {
@@ -1369,6 +1667,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 65,
     tone: 'neutral',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'health'],
     choices: [
       {
@@ -1395,6 +1694,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 70,
     tone: 'funny',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'family'],
     choices: [
       {
@@ -1421,6 +1721,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 65,
     tone: 'good',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'lifestyle'],
     choices: [
       {
@@ -1447,6 +1748,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 60,
     tone: 'bad',
     category: 'adult',
+    gender: 'male',
     tags: ['romance'],
     choices: [
       {
@@ -1473,6 +1775,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 65,
     tone: 'good',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'family'],
     choices: [
       {
@@ -1499,6 +1802,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 60,
     tone: 'neutral',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'karma'],
     choices: [
       {
@@ -1863,6 +2167,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 65,
     tone: 'neutral',
     category: 'adult',
+    gender: 'male',
     tags: ['finance', 'wealth'],
     choices: [
       {
@@ -1942,6 +2247,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     tone: 'neutral',
     category: 'adult',
     tags: ['family', 'finance'],
+    predicate: (character) => character.career.jobId != null,
     choices: [
       {
         id: 'loan_gift_not_loan',
@@ -2149,6 +2455,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 75,
     tone: 'good',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'health'],
     choices: [
       {
@@ -2201,6 +2508,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 70,
     tone: 'funny',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'lifestyle'],
     choices: [
       {
@@ -2253,6 +2561,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 65,
     tone: 'neutral',
     category: 'adult',
+    gender: 'male',
     tags: ['romance', 'finance'],
     choices: [
       {
@@ -2279,6 +2588,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 65,
     tone: 'neutral',
     category: 'adult',
+    gender: 'male',
     tags: ['romance'],
     choices: [
       {
@@ -2305,6 +2615,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 70,
     tone: 'bad',
     category: 'adult',
+    gender: 'male',
     tags: ['romance'],
     choices: [
       {
@@ -2565,6 +2876,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 75,
     tone: 'good',
     category: 'adult',
+    gender: 'male',
     tags: ['family'],
     choices: [
       {
@@ -2877,6 +3189,7 @@ export const ADULT_EVENTS: readonly LifeEventDef[] = [
     weight: 70,
     tone: 'good',
     category: 'adult',
+    gender: 'male',
     tags: ['health'],
     choices: [
       {

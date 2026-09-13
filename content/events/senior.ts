@@ -9,6 +9,7 @@ export const SENIOR_EVENTS: readonly LifeEventDef[] = [
     weight: 95,
     tone: 'good',
     category: 'senior',
+    gender: 'male',
     tags: ['career', 'milestone'],
     choices: [
       {
@@ -636,6 +637,7 @@ export const SENIOR_EVENTS: readonly LifeEventDef[] = [
     weight: 70,
     tone: 'good',
     category: 'senior',
+    gender: 'male',
     tags: ['lifestyle', 'smarts'],
     choices: [
       {
@@ -844,6 +846,7 @@ export const SENIOR_EVENTS: readonly LifeEventDef[] = [
     weight: 75,
     tone: 'good',
     category: 'senior',
+    gender: 'male',
     tags: ['health'],
     choices: [
       {
