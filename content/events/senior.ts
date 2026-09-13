@@ -702,7 +702,7 @@ export const SENIOR_EVENTS: readonly LifeEventDef[] = [
       {
         id: 'jubilee_endow_school',
         text: 'খুশিতে ফ্যামিলিরে পার্টি দিয়া সব ট্যাকা উড়া!',
-        effects: { karma: 25, fame: 12, money: -150, happiness: 20 },
+        effects: { karma: 25, fame: 12, money: -100, happiness: 20 },
         outcomeText: 'পার্টি দিতে গিয়া তুই ফকির হইয়া গেলি! এহন তুই আর তোর বুড়ি রাস্তায় বইসা হারমোনিয়াম বাজায়া গান গা!',
         tone: 'funny',
       },
@@ -832,7 +832,7 @@ export const SENIOR_EVENTS: readonly LifeEventDef[] = [
       {
         id: 'village_gift_primary_school',
         text: 'গ্রামে গিয়া দানবীর সাইজা স্কুলে ট্যাকা দে!',
-        effects: { karma: 20, happiness: -25, fame: 8, money: -500 },
+        effects: { karma: 20, happiness: -25, fame: 8, money: -100 },
         outcomeText: 'ট্যাকা দেওয়ার পর শুনলি স্কুলের হেডমাস্টার ওই ট্যাকা দিয়া নিজের মাইয়ার বিয়া দিয়া দিছে! তুই পুরাই স্ক্যাম খাইলি, হালায় বোকাচোদা!',
         tone: 'funny',
       },
@@ -878,7 +878,7 @@ export const SENIOR_EVENTS: readonly LifeEventDef[] = [
       {
         id: 'endow_free_clinic',
         text: 'হাসপাতাল বানানোর লাইগা ট্যাকা দিয়া বিশাল সাইনবোর্ড লাগা!',
-        effects: { karma: -10, fame: -20, money: -250, happiness: -30 },
+        effects: { karma: -10, fame: -20, money: -100, happiness: -30 },
         outcomeText: 'সাইনবোর্ডে তোর নামের জায়গায় ভুল কইরা লেইখা দিছে "কঞ্জুস মকসদ মেমোরিয়াল ক্লিনিক"! পাবলিক তোরে নিয়া হাসতাছে, ট্যাকাও গেলো, ইজ্জতও গেলো!',
         tone: 'bad',
       },
