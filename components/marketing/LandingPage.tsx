@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SoundLink } from '@/components/ui/SoundLink';
 import {
   Play,
   Sliders,
@@ -103,14 +104,14 @@ export function LandingPage() {
               <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
               ১০০% ফ্রি ব্রাউজারে
             </span>
-            <Link
+            <SoundLink
               href="/play?start=1"
               data-testid="header-play-btn"
               className="inline-flex items-center gap-2 rounded-xl bg-danger hover:brightness-110 border-b-2 border-b-black/40 active:border-b-0 active:translate-y-0.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-on-danger shadow-md shadow-danger/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
             >
               <Play className="size-3.5 fill-current" />
               <span>এখনই খেলো</span>
-            </Link>
+            </SoundLink>
           </div>
         </div>
       </header>
@@ -147,7 +148,7 @@ export function LandingPage() {
 
             {/* Call to Actions */}
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
-              <Link
+              <SoundLink
                 href="/play?start=1"
                 data-testid="new-game"
                 className="group relative flex w-full sm:w-auto items-center justify-center gap-3 rounded-2xl bg-danger hover:brightness-110 border-b-4 border-b-black/40 active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-on-danger shadow-xl shadow-danger/30 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
@@ -155,16 +156,16 @@ export function LandingPage() {
                 <Play className="size-4 fill-current transition-transform group-hover:scale-110" />
                 <span>মামা, এখনই খেলো</span>
                 <ArrowRight className="size-4 opacity-70 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </SoundLink>
 
-              <Link
+              <SoundLink
                 href="/play?custom=1"
                 data-testid="open-custom-life-btn"
                 className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white/70 hover:bg-white px-6 py-4 text-sm font-semibold tracking-wider text-zinc-700 hover:text-zinc-900 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
               >
                 <Sliders className="size-4 text-zinc-500" />
                 <span>কাস্টম বাঁশ (লাইফ)</span>
-              </Link>
+              </SoundLink>
             </div>
 
             {/* Trust Badges */}
@@ -396,14 +397,14 @@ export function LandingPage() {
               কোনো সাইন-আপ নাই, কোনো ট্যাকা লাগে না। খালি ক্লিক করো আর ব্রাউজারে ইনস্ট্যান্ট বাঁশ খাওয়া শুরু করো।
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
+              <SoundLink
                 href="/play?start=1"
                 data-testid="bottom-play-cta"
                 className="inline-flex items-center gap-2 rounded-2xl bg-danger hover:brightness-110 border-b-4 border-b-black/40 active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-on-danger shadow-lg shadow-danger/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
               >
                 <Play className="size-4 fill-current" />
                 <span>মাগনা জীবন শুরু কর</span>
-              </Link>
+              </SoundLink>
             </div>
           </div>
         </section>
