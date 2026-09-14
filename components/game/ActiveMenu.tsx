@@ -302,7 +302,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 
 /**
- * BitLife-style peer cohort: classmates (study tab) and coworkers (job tab)
+ * Life-sim-style peer cohort: classmates (study tab) and coworkers (job tab)
  * shown under হাতেকলমে জীবনের ধান্ধা instead of the classic relationship rail.
  * Inline actions reuse the shared interactWithPerson engine sink.
  */

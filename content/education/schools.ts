@@ -1,5 +1,5 @@
 /**
- * Dhakaiya school catalog (H — BitLife-style player-chosen schools).
+ * Dhakaiya school catalog (H — player-chosen schools).
  * Three school-age windows mirror the engine stages: elementary (6–11),
  * middle (12–14), high (15–17). Public schools are free (govt), the flagship
  * private institutes carry a tuition fee and an admission smarts gate. A

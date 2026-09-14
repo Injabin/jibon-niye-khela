@@ -621,11 +621,21 @@ export function GameHub() {
                   type="button"
                   onClick={onAgeUp}
                   disabled={!canAgeUp}
+                  aria-busy={isGeneratingEvent}
                   data-testid="age-up"
                   className="group relative inline-flex h-11 w-auto items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-primary/25 px-5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
                 >
-                  <Sparkles className="size-4" aria-hidden="true" />
-                  <span>বয়স বাড়াও (+১ বছর)</span>
+                  {isGeneratingEvent ? (
+                    <>
+                      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                      <span>ভাবছে…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-4" aria-hidden="true" />
+                      <span>বয়স বাড়াও (+১ বছর)</span>
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -654,6 +664,7 @@ export function GameHub() {
           <ControlDeck
             hasCharacter={Boolean(character)}
             canAgeUp={canAgeUp}
+            isGeneratingEvent={isGeneratingEvent}
             onAgeUp={onAgeUp}
             onExport={onExport}
             onImportClick={() => fileInputRef.current?.click()}

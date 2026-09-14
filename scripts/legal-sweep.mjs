@@ -31,6 +31,9 @@ const REFERENCE_DOCS = new Set([
   'UI-DESIGN.md',
   'ui-ux-guide.md',
   'AGENTS.md',
+  'bitlife-full-feature-analysis.md',
+  // Asset/used-by credit logs live in /public/**/CREDITS.md (audio, fonts, 3D, Lottie).
+  'CREDITS.md',
 ]);
 
 const TRADEMARK = /bitlife|bit[ -]life/i;

@@ -55,7 +55,7 @@ export const SUBJECTS: Record<MajorField, SubjectMeta> = {
   arts: { label: 'সাহিত্য ও মানবিক', institute: 'জগন্নাথ বিশ্ববিদ্যালয়', minSmarts: 40 },
 };
 
-/** Subjects the player may currently take, given their smarts (bitlife gate). */
+/** Subjects the player may currently take, given their smarts (smarts gate). */
 export function eligibleSubjects(character: Character): MajorField[] {
   return (Object.keys(SUBJECTS) as MajorField[]).filter(
     (m) => character.stats.smarts >= SUBJECTS[m].minSmarts,
@@ -211,7 +211,7 @@ export function enterHigherEducation(
 }
 
 /**
- * BitLife-style school application (H). The player picks a school for the
+ * Catalog-style school application (H). The player picks a school for the
  * current schooling stage; selective schools need the smarts gate, private
  * schools need the tuition. Re-applying moves the child to the new school.
  */

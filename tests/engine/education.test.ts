@@ -122,7 +122,7 @@ describe('Education Extras (skipClass & joinDebateClub)', () => {
   });
 });
 
-describe('School Catalog (H — BitLife-style picking)', () => {
+describe('School Catalog (H — catalog-style picking)', () => {
   it('catalog has four options per compulsory stage', () => {
     for (const stage of ['elementary', 'middle', 'high'] as const) {
       const byStage = SCHOOLS.filter((s) => s.stage === stage);
@@ -224,7 +224,7 @@ describe('School Catalog (H — BitLife-style picking)', () => {
   });
 });
 
-describe('Higher-Education Subjects (H — BitLife-style picking)', () => {
+describe('Higher-Education Subjects (H — subject-style picking)', () => {
   it('eligibleSubjects gates on smarts', () => {
     const { character } = createCharacter(13001);
     character.stats.smarts = 60;

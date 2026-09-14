@@ -34,6 +34,33 @@ async function assertNoHorizontalScroll(page: Page, contextName: string): Promis
 }
 
 test.describe('Gate 8 — Responsive Layout Overhaul', () => {
+  test('Mobile (360px): minimum supported width — 1-column layout, zero overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await page.goto('/');
+
+    // 1. Landing state
+    await expect(page.getByTestId('new-game')).toBeVisible();
+    await assertNoHorizontalScroll(page, '360px Landing');
+
+    // 2. Start game -> Active Hub
+    await page.getByTestId('new-game').click();
+    await expect(page.getByTestId('character-summary')).toBeVisible();
+    await expect(page.getByTestId('age-up')).toBeVisible();
+
+    // Mobile tier: ControlDeck mounted; LeftSidebar and RightRail are NOT
+    await expect(page.locator('footer')).toBeVisible();
+    expect(await page.locator('aside[aria-label="Character and controls"]').count()).toBe(0);
+    expect(await page.locator('aside[aria-label="Secondary stats and lineage"]').count()).toBe(0);
+
+    await assertNoHorizontalScroll(page, '360px Hub');
+
+    // 3. Modal audit at the minimum width
+    await auditModalsAtViewport(page, 360, 640, '360px');
+
+    // Capture required screenshot (Gate 6 — 360px to desktop).
+    await page.screenshot({ path: 'test-results/responsive/mobile-360px.png', fullPage: false });
+  });
+
   test('Mobile (375px): 1-column layout, sticky anchors, no sidebar/rail, zero overflow', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');

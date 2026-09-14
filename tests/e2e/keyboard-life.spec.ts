@@ -110,7 +110,8 @@ test('one full life, keyboard-only, birth to death', async ({ page, browserName 
   await test.step('a life was lived to death, keys only', async () => {
     await expect(page.getByTestId('life-summary')).toBeVisible({ timeout: 30_000 });
     summary = (await page.getByTestId('life-summary').textContent()) ?? '';
-    expect(summary).toContain('lived for');
+    expect(summary).toContain('মোট');
+    expect(summary).toContain('বছর');
   });
 
   // Narrative block — copied into TESTING.md as Gate 6 evidence.

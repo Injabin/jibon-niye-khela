@@ -402,7 +402,7 @@ export function giveChildAllowance(character: Character, relationshipId: string,
 
 /**
  * Peer population: classmates (school years) and coworkers (job years), the
- * BitLife-style daily contacts that can be befriended or dated later.
+ * life-sim-style daily contacts that can be befriended or dated later.
  */
 
 /** Realistic working-class job ids handed to random coworkers (C, jobId). */
@@ -456,7 +456,7 @@ export function seedCoworkers(character: Character, rng: RNG, count: number = 3)
   return needed;
 }
 
-/** Escalates a classmate/coworker into a proper friendship (BitLife-style). */
+/** Escalates a classmate/coworker into a proper friendship (friendship-style). */
 export function befriendPeer(character: Character, relationshipId: string, rng: RNG): RelationshipActionResult {
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'বন্ধু বানাইবার মানুষ কই? ক্লাসে-অফিসে তো সবাই দূর দূর বাঁচতাছে!', tone: 'neutral' };

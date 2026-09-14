@@ -334,7 +334,7 @@ export interface GameStoreActions {
   suckUpToBoss(): boolean;
   /** Active-menu career action: ask for a raise. */
   askForRaise(): boolean;
-  /** Interact with any living person in character.relationships using BitLife sub-actions. */
+  /** Interact with any living person in character.relationships using relationship sub-actions. */
   interactWithPerson(relationshipId: string, action: RelationshipAction): boolean;
   /** Reach out to an ex-partner via call or text. */
   callEx(relationshipId: string): boolean;
