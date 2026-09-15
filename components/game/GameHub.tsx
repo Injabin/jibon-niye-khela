@@ -30,7 +30,7 @@ import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
-import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, X } from 'lucide-react';
+import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, CircleCheck, X } from 'lucide-react';
 
 interface Snapshot {
   alive: boolean;
@@ -96,6 +96,7 @@ export function GameHub() {
   const importFromRaw = useGameStore((s) => s.importFromRaw);
   const resetGame = useGameStore((s) => s.resetGame);
   const clearRejection = useGameStore((s) => s.clearRejection);
+  const clearMessage = useGameStore((s) => s.clearMessage);
   const continueAsHeir = useGameStore((s) => s.continueAsHeir);
   const isPaused = useGameStore((s) => s.isPaused);
   const setPaused = useGameStore((s) => s.setPaused);
@@ -120,6 +121,15 @@ export function GameHub() {
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  const popupText = rejection ?? message;
+  const clearPopup = rejection ? clearRejection : clearMessage;
+
+  useEffect(() => {
+    if (!popupText) return;
+    const autoDismiss = window.setTimeout(clearPopup, 30_000);
+    return () => window.clearTimeout(autoDismiss);
+  }, [popupText, clearPopup]);
 
   function playCue(event: SfxEvent) {
     if (!soundManager.soundEnabled) return;
@@ -405,32 +415,43 @@ export function GameHub() {
       </div>
 
       <AnimatePresence>
-        {rejection && (
+        {(rejection || message) && (
           <motion.div
-            className="pointer-events-none fixed inset-x-3 top-3 z-[70] flex justify-center sm:inset-x-auto sm:right-5 sm:top-5"
-            initial={{ opacity: 0, y: -16, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
           >
-            <div
-              className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border border-danger-border bg-surface p-4 text-sm font-medium text-text shadow-overlay backdrop-blur-xl"
-              role="alert"
-              aria-live="assertive"
-              data-testid="rejection-popup"
+            <div className="pointer-events-none absolute inset-0 bg-surface-overlay/60" aria-hidden="true" />
+            <motion.div
+              className={`pointer-events-auto relative flex w-full max-w-md items-start gap-3 rounded-2xl border bg-surface p-4 text-sm font-medium text-text shadow-overlay backdrop-blur-xl ${
+                rejection ? 'border-danger-border' : 'border-tone-good/40'
+              }`}
+              role={rejection ? 'alert' : 'status'}
+              aria-live={rejection ? 'assertive' : 'polite'}
+              data-testid={rejection ? 'rejection-popup' : 'success-popup'}
+              initial={{ opacity: 0, scale: 0.95, y: -12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
             >
-              <ThumbsDown className="mt-0.5 size-5 shrink-0 text-danger-text" aria-hidden="true" />
-              <p className="min-w-0 flex-1 leading-relaxed">{rejection}</p>
+              {rejection ? (
+                <ThumbsDown className="mt-0.5 size-5 shrink-0 text-danger-text" aria-hidden="true" />
+              ) : (
+                <CircleCheck className="mt-0.5 size-5 shrink-0 text-tone-text-good" aria-hidden="true" />
+              )}
+              <p className="min-w-0 flex-1 leading-relaxed">{rejection ?? message}</p>
               <button
                 type="button"
-                onClick={clearRejection}
-                data-testid="dismiss-rejection"
-                className="shrink-0 rounded-lg p-1 text-danger-text transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
-                aria-label="রিজেকশনের বার্তা বন্ধ করো"
+                onClick={rejection ? clearRejection : clearMessage}
+                data-testid={rejection ? 'dismiss-rejection' : 'dismiss-message'}
+                className="shrink-0 rounded-lg p-1 text-text-muted transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
+                aria-label={rejection ? 'রিজেকশনের বার্তা বন্ধ করো' : 'সাফল্যের বার্তা বন্ধ করো'}
               >
                 <X className="size-4" aria-hidden="true" />
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

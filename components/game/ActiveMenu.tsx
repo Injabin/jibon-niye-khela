@@ -28,7 +28,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'school', label: 'পড়াশোনা' },
   { id: 'career', label: 'চাকরি ও রুজি' },
   { id: 'romance', label: 'প্রেম-ভালোবাসা' },
-  { id: 'assets', label: 'সম্পদ ও ট্যাকা-পয়সা' },
+  { id: 'assets', label: 'ধন-সম্পদ' },
   { id: 'crime', label: 'ধান্ধাবাজি' },
   { id: 'health', label: 'স্বাস্থ্য ও জীবনযাপন' },
 ];
@@ -149,7 +149,7 @@ export function ActiveMenu({
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 border-b border-border bg-surface px-4 py-2.5" role="tablist">
+            <div className="grid grid-cols-2 gap-1.5 border-b border-border bg-surface px-4 py-2.5 sm:grid-cols-3" role="tablist">
               {TABS.map((tabDef) => (
                 <button
                   key={tabDef.id}
@@ -158,7 +158,7 @@ export function ActiveMenu({
                   aria-selected={tab === tabDef.id}
                   data-testid={`actions-tab-${tabDef.id}`}
                   onClick={() => setTab(tabDef.id)}
-                  className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-all active:scale-[0.98] ${tab === tabDef.id
+                  className={`w-full justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all active:scale-[0.98] ${tab === tabDef.id
                       ? 'bg-primary text-on-primary'
                       : 'text-text-muted hover:bg-surface-raised hover:text-text'
                     }`}

@@ -371,6 +371,8 @@ export interface GameStoreActions {
   togglePause(): void;
   /** Dismiss the current rejection popup after the player has read it. */
   clearRejection(): void;
+  /** Dismiss the current success message after the player has read it. */
+  clearMessage(): void;
   /** Update the presentation-only avatar layers and persist the save. */
   setAvatarAppearance(appearance: Partial<AvatarAppearance>): boolean;
   /** Name a baby from a pending birth and add them as a child relationship. */
@@ -1887,6 +1889,10 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
     clearRejection() {
       set({ rejection: null });
+    },
+
+    clearMessage() {
+      set({ message: null });
     },
 
     setAvatarAppearance(appearance) {
