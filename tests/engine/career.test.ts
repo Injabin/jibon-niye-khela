@@ -115,3 +115,64 @@ describe('career ladders (E)', () => {
     expect(character.reputation.fame).toBe(beforeFame);
   });
 });
+
+describe('professional jobs require the matching major (M6)', () => {
+  /** Undergraduate plus an optional major flag — then probe a job. */
+  function undergrad(seed: number, major?: string, smarts = 90) {
+    const { character } = fresh(seed);
+    character.age = 30;
+    character.education.stage = 'undergraduate';
+    character.education.graduated = true;
+    character.stats.smarts = smarts;
+    if (major) character.flags.push(major);
+    return character;
+  }
+
+  it('programmer now needs the science/engineering major', () => {
+    const job = JOB_BOARD.find((j) => j.id === 'programmer')!;
+    expect(isJobEligible(job, undergrad(601))).toBe(false);
+    expect(isJobEligible(job, undergrad(602, 'major_arts'))).toBe(false);
+    expect(isJobEligible(job, undergrad(603, 'major_stem'))).toBe(true);
+  });
+
+  it('the new board lists data_scientist, civil_engineer, banker, pharmacist, university_teacher', () => {
+    for (const id of ['data_scientist', 'civil_engineer', 'banker', 'pharmacist', 'university_teacher']) {
+      expect(JOB_BOARD.some((j) => j.id === id), id).toBe(true);
+    }
+  });
+
+  it('data_scientist and civil_engineer demand major_stem', () => {
+    for (const id of ['data_scientist', 'civil_engineer']) {
+      const job = JOB_BOARD.find((j) => j.id === id)!;
+      expect(isJobEligible(job, undergrad(604)), id).toBe(false);
+      expect(isJobEligible(job, undergrad(605, 'major_stem')), id).toBe(true);
+    }
+  });
+
+  it('banker demands major_business and pharmacist demands major_medicine', () => {
+    const banker = JOB_BOARD.find((j) => j.id === 'banker')!;
+    expect(isJobEligible(banker, undergrad(606, 'major_stem'))).toBe(false);
+    expect(isJobEligible(banker, undergrad(607, 'major_business'))).toBe(true);
+
+    const pharmacist = JOB_BOARD.find((j) => j.id === 'pharmacist')!;
+    expect(isJobEligible(pharmacist, undergrad(608, 'major_business'))).toBe(false);
+    expect(isJobEligible(pharmacist, undergrad(609, 'major_medicine'))).toBe(true);
+  });
+
+  it('university_teacher admits ANY post-secondary major', () => {
+    const job = JOB_BOARD.find((j) => j.id === 'university_teacher')!;
+    for (const major of ['major_stem', 'major_business', 'major_arts', 'major_medicine', 'major_law']) {
+      expect(isJobEligible(job, undergrad(610, major)), major).toBe(true);
+    }
+    expect(isJobEligible(job, undergrad(611))).toBe(false);
+  });
+
+  it('annualSalary scales up the ladder for the new roles', () => {
+    for (const id of ['data_scientist', 'civil_engineer', 'banker', 'pharmacist', 'university_teacher']) {
+      const job = JOB_BOARD.find((j) => j.id === id)!;
+      const t2 = annualSalary(job, 60, 2);
+      const t0 = annualSalary(job, 60, 0);
+      expect(t2, id).toBeGreaterThan(t0);
+    }
+  });
+});

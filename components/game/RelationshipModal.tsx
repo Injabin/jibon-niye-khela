@@ -313,7 +313,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
         )}
 
         {/* 3. UNIVERSAL SOCIAL ACTIONS (For all alive non-ex or regular interactions) */}
-        {!isEx && liveRel.alive && (
+        {!isEx && liveRel.alive && character.age >= 5 && (
           <div className="space-y-2">
             <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted">
               সামাজিক মেলামেশা

@@ -29,6 +29,8 @@ export interface JobDef {
     trait?: string;
     /** A major flag required (major_law, major_medicine, …). */
     major?: string;
+    /** Any one of these major flags satisfies the seat (major_arts / major_stem …). */
+    majorAny?: string[];
   };
   /** [min, max] yearly salary. */
   salary: [number, number];
@@ -139,7 +141,7 @@ export const JOB_BOARD: readonly JobDef[] = [
     title: 'সফটওয়্যার ডেভেলপার',
     minAge: 22,
     flag: 'job_tech',
-    requires: { education: 'undergraduate', minSmarts: 60 },
+    requires: { education: 'undergraduate', major: 'major_stem', minSmarts: 60 },
     salary: [1_600, 3_000],
   },
   {
@@ -174,6 +176,51 @@ export const JOB_BOARD: readonly JobDef[] = [
     requires: { education: 'undergraduate', minSmarts: 70 },
     salary: [1_200, 2_600],
   },
+  {
+    id: 'data_scientist',
+    title: 'ডেটা সায়েন্টিস্ট / এআই গবেষক',
+    minAge: 24,
+    flag: 'job_tech',
+    requires: { education: 'undergraduate', major: 'major_stem', minSmarts: 80 },
+    salary: [2_800, 5_800],
+  },
+  {
+    id: 'civil_engineer',
+    title: 'সিভিল ইঞ্জিনিয়ার / আর্কিটেক্ট',
+    minAge: 24,
+    flag: 'job_tech',
+    requires: { education: 'undergraduate', major: 'major_stem', minSmarts: 65 },
+    salary: [2_000, 3_900],
+  },
+  {
+    id: 'banker',
+    title: 'ব্যাংক এক্সিকিউটিভ / অর্থায়ন বিশ্লেষক',
+    minAge: 24,
+    flag: 'job_finance',
+    requires: { education: 'undergraduate', major: 'major_business', minSmarts: 65 },
+    salary: [2_200, 4_200],
+  },
+  {
+    id: 'pharmacist',
+    title: 'ফার্মাসিস্ট / ফার্মেসি ম্যানেজার',
+    minAge: 24,
+    flag: 'job_medical',
+    requires: { education: 'undergraduate', major: 'major_medicine', minSmarts: 70 },
+    salary: [2_100, 4_000],
+  },
+  {
+    id: 'university_teacher',
+    title: 'বিশ্ববিদ্যালয়ের শিক্ষক / গবেষক',
+    minAge: 26,
+    flag: 'job_academic',
+    requires: {
+      education: 'undergraduate',
+      majorAny: ['major_stem', 'major_business', 'major_arts', 'major_medicine', 'major_law'],
+      minSmarts: 75,
+    },
+    salary: [2_300, 4_500],
+  },
+
 ];
 
 export const ALL_JOB_FLAGS: readonly string[] = JOB_BOARD.map((j) => j.flag);
@@ -226,6 +273,7 @@ export function isJobEligible(job: JobDef, character: Character): boolean {
     // must earn the same seat).
     if (req.trait && !character.traits.includes(req.trait) && !character.flags.includes(req.trait)) return false;
     if (req.major && !character.flags.includes(req.major)) return false;
+    if (req.majorAny && !req.majorAny.some((m) => character.flags.includes(m))) return false;
   }
   return true;
 }
@@ -255,6 +303,11 @@ export const CAREER_LADDERS: readonly CareerLadderDef[] = [
   { jobId: 'programmer', titles: ['জুনিয়র ডেভেলপার', 'সিনিয়র ডেভেলপার', 'টেক লিড / আর্কিটেক্ট'], scales: [1, 1.4, 2.0], fameFeed: false },
   { jobId: 'side_business', titles: ['ছোট্ট পসার', 'ব্যবসা-বিস্তার', 'ব্যবসার সাম্রাজ্য'], scales: [1, 1.5, 2.2], fameFeed: false },
   { jobId: 'nurse', titles: ['নার্সিং অ্যাটেনডেন্ট', 'রেজিস্টার্ড নার্স', 'সিনিয়র / হেড নার্স'], scales: [1, 1.35, 1.85], fameFeed: false },
+  { jobId: 'data_scientist', titles: ['জুনিয়র ডেটা বিশ্লেষক', 'ডেটা সায়েন্টিস্ট', 'এআই রিসার্চ লিড'], scales: [1, 1.4, 2.1], fameFeed: false },
+  { jobId: 'civil_engineer', titles: ['জুনিয়র ইঞ্জিনিয়ার', 'সিনিয়র ইঞ্জিনিয়ার', 'প্রজেক্ট আর্কিটেক্ট'], scales: [1, 1.35, 1.9], fameFeed: false },
+  { jobId: 'banker', titles: ['ব্যাংক অফিসার', 'সিনিয়র এক্সিকিউটিভ', 'শাখা ব্যবস্থাপক'], scales: [1, 1.35, 1.9], fameFeed: false },
+  { jobId: 'pharmacist', titles: ['জুনিয়র ফার্মাসিস্ট', 'রেজিস্টার্ড ফার্মাসিস্ট', 'হেড ফার্মেসি ম্যানেজার'], scales: [1, 1.3, 1.8], fameFeed: false },
+  { jobId: 'university_teacher', titles: ['প্রভাষক', 'সহকারী অধ্যাপক', 'অধ্যাপক'], scales: [1, 1.4, 2.0], fameFeed: false },
 ];
 
 const LADDER_BY_JOB = new Map(CAREER_LADDERS.map((l) => [l.jobId, l]));
@@ -311,6 +364,7 @@ export function applyForJob(
   if (hasCriminalRecord(character)) chance -= 0.15;
   if (job.requires?.trait && character.traits.includes(job.requires.trait)) chance += 0.1;
   if (job.requires?.major && character.flags.includes(job.requires.major)) chance += 0.1;
+  if (job.requires?.majorAny?.some((m) => character.flags.includes(m))) chance += 0.1;
   const hireChance = Math.min(0.98, Math.max(0.15, chance));
 
   const hired = rng.chance(hireChance);
