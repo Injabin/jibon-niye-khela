@@ -7,6 +7,7 @@ import { getJobBoard, careerTitle } from '@/lib/engine/events/categories/career'
 import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { getFinance, LOAN_KIND_LABELS, netWorth, QUICK_BANK_AMOUNT } from '@/lib/engine/finance';
+import { ASSET_CATALOG, ASSET_KIND_LABELS } from '@/lib/engine/events/catalog';
 import { peerRelationships, type PeerRelation } from '@/lib/engine/relationships';
 import { relLabel } from '@/lib/ui/relations';
 import { jobLabel } from '@/lib/ui/jobs';
@@ -35,15 +36,6 @@ const TABS: { id: Tab; label: string }[] = [
 export type { Tab };
 
 const BUYABLE_KINDS: AssetKind[] = ['car', 'home', 'jewelry', 'collectible', 'stock', 'crypto'];
-
-const ASSET_KIND_LABELS: Record<AssetKind, string> = {
-  car: 'গাড়ি / বাইক',
-  home: 'বাড়ি / ফ্ল্যাট',
-  jewelry: 'সোনার গহনা',
-  collectible: 'শখের জিনিস',
-  stock: 'শেয়ার মার্কেট',
-  crypto: 'ডিজিটাল সম্পদ',
-};
 
 function coins(value: number): string {
   return value.toLocaleString();
@@ -692,7 +684,7 @@ function AssetsTab({
   onBankrupt,
 }: {
   character: Character;
-  onBuy: (kind: AssetKind) => boolean;
+  onBuy: (kind: AssetKind, options?: { name?: string; price?: number }) => boolean;
   onSell: (assetId: string) => boolean;
   onDeposit: (amount: number) => boolean;
   onWithdraw: (amount: number) => boolean;
@@ -703,6 +695,8 @@ function AssetsTab({
   const finance = getFinance(character);
   const worth = netWorth(character);
   const insolvent = worth < 0;
+  const [listingKind, setListingKind] = useState<AssetKind | null>(null);
+  const list = listingKind ? ASSET_CATALOG[listingKind] : null;
   return (
     <div className="space-y-3">
       <div className="rounded-2xl border border-border bg-surface-raised/60 p-4">
@@ -769,13 +763,61 @@ function AssetsTab({
 
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">কিনাকাটা</p>
-        <div className="flex flex-wrap gap-2">
-          {BUYABLE_KINDS.map((kind) => (
-            <Button key={kind} variant="secondary" onClick={() => onBuy(kind)} data-testid={`buy-${kind}`}>
-              {ASSET_KIND_LABELS[kind]}
-            </Button>
-          ))}
-        </div>
+        {!list ? (
+          <div className="grid grid-cols-2 gap-2">
+            {BUYABLE_KINDS.map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                onClick={() => setListingKind(kind)}
+                data-testid={`kind-${kind}`}
+                className="rounded-xl border border-border bg-surface-raised/60 px-3 py-2.5 text-left text-sm font-medium text-text hover:bg-surface-raised hover:border-primary/40 transition-all"
+              >
+                {ASSET_KIND_LABELS[kind]}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-text">{ASSET_KIND_LABELS[listingKind!]}</p>
+              <button
+                type="button"
+                onClick={() => setListingKind(null)}
+                data-testid="catalog-back"
+                className="text-xs font-semibold text-primary-text hover:underline"
+              >
+                ← বাজারে ফেরো
+              </button>
+            </div>
+            {list.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-raised/40 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-text">{item.name}</p>
+                  <p className="text-xs text-text-muted">
+                    দাম ৳{coins(item.price)}
+                    {character.money < item.price && (
+                      <span className="text-danger-text"> · পকেটে ট্যাকা কম!</span>
+                    )}
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    onBuy(item.kind, { name: item.name, price: item.price });
+                    setListingKind(null);
+                  }}
+                  data-testid={`buy-${item.id}`}
+                >
+                  কিনো
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div>

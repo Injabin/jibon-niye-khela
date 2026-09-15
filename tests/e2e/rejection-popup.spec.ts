@@ -18,7 +18,8 @@ test('rejected actions show a dismissible popup above the game UI', async ({ pag
 
   await page.getByTestId('open-actions').first().click();
   await page.getByTestId('actions-tab-assets').click();
-  await page.getByTestId('buy-car').click();
+  await page.getByTestId('kind-car').click();
+  await page.getByTestId('buy-car_toyota_corolla').click();
 
   const popup = page.getByTestId('rejection-popup');
   await expect(popup).toBeVisible();
