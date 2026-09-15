@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     };
 
     const targetCategory = categoryMap[input.stage] ?? 'universal';
-    const validation = validateGeminiEvent(geminiResult.rawJson, input.age, targetCategory);
+    const validation = validateGeminiEvent(geminiResult.rawJson, input.age, targetCategory, input.gender);
 
     if (!validation.valid || !validation.event) {
       return NextResponse.json(

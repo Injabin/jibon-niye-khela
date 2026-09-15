@@ -1082,7 +1082,7 @@ function RomanceTab({
                         onAskOut({
                           id: partner.id,
                           name: partner.name,
-                          gender: 'female',
+                          gender: character.gender === 'male' ? 'female' : 'male',
                           age: partner.age,
                           archetype: partner.occupation || 'মহল্লার মানুষ',
                           isCelebrity: false,

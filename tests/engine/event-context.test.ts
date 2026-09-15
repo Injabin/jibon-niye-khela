@@ -18,7 +18,7 @@ function atAge(
   religion: Religion = 'islam',
   flags: string[] = [],
 ): Character {
-  const { character } = createCharacter(seed, { religion });
+  const { character } = createCharacter(seed, { religion, gender: 'male' });
   character.age = age;
   character.flags.push(...flags);
   return character;

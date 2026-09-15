@@ -20,6 +20,8 @@ const STAT_EFFECT_KEYS = new Set([
   'addFlag',
   'removeFlag',
   'bond',
+  'addAsset',
+  'removeAsset',
 ]);
 
 const CATEGORIES = new Set(['childhood', 'teen', 'young-adult', 'adult', 'senior', 'universal']);

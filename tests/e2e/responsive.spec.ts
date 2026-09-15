@@ -209,8 +209,14 @@ test.describe('Gate 8 — Responsive Layout Overhaul', () => {
     await page.getByTestId('close-actions').click();
     await expect(page.getByTestId('active-menu')).toBeHidden();
 
-    // 2. Settings Panel (SettingsPanel)
-    await page.getByTestId('open-settings').first().click();
+    // 2. Settings Panel (SettingsPanel). On mobile the settings entry lives in
+    // the deck ⋯ menu; on tablet/desktop it is a direct sidebar button.
+    if (width < 768) {
+      await page.getByTestId('deck-more').click();
+      await page.getByTestId('deck-open-settings').click();
+    } else {
+      await page.getByTestId('open-settings').first().click();
+    }
     await expect(page.getByTestId('settings-panel')).toBeVisible();
     await assertNoHorizontalScroll(page, `${label} SettingsPanel`);
     await page.getByTestId('settings-backdrop').click({ position: { x: 10, y: 10 } });

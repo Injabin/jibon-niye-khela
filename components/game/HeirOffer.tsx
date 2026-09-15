@@ -24,7 +24,7 @@ export function HeirOffer({
     >
       <h2 className="text-base font-semibold tracking-tight text-text">গল্পটা এখানেই শেষ না — চলো এগাই!</h2>
       <p className="mt-1 text-sm text-text-muted">
-        এক সন্তান বড় হইয়া গেছে — ও {heirs[0].name.split(' ').slice(-1)[0]} বংশের নামটা সামনে টাইনা নিতে পারে।
+        সন্তান বড় হইয়া গেছে — ও {heirs[0].name.split(' ').slice(-1)[0]} বংশের নামটা সামনে টাইনা নিতে পারে।
         বাপের-চ্যায়া সম্পদ {heirs.length === 1 ? 'ও একার হাতে' : `${heirs.length} জনের মাঝে ভাগ হবে`}।
       </p>
       <div className="mt-4 flex flex-wrap gap-2">

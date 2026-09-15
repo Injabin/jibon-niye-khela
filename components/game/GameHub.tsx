@@ -18,11 +18,13 @@ import { ControlDeck } from './ControlDeck';
 import { HeirOffer } from './HeirOffer';
 import { LifeSummary } from './LifeSummary';
 import { ProfileSheet } from './ProfileSheet';
+import { RelationsSheet } from './RelationsSheet';
 import { SettingsPanel } from './SettingsPanel';
 import { StickyHeader } from './StickyHeader';
 import { CustomLifeModal } from './CustomLifeModal';
 import { PauseMenu } from './PauseMenu';
 import { ShortcutsModal } from './ShortcutsModal';
+import { BabyNamingModal } from './BabyNamingModal';
 
 import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
@@ -102,6 +104,7 @@ export function GameHub() {
   const [actionsOpen, setActionsOpen] = useState(false);
   const [actionsTab, setActionsTab] = useState<Tab>('school');
   const [profileOpen, setProfileOpen] = useState(false);
+  const [relsOpen, setRelsOpen] = useState(false);
   const [customLifeOpen, setCustomLifeOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,6 +158,9 @@ export function GameHub() {
     }
     if (next.arc !== prev.arc) {
       soundManager.startMusic(next.arc);
+      // The 18th-birthday arc crossover is the one audible life "jump":
+      // a short bundled sting layers over the crossfade into late-life music.
+      playCue('jump');
     }
 
     if (next.health < prev.health) playCue('stat_down');
@@ -249,6 +255,7 @@ export function GameHub() {
     settingsOpen ||
       actionsOpen ||
       profileOpen ||
+      relsOpen ||
       customLifeOpen ||
       shortcutsOpen ||
       isPaused ||
@@ -308,6 +315,11 @@ export function GameHub() {
           setProfileOpen(false);
           return;
         }
+        if (relsOpen) {
+          e.preventDefault();
+          setRelsOpen(false);
+          return;
+        }
 
         if (isPaused) {
           e.preventDefault();
@@ -339,7 +351,8 @@ export function GameHub() {
           !settingsOpen &&
           !customLifeOpen &&
           !actionsOpen &&
-          !profileOpen
+          !profileOpen &&
+          !relsOpen
         ) {
           e.preventDefault();
           onAgeUp();
@@ -355,6 +368,7 @@ export function GameHub() {
     customLifeOpen,
     actionsOpen,
     profileOpen,
+    relsOpen,
     isPaused,
     character,
     canAgeUp,
@@ -421,16 +435,18 @@ export function GameHub() {
         )}
       </AnimatePresence>
 
-      {/* Top bar on Mobile (< 768px) */}
+      {/* Top bar on Mobile (< 768px).
+          Mobile: a 100dvh flex column — the header stays on top and the
+          content area below it is the single scroll container, so scrolling
+          starts under the header. Body itself never scrolls on mobile. */}
       <div
         inert={anyOverlayOpen}
         aria-hidden={anyOverlayOpen || undefined}
         data-game-background="true"
+        className={isMobile ? 'flex h-[100dvh] flex-col overflow-hidden' : undefined}
       >
         {isMobile && character && (
-          <div className="relative z-20">
-            <StickyHeader character={character} compact />
-          </div>
+          <StickyHeader character={character} compact />
         )}
 
       {/* Main Layout:
@@ -438,7 +454,12 @@ export function GameHub() {
           - Tablet (768px–1279px): 2-Column split (LeftSidebar col-span-5 : Chronicle col-span-7)
           - Desktop (≥ 1280px): 3-Region layout (LeftSidebar col-span-3 : Chronicle col-span-6 : RightRail col-span-3)
       */}
-      <div className="relative z-10 mx-auto h-[100dvh] w-full max-w-[1700px] overflow-hidden px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:py-4 xl:px-8">
+      <div
+        tabIndex={isMobile ? 0 : undefined}
+        className={`relative z-10 mx-auto w-full max-w-[1700px] ${isMobile
+        ? 'flex-1 min-h-0 overflow-y-auto px-3 pb-3 focus:outline-none'
+        : 'h-[100dvh] overflow-hidden px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:py-4 xl:px-8'
+      }`}>
         <div
           className={`grid h-full min-h-0 items-stretch ${isMobile
             ? 'grid-cols-1'
@@ -465,23 +486,25 @@ export function GameHub() {
             </div>
           )}
 
-          {/* Center Column (Scrollable Event Timeline):
-              - Mobile: full width, pb-36
+          {/* Center Column (Flex layout):
+              - Static flex-shrink-0 header + a flex-1 overflow-y-auto scroll
+                pane below it. Header never overlaps content, and nothing
+                bleeds through (opaque bg + z-index).
+              - Mobile: full width, pb-36 (page-level scroll)
               - Tablet: 7 cols, dedicated internal scroll container
               - Desktop: 6 cols, dedicated internal scroll container
           */}
           <main
-            id="chronicle-scroll"
             className={`${isMobile
               ? 'pb-36'
               : isTablet
-                ? 'col-span-7 h-full overflow-y-auto pr-2'
-                : 'col-span-6 h-full overflow-y-auto pr-2'
+                ? 'col-span-7'
+                : 'col-span-6'
               } flex flex-col min-h-0 scrollbar-none`}
           >
-            {/* Life-stage Hub Row (gives the center column its own identity) */}
+            {/* Life-stage Hub Row (static flex-shrink-0 header) */}
             {character && character.alive && !isMobile && (
-              <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised/50 px-4 py-3">
+              <div className="z-10 mb-3 flex flex-shrink-0 items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised px-4 py-3 shadow-sm">
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                     জীবনের ধাপ
@@ -504,6 +527,14 @@ export function GameHub() {
               </div>
             )}
 
+            {/* Scrollable Timeline Pane (flex-1, scopes ALL scrolling here) */}
+            <div
+              id="chronicle-scroll"
+              className={`${isMobile
+                ? 'flex flex-col'
+                : 'flex-1 min-h-0 overflow-y-auto'
+                } flex flex-col scrollbar-none`}
+            >
             {/* Ambient Alerts / Feedback */}
             {message && (
               <div
@@ -639,6 +670,7 @@ export function GameHub() {
                 </button>
               </div>
             )}
+            </div>
           </main>
 
           {/* Right Column (Secondary Stats Rail): 3 cols on Desktop */}
@@ -670,9 +702,11 @@ export function GameHub() {
             onImportClick={() => fileInputRef.current?.click()}
             onOpenSettings={() => setSettingsOpen(true)}
             onOpenShortcuts={() => setShortcutsOpen(true)}
-            onReset={resetGame}
             onOpenActions={openActions}
             onOpenProfile={() => setProfileOpen(true)}
+            onOpenRelations={() => setRelsOpen(true)}
+            onStartFreshLife={startFreshLife}
+            onOpenCustomLife={() => setCustomLifeOpen(true)}
           />
         )}
       </div>
@@ -728,6 +762,14 @@ export function GameHub() {
         />
       )}
 
+      {character && (
+        <RelationsSheet
+          open={relsOpen}
+          onClose={() => setRelsOpen(false)}
+          character={character}
+        />
+      )}
+
       <CustomLifeModal
         open={customLifeOpen}
         onClose={() => setCustomLifeOpen(false)}
@@ -754,6 +796,7 @@ export function GameHub() {
         }}
       />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <BabyNamingModal />
       <MomentSting key={stingToken} kind={pendingSting} token={stingToken} />
     </div>
   );

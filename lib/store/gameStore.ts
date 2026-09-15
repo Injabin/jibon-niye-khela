@@ -38,6 +38,7 @@ import {
   dateCandidateOrPartner,
   giveGiftToPartner,
   tryForBaby,
+  birthChildFromPregnancy,
   callOrTextEx,
   hookupWithEx,
   begGetBackTogether,
@@ -191,6 +192,12 @@ function collectPartnerInitiativeEvents(character: Character, rng: RNG): LifeEve
     : [buildPartnerBabyProposalEvent(character, initiative)];
 }
 
+interface PendingBirth {
+  partnerRelId: string;
+  partnerName: string;
+  babyGender: Gender;
+}
+
 export interface GameStoreState {
   character: Character | null;
   seed: number;
@@ -219,6 +226,8 @@ export interface GameStoreState {
   isPaused: boolean;
   /** Whether the hybrid engine is currently requesting a Gemini event. */
   isGeneratingEvent: boolean;
+  /** Babies due from the last age-up (transient — not persisted). */
+  pendingBirths: PendingBirth[];
 }
 
 export type FamilyInteractionType = 'spend_time' | 'chitchat' | 'compliment' | 'ask_money' | 'gift';
@@ -364,6 +373,8 @@ export interface GameStoreActions {
   clearRejection(): void;
   /** Update the presentation-only avatar layers and persist the save. */
   setAvatarAppearance(appearance: Partial<AvatarAppearance>): boolean;
+  /** Name a baby from a pending birth and add them as a child relationship. */
+  nameBaby(partnerRelId: string, name: string): void;
 }
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -385,6 +396,7 @@ const initialState: GameStoreState = {
   familyTree: null,
   isPaused: false,
   isGeneratingEvent: false,
+  pendingBirths: [],
 };
 
 function toSaveState(s: GameStoreState, character: Character): SaveState {
@@ -579,6 +591,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = ageUp(character, rng);
 
+
+
       if (!result.character.alive) {
         achievementsStore.getState().recordLife(result.character);
       }
@@ -587,6 +601,40 @@ export const useGameStore = create<GameStore>()((set, get) => {
         s.familyTree && result.character.alive
           ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
+      // Pregnancy resolution (J): detect due pregnancies after ageUp.
+      let nextPendingBirths = s.pendingBirths;
+      if (result.character.alive) {
+        const existingPending = [...s.pendingBirths];
+        const newPending: { partnerRelId: string; partnerName: string; babyGender: Gender }[] = [];
+        for (const rel of result.character.relationships) {
+          if (rel.pregnantSinceAge === undefined) continue;
+          if (rel.pregnantSinceAge >= result.character.age) continue;
+          const alreadyPending = existingPending.some((b) => b.partnerRelId === rel.id);
+          const yearsOverdue = result.character.age - rel.pregnantSinceAge;
+          if (alreadyPending && yearsOverdue <= 1) {
+            // Player is currently naming this baby — leave the entry alone.
+          } else if (yearsOverdue > 1) {
+            // Safety-net: the year slipped by without the player naming — auto-name.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            birthChildFromPregnancy(result.character, familyTree ?? null, rng, {
+              gender: babyGender,
+              partnerName: rel.name,
+            });
+            rel.pregnantSinceAge = undefined;
+          } else {
+            // Normal flow: baby is due this year — surface as a naming moment.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            newPending.push({ partnerRelId: rel.id, partnerName: rel.name, babyGender });
+          }
+        }
+        const merged = [
+          ...existingPending.filter((b) => result.character!.relationships.some(
+            (r) => r.id === b.partnerRelId && r.pregnantSinceAge !== undefined
+          )),
+          ...newPending,
+        ];
+        nextPendingBirths = merged;
+      }
       const funeralEvents: LifeEventDef[] = [];
       const dramaEvents: LifeEventDef[] = [];
       const peerInterestEvents: LifeEventDef[] = [];
@@ -614,6 +662,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character: result.character,
+        pendingBirths: nextPendingBirths,
         rngState: rng.getState(),
         pendingEvents: events,
         currentEventIndex: 0,
@@ -639,6 +688,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = ageUp(character, rng);
 
+
+
       if (!result.character.alive) {
         achievementsStore.getState().recordLife(result.character);
       }
@@ -647,6 +698,40 @@ export const useGameStore = create<GameStore>()((set, get) => {
         s.familyTree && result.character.alive
           ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
+      // Pregnancy resolution (J): detect due pregnancies after ageUp.
+      let nextPendingBirths = s.pendingBirths;
+      if (result.character.alive) {
+        const existingPending = [...s.pendingBirths];
+        const newPending: { partnerRelId: string; partnerName: string; babyGender: Gender }[] = [];
+        for (const rel of result.character.relationships) {
+          if (rel.pregnantSinceAge === undefined) continue;
+          if (rel.pregnantSinceAge >= result.character.age) continue;
+          const alreadyPending = existingPending.some((b) => b.partnerRelId === rel.id);
+          const yearsOverdue = result.character.age - rel.pregnantSinceAge;
+          if (alreadyPending && yearsOverdue <= 1) {
+            // Player is currently naming this baby — leave the entry alone.
+          } else if (yearsOverdue > 1) {
+            // Safety-net: the year slipped by without the player naming — auto-name.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            birthChildFromPregnancy(result.character, familyTree ?? null, rng, {
+              gender: babyGender,
+              partnerName: rel.name,
+            });
+            rel.pregnantSinceAge = undefined;
+          } else {
+            // Normal flow: baby is due this year — surface as a naming moment.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            newPending.push({ partnerRelId: rel.id, partnerName: rel.name, babyGender });
+          }
+        }
+        const merged = [
+          ...existingPending.filter((b) => result.character!.relationships.some(
+            (r) => r.id === b.partnerRelId && r.pregnantSinceAge !== undefined
+          )),
+          ...newPending,
+        ];
+        nextPendingBirths = merged;
+      }
       const funeralEvents: LifeEventDef[] = [];
       const dramaEvents: LifeEventDef[] = [];
       const peerInterestEvents: LifeEventDef[] = [];
@@ -663,6 +748,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
         set({
           character: result.character,
           rngState: rng.getState(),
+          pendingBirths: [],
           pendingEvents: [...result.firedEvents],
           currentEventIndex: 0,
           lastOutcomeTone: null,
@@ -686,6 +772,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           character: result.character,
           rngState: rng.getState(),
           familyTree,
+          pendingBirths: nextPendingBirths,
           pendingEvents: [...funeralEvents, ...dramaEvents, ...peerInterestEvents, ...partnerInitiativeEvents, ...result.firedEvents],
           currentEventIndex: 0,
           lastOutcomeTone: null,
@@ -702,6 +789,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       // 2. Advance age and stats synchronously so persistence is never stale
       set({
         character: result.character,
+        pendingBirths: nextPendingBirths,
         rngState: rng.getState(),
         familyTree,
         isGeneratingEvent: true,
@@ -735,6 +823,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character: result.character,
+        pendingBirths: nextPendingBirths,
         pendingEvents: [
           ...funeralEvents,
           ...dramaEvents,
@@ -1811,6 +1900,32 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({ character });
       persist();
       return true;
+    },
+
+    nameBaby(partnerRelId, name) {
+      const s = get();
+      if (!s.character || !s.character.alive || !s.pendingBirths.length) return;
+      const character = structuredClone(s.character);
+      const familyTree = structuredClone(s.familyTree);
+      const pendingBirths = [...s.pendingBirths];
+      const birth = pendingBirths.find((b) => b.partnerRelId === partnerRelId);
+      if (!birth) return;
+      // Remove this birth from the pending list
+      const remaining = pendingBirths.filter((b) => b.partnerRelId !== partnerRelId);
+      // Find the partner relationship for name reference
+      const partnerRel = character.relationships.find((r) => r.id === partnerRelId);
+      const partnerName = partnerRel?.name ?? birth.partnerName;
+      const rng = new RNG(s.rngState + character.age);
+      const result = birthChildFromPregnancy(character, familyTree, rng, {
+        gender: birth.babyGender,
+        name: name.trim(),
+        partnerName,
+      });
+      // Clear the pregnancy marker on the partner relationship
+      const partner = character.relationships.find((r) => r.id === partnerRelId);
+      if (partner) partner.pregnantSinceAge = undefined;
+      set({ character, familyTree, pendingBirths: remaining, message: result.text });
+      persist();
     },
 
     resetGame() {

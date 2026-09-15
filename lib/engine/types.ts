@@ -96,6 +96,9 @@ export interface Relationship {
   lastMakePeaceAge?: number;
   /** Count of secret extramarital/infra-partnership affairs this NPC has had (F). */
   affairCount?: number;
+  /** Character age at which this partner conceived — the birth is due the
+   *  following year and surfaces as a baby-naming moment (J). */
+  pregnantSinceAge?: number;
 }
 
 export type EducationStage =
@@ -285,6 +288,10 @@ export interface StatEffects {
   removeFlag?: string;
   /** Relationship meter adjustment applied to living NPCs with the given role. */
   bond?: { role: Relation; amount: number };
+  /** Purchase an asset (car/home/jewelry/stock/crypto) so the buy shows up in wealth. */
+  addAsset?: { kind: AssetKind; value?: number; name?: string };
+  /** Dispose of an owned asset of the given kind (sale, crash, repossession). */
+  removeAsset?: AssetKind;
 }
 
 export interface EventChoice {

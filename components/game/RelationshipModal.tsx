@@ -52,6 +52,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
   const propose = useGameStore((s) => s.propose);
   const haveBaby = useGameStore((s) => s.haveBaby);
   const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
+  const makeOfficial = useGameStore((s) => s.makeOfficial);
 
   if (!relationship || !character) return null;
 
@@ -178,13 +179,24 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
               সংসার ও ভালোবাসার বিশেষ পদক্ষেপ
             </p>
             <div className="grid grid-cols-2 gap-2">
+              {liveRel.relation === 'dating' && (
+                <Button
+                  variant="primary"
+                  onClick={() => makeOfficial(liveRel.id)}
+                  data-testid={`make-official-modal-${liveRel.id}`}
+                  className="col-span-2 flex items-center justify-center gap-2 py-2 text-xs"
+                >
+                  <HeartHandshake className="size-3.5" />
+                  মনের মানুষ বানাও (অফিশিয়াল)
+                </Button>
+              )}
               <Button variant="secondary" onClick={() => datePartner(liveRel.id)} className="py-2 text-xs">
                 ডেট মারা (৳২০০)
               </Button>
               <Button variant="secondary" onClick={() => giveGift(liveRel.id)} className="py-2 text-xs">
                 তোহফা দেওয়া (৳৪০০)
               </Button>
-              {isPartner && !isSpouse && (
+              {liveRel.relation === 'partner' && (
                 <Button
                   variant="primary"
                   onClick={() => propose(liveRel.id, 'kazi_office')}
@@ -193,7 +205,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                   কাজী অফিসে প্রস্তাব (৳২,০০০)
                 </Button>
               )}
-              {isPartner && !isSpouse && (
+              {liveRel.relation === 'partner' && (
                 <Button
                   variant="primary"
                   onClick={() => propose(liveRel.id, 'community_center')}

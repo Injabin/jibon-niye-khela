@@ -62,7 +62,7 @@ describe('PART F — romance drama detection', () => {
   it('a silent NPC affair never surfaces but quietly sours the bond', () => {
     const character = makeCharacter(1, 30);
     const rel = romance(character, 'affair_silent', 'partner', 30);
-    const drama = rollRomanceDrama(character, new RNG(39));
+    const drama = rollRomanceDrama(character, new RNG(45));
 
     expect(drama).toBeNull();
     expect(rel.affairCount).toBe(1);

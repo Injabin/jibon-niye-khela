@@ -7,12 +7,12 @@ export async function readDisplayedState(page: Page) {
   const moneyText = await page.getByTestId('money').textContent();
 
   const ageMatch = ageText?.match(/(\d+)/);
-  const health = await page.getByRole('progressbar', { name: 'Health' }).getAttribute('aria-valuenow');
+  const health = await page.getByRole('progressbar', { name: 'স্বাস্থ্য' }).getAttribute('aria-valuenow');
   const happiness = await page
-    .getByRole('progressbar', { name: 'Happiness' })
+    .getByRole('progressbar', { name: 'সুখ-খুশি' })
     .getAttribute('aria-valuenow');
-  const smarts = await page.getByRole('progressbar', { name: 'Smarts' }).getAttribute('aria-valuenow');
-  const looks = await page.getByRole('progressbar', { name: 'Looks' }).getAttribute('aria-valuenow');
+  const smarts = await page.getByRole('progressbar', { name: 'বুদ্ধি' }).getAttribute('aria-valuenow');
+  const looks = await page.getByRole('progressbar', { name: 'চেহারা' }).getAttribute('aria-valuenow');
 
   return {
     name: summary?.trim() ?? '',
@@ -46,8 +46,10 @@ export async function resolveAllEvents(page: Page): Promise<void> {
         __JNK_GAME_STORE__?: {
           getState: () => {
             pendingEvents?: Array<{ choices?: Array<{ id?: string }> }>;
+            pendingBirths?: Array<{ partnerRelId: string }>;
             currentEventIndex?: number;
             resolveCurrentChoice?: (choiceId: string) => unknown;
+            nameBaby?: (partnerRelId: string, name: string) => unknown;
             isGeneratingEvent?: boolean;
           };
         };
@@ -56,6 +58,14 @@ export async function resolveAllEvents(page: Page): Promise<void> {
       const tick = () => {
         const s = store?.getState();
         if (s?.isGeneratingEvent) {
+          requestAnimationFrame(tick);
+          return;
+        }
+        // Baby-naming prompts (phase J) are store-driven like events: name the
+        // newborn so the modal never stalls the automated loop.
+        const baby = s?.pendingBirths?.[0];
+        if (baby?.partnerRelId) {
+          s?.nameBaby?.(baby.partnerRelId, 'আবরার');
           requestAnimationFrame(tick);
           return;
         }

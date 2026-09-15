@@ -57,6 +57,8 @@ export function isFallbackEventContextEligible(
   }
 
   if (character) {
+    // Gender / religion targeting (default 'any'), mirroring the engine registry
+    if (event.gender && event.gender !== 'any' && event.gender !== character.gender) return false;
     const flags = new Set(getCharacterFlags(character));
     if (requirements.length > 0 && !requirements.every((flag) => flags.has(flag))) return false;
     const forbids = event.antiFlags ?? [];
@@ -138,8 +140,27 @@ export function getFallbackEvent(filter: FallbackFilter): LifeEventDef {
   const idx = h % candidates.length;
   const selected = candidates[idx] ?? candidates[0];
 
+  // Parity with the AI response path (lib/ai/responseValidator.ts): the
+  // game's balance gate clamps stat/karma deltas to ±25, so fallback content
+  // that authors bolder numbers is normalized before it reaches applyEffects.
+  const clampDelta = (value: number): number => Math.max(-25, Math.min(25, value));
+
   return {
     ...selected,
     source: 'fallback',
+    choices: selected.choices.map((choice) => ({
+      ...choice,
+      effects: choice.effects
+        ? {
+            ...choice.effects,
+            health: choice.effects.health !== undefined ? clampDelta(choice.effects.health) : choice.effects.health,
+            happiness:
+              choice.effects.happiness !== undefined ? clampDelta(choice.effects.happiness) : choice.effects.happiness,
+            smarts: choice.effects.smarts !== undefined ? clampDelta(choice.effects.smarts) : choice.effects.smarts,
+            looks: choice.effects.looks !== undefined ? clampDelta(choice.effects.looks) : choice.effects.looks,
+            karma: choice.effects.karma !== undefined ? clampDelta(choice.effects.karma) : choice.effects.karma,
+          }
+        : choice.effects,
+    })),
   };
 }

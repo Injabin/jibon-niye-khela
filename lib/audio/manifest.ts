@@ -21,6 +21,7 @@ export type SfxEvent =
   | 'birth'
   | 'age_up'
   | 'life_stage_change'
+  | 'jump'
   | 'death';
 
 export interface SynthStep {
@@ -52,8 +53,10 @@ export type SfxDef = SynthSfx | FileSfx;
 /**
  * Adaptive music layer (Additional_plus_improved_plan Phase 7): exactly **two**
  * mood tracks total, one per life arc, instead of a per-stage rotation.
- * `early_life` spans birth through age 17; `late_life` from age 18 onward.
- * Tracks crossfade when the age boundary is crossed during an Age Up.
+ * `early_life` (birth → 17) rides the warm `heavenly` track; at the 18th
+ * birthday the `late_life` `ambient` track crossfades in underneath a short
+ * `jump` sting cue. Tracks crossfade when the age boundary is crossed during
+ * an Age Up.
  */
 export type MusicArcId = 'early' | 'late';
 
@@ -67,7 +70,7 @@ export interface MusicTrack {
 export const CROSSFADE_SECONDS = 1.5;
 
 export const MUSIC_MANIFEST: Record<MusicArcId, MusicTrack> = {
-  early: { id: 'early', label: 'Early life (ages 0–17)', mood: 'lighter, warmer', file: '/audio/lofi.ogg' },
+  early: { id: 'early', label: 'Early life (ages 0–17)', mood: 'heavenly, lilting', file: '/audio/heavenly.ogg' },
   late: { id: 'late', label: 'Late life (ages 18+)', mood: 'more mature, weightier', file: '/audio/ambient.ogg' },
 };
 
@@ -171,6 +174,10 @@ export const SFX_MANIFEST: Record<SfxEvent, SfxDef> = {
       { t: 0, freq: 330, freqEnd: 660, type: 'square', dur: 0.4, gain: 0.18 },
       { t: 0.02, freq: 880, type: 'sine', dur: 0.3, gain: 0.12 },
     ],
+  },
+  jump: {
+    kind: 'file',
+    src: '/audio/jump.ogg',
   },
   death: {
     kind: 'synth',

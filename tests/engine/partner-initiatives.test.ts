@@ -150,10 +150,11 @@ describe('PART I — NPC-initiated events from the player\u2019s entourage', () 
     expect(event.choices.map((x) => x.id)).toEqual(['baby_yes', 'baby_not_now']);
 
     const outcome = resolveRomanceDramaChoice(character, event, 'baby_yes', new RNG(found!.seed + 3), tree);
-    expect(outcome).toEqual({ childBirthed: true });
-    expect(character.flags).toContain('has_child');
-    expect(character.relationships.some((r) => r.relation === 'child' && r.age === 0)).toBe(true);
-    expect(tree.members.length).toBe(membersBefore + 1);
+    expect(outcome).toEqual({ pregnancyStarted: true });
+    expect(character.flags).not.toContain('has_child');
+    expect(character.relationships.some((r) => r.relation === 'child' && r.age === 0)).toBe(false);
+    expect(partner.pregnantSinceAge).toBe(character.age);
+    expect(tree.members.length).toBe(membersBefore);
     expect(partner.relation).toBe('partner');
   });
 

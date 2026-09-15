@@ -152,7 +152,8 @@ Return ONLY a valid, raw JSON object (no markdown code fences, no commentary) ad
         "smarts": number between -20 and 20,
         "looks": number between -20 and 20,
         "money": number between -50 and 50,
-        "karma": number between -15 and 15
+        "karma": number between -15 and 15,
+        "addAsset": OPTIONAL object only when the situation involves buying something (a car, home, gold/jewelry, shares, or crypto): { "kind": "car" | "home" | "jewelry" | "collectible" | "stock" | "crypto" }
       }
     }
   ]

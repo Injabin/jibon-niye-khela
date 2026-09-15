@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ageUp } from '@/lib/engine/aging';
 import { createCharacter } from '@/lib/engine/character';
 import { RNG } from '@/lib/engine/rng';
+import { applyStatEffects } from '@/lib/engine/stats';
 import { buyAsset, sellAsset, tickAssets } from '@/lib/engine/events/categories/assets';
 import { applyForJob, getJobBoard, quitJob, tickCareer, workOvertime, suckUpToBoss, askForRaise } from '@/lib/engine/events/categories/career';
 import { commitCrime, tickCrime } from '@/lib/engine/events/categories/crime';
@@ -276,6 +277,48 @@ describe('assets engine (DESIGN.md §5.5)', () => {
       expect(asset.value).toBeGreaterThanOrEqual(1);
       expect(typeof asset.value).toBe('number');
     }
+  });
+
+  it('a content event granting an asset records it and flags ownership', () => {
+    const { character } = createCharacter(17);
+    character.age = 34;
+    applyStatEffects(character, {
+      money: -15,
+      happiness: 6,
+      addAsset: { kind: 'crypto', value: 500, name: 'শেয়ারবাজারে বিটকয়েন' },
+    });
+    const crypto = character.assets.find((a) => a.kind === 'crypto');
+    expect(crypto).toBeDefined();
+    expect(crypto!.name).toBe('শেয়ারবাজারে বিটকয়েন');
+    expect(crypto!.value).toBe(500);
+    expect(crypto!.acquiredAge).toBe(34);
+    expect(character.flags).toContain('has_investment');
+  });
+
+  it('a content event divesting an asset sells it and retires the flag', () => {
+    const { character } = createCharacter(18);
+    character.age = 44;
+    applyStatEffects(character, { money: 500, addAsset: { kind: 'stock', value: 1000 } });
+    expect(character.assets.some((a) => a.kind === 'stock')).toBe(true);
+    applyStatEffects(character, { money: -15, happiness: -6, removeAsset: 'stock' });
+    expect(character.assets.some((a) => a.kind === 'stock')).toBe(false);
+    expect(character.flags).not.toContain('has_investment');
+  });
+
+  it('a leveraged asset grant flips the debt flag but an outright grant does not', () => {
+    const broke = createCharacter(19).character;
+    broke.age = 30;
+    broke.money = -200;
+    applyStatEffects(broke, { addAsset: { kind: 'home', value: 150_000 } });
+    expect(broke.flags).toContain('has_house');
+    expect(broke.flags).toContain('has_debt');
+
+    const flush = createCharacter(20).character;
+    flush.age = 30;
+    flush.money = 800_000;
+    applyStatEffects(flush, { addAsset: { kind: 'car', value: 8_500 } });
+    expect(flush.flags).toContain('has_car');
+    expect(flush.flags).not.toContain('has_debt');
   });
 });
 

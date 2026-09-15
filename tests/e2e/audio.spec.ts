@@ -13,7 +13,7 @@ import { resolveAllEvents, startNewLife } from './helpers';
  */
 test.use({ trace: 'on' });
 
-const EARLY_FILE = '/audio/lofi.ogg';
+const EARLY_FILE = '/audio/heavenly.ogg';
 const LATE_FILE = '/audio/ambient.ogg';
 
 interface ProbeSnapshot {
@@ -94,36 +94,41 @@ async function exportAndImport(page: import('@playwright/test').Page, mutate: (s
 }
 
 test.describe('Gate 7 audio assets', () => {
-  test('exactly two in-manifest tracks exist on disk, retired tracks unreferenced', async () => {
+  test('exactly two in-manifest music tracks exist on disk, plus the jump sting', async () => {
     const root = process.cwd();
     const manifest = await readFile(path.join(root, 'lib/audio/manifest.ts'), 'utf8');
-    const referenced = Array.from(manifest.matchAll(/\/audio\/([A-Za-z0-9_.-]+\.ogg)/g)).map((m) => m[1]);
 
-    // Exactly the two Phase 7 arcs — nothing else may be in the manifest.
-    const ogg = referenced.filter((f) => f.endsWith('.ogg'));
-    expect([...new Set(ogg)].sort()).toEqual([EARLY_FILE.split('/').pop(), LATE_FILE.split('/').pop()].sort());
+    // Music tracks are declared with a `file:` key (SFX use `src:`), so this
+    // scope isolates the two-arc manifest. Everything else is a sound effect.
+    const referenced = Array.from(manifest.matchAll(/file:\s*'\/audio\/([A-Za-z0-9_.-]+\.ogg)'/g)).map((m) => m[1]);
+    expect([...new Set(referenced)].sort()).toEqual([EARLY_FILE.split('/').pop(), LATE_FILE.split('/').pop()].sort());
 
-    // The retired per-stage files must not be referenced anywhere in audio/game code.
+    // The 18th-birthday sting is a bundled file cue, deliberately not a track.
+    expect(manifest).toContain("src: '/audio/jump.ogg'");
+
+    // The retired per-stage music files must not be referenced anywhere in audio/game code.
     for (const file of ['lib/audio/SoundManager.ts', 'components/game/GameHub.tsx']) {
       const src = await readFile(path.join(root, file), 'utf8');
-      for (const retired of ['heavenly.ogg', 'jump.ogg', 'fastsong.ogg']) {
+      for (const retired of ['lofi.ogg', 'fastsong.ogg']) {
         expect(src, `${file} still references ${retired}`).not.toContain(retired);
       }
     }
 
-    // Both active files exist on disk (spot-checking CREDITS entries vs. disk).
+    // All three active files exist on disk (spot-checking CREDITS entries vs. disk).
     const disk = await readdir(path.join(root, 'public/audio'));
-    expect(disk).toContain('lofi.ogg');
+    expect(disk).toContain('heavenly.ogg');
     expect(disk).toContain('ambient.ogg');
+    expect(disk).toContain('jump.ogg');
 
-    // CREDITS accounts for every bundled track + each Phase 7 synthesized cue
+    // CREDITS accounts for every bundled asset + each Phase 7 synthesized cue
     // with a real source/license. No unlicensed or third-party proprietary material.
     const credits = await readFile(path.join(root, 'public/audio/CREDITS.md'), 'utf8');
     for (const cue of ['birth', 'good_event', 'bad_event', 'funny_event', 'death']) {
       expect(credits).toContain(cue);
     }
-    expect(credits).toContain('lofi.ogg');
+    expect(credits).toContain('heavenly.ogg');
     expect(credits).toContain('ambient.ogg');
+    expect(credits).toContain('jump.ogg');
     expect(credits).toContain('CC0');
     expect(credits).not.toContain(['Bit', 'Life'].join(''));
   });
@@ -162,6 +167,10 @@ test.describe('Gate 7 birth + arc crossfade', () => {
       .toBe('late');
     const after = await audioSnapshot(page);
     expect(after.musicPlays).toEqual([EARLY_FILE, LATE_FILE]);
+
+    // The age-18 boundary is the one life "jump" — the bundled sting fires
+    // alongside the crossfade exactly once.
+    expect(after.sfxPlays).toContain('jump');
   });
 });
 

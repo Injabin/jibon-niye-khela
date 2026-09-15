@@ -228,7 +228,7 @@ outcomeText: 'এনাটমির ক্লাসে মরা দেহ দ�
       {
         id: 'ya_crypto_risky',
         text: 'কিডনি বেইচা সব ট্যাকা ক্রিপ্টোতে ঢাইলা দে!',
-        effects: { money: -50, happiness: -40, addFlag: 'has_investment' },
+        effects: { money: -50, happiness: -40, addAsset: { kind: 'crypto', value: 500 } },
         outcomeText: 'কয়েনের দাম জিরো! স্ক্যাম খাইয়া তুই এহন রাস্তায় বইসা ভিক্কা করতাছোস আর দোস্ত আমেরিকায় চিল করতাছে!',
         tone: 'bad',
       },
@@ -243,6 +243,7 @@ outcomeText: 'এনাটমির ক্লাসে মরা দেহ দ�
   },
   {
     id: 'ya_dating_first',
+    gender: 'male',
     text: 'টিংটিং! ডেটিং অ্যাপে একখান মাইয়া তোরে রাইট সোয়াইপ মারছে! তোর লালা বাইর হইয়া গেছে!',
     minAge: 18,
     maxAge: 26,
@@ -321,6 +322,7 @@ outcomeText: 'এনাটমির ক্লাসে মরা দেহ দ�
   },
   {
     id: 'ya_speed_dating',
+    gender: 'male',
     text: 'ধানমন্ডির এক ক্যাফেতে স্পিড ডেটিংয়ে গেছস। সামনে এক কড়া মাইয়া বসা!',
     minAge: 19,
     maxAge: 28,
@@ -347,6 +349,8 @@ outcomeText: 'এনাটমির ক্লাসে মরা দেহ দ�
   },
   {
     id: 'ya_rooftop_candlelight',
+    gender: 'male',
+    requiredFlags: ['has_spouse'],
     text: 'ওয়াইফিরে নিয়া ছাদে ক্যান্ডেললাইট ডিনারের ফাপড় নিছোস! পুরাই রোমান্টিক মুড!',
     minAge: 20,
     maxAge: 29,
@@ -373,6 +377,8 @@ outcomeText: 'এনাটমির ক্লাসে মরা দেহ দ�
   },
   {
     id: 'ya_meeting_the_parents',
+    gender: 'male',
+    requiredFlags: ['has_spouse'],
     text: 'ওয়াইফি তোরে তার বাপের লগে দেখা করতে ডাকছে। শ্বশুর হালায় ডাইরেক্ট রিভলবার নিয়া খাড়ায়া আছে!',
     minAge: 21,
     maxAge: 29,

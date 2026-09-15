@@ -46,6 +46,7 @@ export function validateGeminiEvent(
   raw: unknown,
   characterAge: number,
   targetCategory: LifeEventDef['category'] = 'universal',
+  characterGender?: 'male' | 'female',
 ): ValidationResult {
   validationMetrics.totalChecked++;
 
@@ -120,6 +121,18 @@ export function validateGeminiEvent(
     if (rawEffects.money !== undefined) effects.money = clampDelta(rawEffects.money, -100, 100);
     if (rawEffects.karma !== undefined) effects.karma = clampDelta(rawEffects.karma, -20, 20);
 
+    const ASSET_KINDS = new Set(['car', 'home', 'jewelry', 'collectible', 'stock', 'crypto']);
+    const rawAsset = rawEffects.addAsset as { kind?: unknown; value?: unknown } | undefined;
+    if (rawAsset && typeof rawAsset === 'object' && typeof rawAsset.kind === 'string' && ASSET_KINDS.has(rawAsset.kind)) {
+      effects.addAsset = {
+        kind: rawAsset.kind as 'car' | 'home' | 'jewelry' | 'collectible' | 'stock' | 'crypto',
+        value: typeof rawAsset.value === 'number' && !Number.isNaN(rawAsset.value) ? Math.max(0, Math.round(rawAsset.value)) : undefined,
+      };
+    }
+    if (typeof rawEffects.removeAsset === 'string' && ASSET_KINDS.has(rawEffects.removeAsset)) {
+      effects.removeAsset = rawEffects.removeAsset as 'car' | 'home' | 'jewelry' | 'collectible' | 'stock' | 'crypto';
+    }
+
     validatedChoices.push({
       id: typeof c.id === 'string' && c.id.trim() ? c.id.trim() : `ai_choice_${i + 1}`,
       text: label,
@@ -134,6 +147,20 @@ export function validateGeminiEvent(
     if (pattern.test(fullTextToScan)) {
       validationMetrics.contentFilterFailures++;
       return { valid: false, reason: `Violated banned terms / safety filter (pattern: ${pattern})` };
+    }
+  }
+
+  // --- LAYER 3.5: Gender-Consistent Spouse References ---
+  // Dhakaiya marriage/romance is heterosexual (man dates/marries a woman and
+  // vice versa), so a female character must never receive male-voiced "wife"
+  // (বউ/স্ত্রী/ওয়াইফি) events, and a male character must never get
+  // "husband" (স্বামী) phrasing. Rejecting forces a state-appropriate fallback.
+  if (characterGender) {
+    const spouseMismatch =
+      characterGender === 'female' ? /(বউ|স্ত্রী(?!লোক)|ওয়াইফি)/iu.test(fullTextToScan) : /স্বামী/.test(fullTextToScan);
+    if (spouseMismatch) {
+      validationMetrics.contentFilterFailures++;
+      return { valid: false, reason: 'Gender-mismatched spouse reference in generated event' };
     }
   }
 

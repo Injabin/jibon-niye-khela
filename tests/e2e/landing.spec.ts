@@ -24,23 +24,23 @@ test.describe('Gate 11 — Public Landing / Marketing Page', () => {
     // 2. Primary & Secondary CTAs
     const playCta = page.getByTestId('new-game');
     await expect(playCta).toBeVisible();
-    await expect(playCta).toContainText('ব্রাউজারে ফ্রি খেলো');
+    await expect(playCta).toContainText('মামা, এখনই খেলো');
 
     const customCta = page.getByTestId('open-custom-life-btn');
     await expect(customCta).toBeVisible();
 
     // 3. Gameplay Video and Features
     await expect(page.getByTestId('gameplay-video')).toBeVisible();
-    await expect(page.getByText('প্রতিটা জীবন আলাদা')).toBeVisible();
-    await expect(page.getByText('প্রতিক্রিয়াশীল স্ট্যাট, সাউন্ড আর মুহূর্ত')).toBeVisible();
-    await expect(page.getByText('১০০% ফ্রি সবসময়, কোনো ঐড নাই, অ্যাকাউন্ট নাই')).toBeVisible();
+    await expect(page.getByText('প্রতিটা জীবন এক একটা মাইঙ্কা চিপা')).toBeVisible();
+    await expect(page.getByText('লাইভ স্ট্যাট, চান্দি গরম করা ফিডব্যাক')).toBeVisible();
+    await expect(page.getByText('১০০% ফ্রি, কোনো ভেজাল নাই, নো সাইন-আপ')).toBeVisible();
 
     // 4. Tags
-    await expect(page.getByText('লাইফ সিমুলেশন', { exact: true })).toBeVisible();
-    await expect(page.getByText('চয়েস-চালিত', { exact: true })).toBeVisible();
-    await expect(page.getByText('ফ্রি-টু-প্লে', { exact: true })).toBeVisible();
-    await expect(page.getByText('অফলাইন ফallback', { exact: true })).toBeVisible();
-    await expect(page.getByText('ব্রাউজার-বেসড', { exact: true })).toBeVisible();
+    await expect(page.getByText('ঢাকাইয়া সিম', { exact: true })).toBeVisible();
+    await expect(page.getByText('চয়েস-চালিত বাঁশ', { exact: true })).toBeVisible();
+    await expect(page.getByText('১০০% ফ্রি ফালতুগিরি', { exact: true })).toBeVisible();
+    await expect(page.getByText('অফলাইন প্যারা', { exact: true })).toBeVisible();
+    await expect(page.getByText('ব্রাউজার-বেসড গ্যাঞ্জাম', { exact: true })).toBeVisible();
   });
 
   test('Responsive layouts: 375px, 900px, 1440px with zero horizontal scroll', async ({ page }) => {

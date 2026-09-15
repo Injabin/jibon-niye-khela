@@ -126,9 +126,10 @@ test.describe('legacy / heir mode (M5 #4)', () => {
     const heir = await readCharacter(page);
     expect(heir.age).toBe(22);
     expect(heir.surname).toBeTruthy();
-    // 60,000 split two ways; debt is never inherited.
+    // 60,000 split two ways; debt is never inherited. The heir carries the
+    // family faith, so exactly one religion flag is expected.
     expect(heir.money).toBe(30_000);
-    expect(heir.flags).toEqual([]);
+    expect(heir.flags.filter((f) => f === 'religion_muslim' || f === 'religion_hindu')).toHaveLength(1);
 
     // The heir is playable: stroll a year.
     await page.getByTestId('age-up').click();

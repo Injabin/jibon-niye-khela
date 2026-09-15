@@ -3,6 +3,7 @@ import type { LifeEventDef } from '@/lib/engine/types';
 export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
   {
     id: 'adult_gold_necklace_anniversary',
+    gender: 'male',
     text: 'বিয়ের বর্ষপূর্তিতে বউ আবদার করছে, চকবাজারের খাঁটি সোনার একখান নেকলেস বানায়া দিতে হইবো!',
     minAge: 25,
     maxAge: 55,
@@ -30,6 +31,8 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'adult_buy_flat_mirpur',
+    gender: 'male',
+    requiredFlags: ['has_spouse'],
     text: 'লাইফের সব জমানো ট্যাকা আর বউয়ের গয়না বেইচা মিরপুরে একখান তিন রুমের ফ্লাট কিনার ফাপড় নিছোস!',
     minAge: 35,
     maxAge: 55,
@@ -238,6 +241,7 @@ export const ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'adult_daughter_wedding_arrangements',
+    requiredFlags: ['has_child'],
     text: 'মাইয়ার বিয়ার বয়স হইছে! জামাই পার্টি ৫০ ডেগ কাচ্চির ডিমান্ড দিয়া তোর পাছা মারার প্ল্যান করতাছে!',
     minAge: 45,
     maxAge: 58,

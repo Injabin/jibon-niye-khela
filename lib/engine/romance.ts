@@ -413,7 +413,7 @@ export function cheatBranch(
     if (rel.meter < 20) {
       rel.relation = 'ex';
       rel.romanceStage = 'ex';
-      character.flags = character.flags.filter((f) => f !== 'is_married');
+      character.flags = character.flags.filter((f) => f !== 'is_married' && f !== 'has_spouse');
       const breakupMsg = `${rel.name} তল্পিতল্পা গুটাইয়া মুখের ওপর চাবি মাইরা কইলো—"তোর মতো বেইমানের লগে এক ছাদের নিচে আমি আর এক সেকেন্ডও থাকুম না!" সম্পর্ক চিরতরে শেষ!`;
       character.history.push({ age: character.age, text: breakupMsg, tone: 'bad' });
     }
@@ -534,13 +534,18 @@ export function giveGiftToPartner(
   return { ok: true, text: msg };
 }
 
-/** Tries to have a baby with a committed partner or spouse. Deterministic through RNG and family tree. */
+/**
+ * Tries to conceive with a committed partner or spouse (J). A successful
+ * attempt only marks the pregnancy — the birth is due the following year and
+ * surfaces as a baby-naming moment, so the baby actually arrives in the next
+ * yearly advance instead of the same action. Deterministic through RNG.
+ */
 export function tryForBaby(
   character: Character,
   familyTree: FamilyTree | null,
   relationshipId: string,
   rng: RNG
-): { ok: boolean; text: string; babyMember?: FamilyMember } {
+): { ok: boolean; text: string } {
   if (character.age < 18) {
     return { ok: false, text: 'এহন বাচ্চা লইবার বয়স না — নিজেই তো দই-চিনি খাওয়ার পাত্র!' };
   }
@@ -554,6 +559,10 @@ export function tryForBaby(
     return { ok: false, text: 'বয়সের কাঁটা পাহাড় ডিঙাইছে — প্রাকৃতিক উপায়ে সন্তানের খবর এখন খালি গল্পের পাতায় পাওয়া যায়!' };
   }
 
+  if (rel.pregnantSinceAge !== undefined) {
+    return { ok: false, text: 'ঘরে সুখবর পাওয়া গেছে গিয়া — চিকিৎসক সাব কইলো "ধৈর্য ধরো, আর এহন দ্বিতীয়বার নয়!"' };
+  }
+
   // Fertility check based on health and randomness
   let fertility = 0.65;
   if (character.stats.health < 40) fertility -= 0.2;
@@ -562,27 +571,47 @@ export function tryForBaby(
   const success = rng.chance(fertility);
   if (!success) {
     character.stats.happiness = clamp(character.stats.happiness - 5);
-    const failMsg = `ডাক্তার সাব কইলো—"এহনও সুখবর নাই, দুশ্চিন্তা বাদ দিয়া পুষ্টিকর খাবার খান আর দোয়া করেন।"`;
+    const failMsg = `ডাক্তার সাব কইলো—"এহনও সুখবর নাই, দুশ্চিন্তা বাদ দিয়া পুষ্টিকর খাবার খান আর দোয়া করেন।"`;
     return { ok: false, text: failMsg };
   }
 
-  // Baby is born!
+  // Conception! The baby is due next year — this action only records it.
+  rel.pregnantSinceAge = character.age;
   character.stats.happiness = clamp(character.stats.happiness + 25);
   const EXPENSE = 350;
   character.money = Math.max(0, character.money - EXPENSE);
 
+  const blessing = character.religion === 'islam' ? 'আলহামদুলিল্লাহ!' : 'হরিবোল!';
+  const pregnancyMsg = `${blessing} তোমার আর ${rel.name}-এর ঘরে শুভসংবাদ! চিকিৎসক কইলেন—"এহন নয় মাসের প্যাঁচ, ছোট্ট একটা জিনিস আসতাছে!" মহল্লায় এহনও গুঞ্জন, খবরটা পাইয়া তুই খুশিতে বাকবাকুম!`;
+  character.history.push({ age: character.age, text: pregnancyMsg, tone: 'good' });
+
+  return { ok: true, text: pregnancyMsg };
+}
+
+/**
+ * Turns a recorded pregnancy into a living child (J). Rolls the family-tree
+ * member from the pre-rolled gender + a given/auto name, registers the child
+ * relationship, and sets `has_child`. Deterministic through the RNG.
+ */
+export function birthChildFromPregnancy(
+  character: Character,
+  familyTree: FamilyTree | null,
+  rng: RNG,
+  options: { gender: Gender; name?: string; partnerName?: string }
+): { text: string; babyMember?: FamilyMember } {
   let newMember: FamilyMember | undefined;
   if (familyTree) {
-    const updatedTree = birthChild(familyTree, character, rng);
+    const updatedTree = birthChild(familyTree, character, rng, { gender: options.gender, name: options.name });
     familyTree.members = updatedTree.members;
     familyTree.edges = updatedTree.edges;
     newMember = familyTree.members[familyTree.members.length - 1];
   }
 
-  const defaultBabyName = character.religion === 'hinduism'
-    ? (rng.chance(0.5) ? 'অয়ন' : 'প্রমা')
-    : (rng.chance(0.5) ? 'আবরার' : 'মাইশা');
-  const childName = newMember ? newMember.name : defaultBabyName;
+  const defaultBabyName =
+    character.religion === 'hinduism'
+      ? (options.gender === 'male' ? 'অয়ন' : 'প্রমা')
+      : (options.gender === 'male' ? 'আবরার' : 'মাইশা');
+  const childName = newMember ? newMember.name : options.name?.trim() || defaultBabyName;
   const childId = newMember ? newMember.id : generateId(rng);
 
   const childRel: Relationship = {
@@ -609,13 +638,13 @@ export function tryForBaby(
     character.flags.push('has_child');
   }
 
-  const birthBlessing = character.religion === 'islam' ? 'আলহামদুলিল্লাহ!' : 'হরিবোল!';
-  const birthMsg = `${birthBlessing} তোমার আর ${rel.name}-এর কোল আলো কইরা ফুটফুটে সন্তান "${childName}" দুনিয়ায় আইলো! মহল্লায় গরম গরম জিলাপি আর মিষ্টি বিলানো হইলো!`;
+  const blessing = character.religion === 'islam' ? 'আলহামদুলিল্লাহ!' : 'হরিবোল!';
+  const partnerName = options.partnerName ?? 'সন্তানের মা-বাবা';
+  const birthMsg = `${blessing} তোমার আর ${partnerName}-এর কোল আলো কইরা ফুটফুটে সন্তান "${childName}" দুনিয়ায় আইলো! মহল্লায় গরম গরম জিলাপি আর মিষ্টি বিলানো হইলো!`;
   character.history.push({ age: character.age, text: birthMsg, tone: 'good' });
 
-  return { ok: true, text: birthMsg, babyMember: newMember };
+  return { text: birthMsg, babyMember: newMember };
 }
-
 /** Calls or texts an ex-partner with authentic Dhakaiya outcomes. */
 export function callOrTextEx(
   character: Character,
@@ -826,7 +855,7 @@ export function rollRomanceDrama(character: Character, rng: RNG): RomanceDrama |
 
   // NPC infidelity: a long-neglected partner is far more likely to stray.
   for (const rel of partners) {
-    const affairChance = rel.meter < 35 ? 0.12 : 0.04;
+    const affairChance = rel.meter < 35 ? 0.06 : 0.02;
     if (!rng.chance(affairChance)) continue;
     rel.affairCount = (rel.affairCount ?? 0) + 1;
     const discovered = rel.meter < 35 ? rng.chance(0.65) : rng.chance(0.5);
@@ -867,7 +896,7 @@ export function resolveRomanceDramaChoice(
   choiceId: string,
   rng?: RNG,
   familyTree?: FamilyTree | null
-): { spouseId?: string; childBirthed?: boolean } | null {
+): { spouseId?: string; childBirthed?: boolean; pregnancyStarted?: boolean } | null {
   const drama = event.drama;
   if (!drama) return null;
   const byId = (id: string): Relationship | undefined =>
@@ -1061,7 +1090,7 @@ export function resolveRomanceDramaChoice(
     if (!rel) return null;
     if (choiceId === 'baby_yes') {
       const result = tryForBaby(character, familyTree ?? null, rel.id, rng ?? new RNG(1));
-      if (result.ok) return { childBirthed: true };
+      if (result.ok) return { pregnancyStarted: true };
       character.history.push({ age: character.age, text: result.text, tone: 'neutral' });
       return null;
     }
