@@ -50,11 +50,27 @@ export function peerRelationships(character: Character, kind: PeerRelation): Cha
  * Every action immediately logs an expressive event to character.history for the current year.
  */
 
+/** Under this age the social round (আড্ডা, আলাপ, তারিফ, ঝগড়া, হাত পাতা, তোহফা) stays locked. */
+export const MIN_SOCIAL_AGE = 5;
+
+/** Babies stay out of the social round until their 5th birthday. */
+function tooYoungForSocial(character: Character, rng: RNG): RelationshipActionResult | null {
+  if (character.age >= MIN_SOCIAL_AGE) return null;
+  const lines = [
+    `এত কচি বয়সে এসব সামাজিক কারবার নাই! এহন তো দুধ, ঘুম আর পঁচা লেথা ছাড়া অন্য শখ বোঝাও কঠিন!`,
+    `৫ বছরের নিচের বাচ্চারে আড্ডা-আলাপ-তোহফার থালা বাড়াইলে মা বকা দিবে — আগে কোল ঠিক হইক, বড় হও!`,
+    `এত ছোটু বয়সে টং-দোকানি তোরে চা দিবার বেলা ঘুমাইবার বয়স — মাম্মু-বাব্বুর কোলে শুইয়া আগে বাড়ো!`,
+  ];
+  return { ok: false, text: rng.pick(lines), tone: 'neutral' };
+}
+
 export function spendTimeWithPerson(
   character: Character,
   relationshipId: string,
   rng: RNG
 ): RelationshipActionResult {
+  const tooYoung = tooYoungForSocial(character, rng);
+  if (tooYoung) return tooYoung;
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'আড্ডা দিবার মানুষ কই? গলির মোড়ে চারপাশ ঘুড়া, কে আছে দেখো — কেউ নাই!', tone: 'neutral' };
   if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
@@ -79,6 +95,8 @@ export function chatWithPerson(
   relationshipId: string,
   rng: RNG
 ): RelationshipActionResult {
+  const tooYoung = tooYoungForSocial(character, rng);
+  if (tooYoung) return tooYoung;
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'গল্প-গুজবের মানুষ খুঁইজা পাইলাম না — চায়ের দোকানের ফাঁকা টেবিলে বসা চলবে না!', tone: 'neutral' };
   if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
@@ -103,6 +121,8 @@ export function complimentPerson(
   relationshipId: string,
   rng: RNG
 ): RelationshipActionResult {
+  const tooYoung = tooYoungForSocial(character, rng);
+  if (tooYoung) return tooYoung;
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'তারিফ-শাহিনার মানুষ কই? সামনে কেউ নাই — আয়নার সামনে গিয়া নিজেরেই বলো!', tone: 'neutral' };
   if (isEstranged(rel)) return estrangedRefusal(rel.name, rng);
@@ -127,6 +147,8 @@ export function insultPerson(
   relationshipId: string,
   rng: RNG
 ): RelationshipActionResult {
+  const tooYoung = tooYoungForSocial(character, rng);
+  if (tooYoung) return tooYoung;
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'গালাগালি দিয়া তেজ দেখাইবার মানুষ কই? সামনে মানুষ নাই তো — তেজ ধরার জায়গাও নাই!', tone: 'neutral' };
 
@@ -150,6 +172,8 @@ export function askMoneyFromPerson(
   relationshipId: string,
   rng: RNG
 ): RelationshipActionResult {
+  const tooYoung = tooYoungForSocial(character, rng);
+  if (tooYoung) return tooYoung;
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'টাকা চাইবার মানুষ কই? চারদিকে তাকাইলাম, কেউ তো সামনে নাই — খালি পায়ের ছায়া!', tone: 'neutral' };
 
@@ -257,6 +281,8 @@ export function giveGiftToPerson(
   relationshipId: string,
   rng: RNG
 ): RelationshipActionResult {
+  const tooYoung = tooYoungForSocial(character, rng);
+  if (tooYoung) return tooYoung;
   const rel = character.relationships.find((r) => r.id === relationshipId && r.alive);
   if (!rel) return { ok: false, text: 'তোহফা দিবার মানুষ খুঁইজা পাইলাম না — চকবাজারে মিষ্টির ডাব্বা নিয়া মুড়া ফ্যালবো!', tone: 'neutral' };
 

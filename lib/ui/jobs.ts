@@ -14,6 +14,7 @@ export const JOB_LABELS: Record<string, string> = {
   job_politics: 'রাজনীতি-রংমহল',
   job_sports: 'খেলার মাঠ',
   job_business: 'ব্যবসা-বাণিজ্য',
+  job_academic: 'জ্ঞান-শিক্ষা',
 };
 
 /** Always returns a Dhakaiya label; unknown ids degrade to the raw token wrapped in parens. */

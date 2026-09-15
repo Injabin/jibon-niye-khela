@@ -39,6 +39,7 @@ export const CAREER_FLAGS = [
   'job_politics',
   'job_sports',
   'job_business',
+  'job_academic',
   'perf_high',
   'perf_low',
   'retired',

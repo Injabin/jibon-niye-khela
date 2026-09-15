@@ -472,3 +472,60 @@ describe('Peer vs classic relationship surfaces (G)', () => {
     expect(peerRelationships(character, 'classmate').every((r) => r.alive)).toBe(true);
   });
 });
+
+describe('under-5 gate keeps the social round locked (M6)', () => {
+  /** A mother relationship for a tiny character. */
+  function babyWithMom(seed: number, age: number) {
+    const rng = new RNG(seed);
+    const { character } = createCharacter(seed);
+    character.age = age;
+    character.money = 2000;
+    character.relationships.push({
+      id: 'mom_baby',
+      relation: 'mother' as const,
+      name: 'আম্মু',
+      age: 30,
+      alive: true,
+      meter: 90,
+      metAge: 0,
+    });
+    return { rng, character };
+  }
+
+  it('blocks every universal social action below age 5', () => {
+    const { rng, character } = babyWithMom(500, 2);
+    const momId = character.relationships[character.relationships.length - 1].id;
+    const cases = [
+      spendTimeWithPerson,
+      chatWithPerson,
+      complimentPerson,
+      insultPerson,
+      askMoneyFromPerson,
+      giveGiftToPerson,
+    ];
+    const historyBefore = character.history.length;
+    for (const fn of cases) {
+      const res = fn(character, momId, rng);
+      expect(res.ok, fn.name).toBe(false);
+    }
+    // No meter drift, no money moved, nothing logged — a true lock.
+    const mom = character.relationships[character.relationships.length - 1];
+    expect(mom.meter).toBe(90);
+    expect(character.history.length).toBe(historyBefore);
+  });
+
+  it('allows the universal social actions again at age 5', () => {
+    const { rng, character } = babyWithMom(501, 5);
+    const momId = character.relationships[character.relationships.length - 1].id;
+    const spend = spendTimeWithPerson(character, momId, rng);
+    expect(spend.ok).toBe(true);
+  });
+
+  it('turns an under-5 refusal into a store rejection message', () => {
+    const { character } = babyWithMom(502, 4);
+    const momId = character.relationships[character.relationships.length - 1].id;
+    const res = chatWithPerson(character, momId, new RNG(502));
+    expect(res.ok).toBe(false);
+    expect(res.text.length).toBeGreaterThan(0);
+  });
+});
