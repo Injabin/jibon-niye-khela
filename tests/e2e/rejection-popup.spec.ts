@@ -38,8 +38,12 @@ test('successful actions show a dismissible success popup above the game UI', as
   await page.evaluate(() => {
     const store = (window as unknown as {
       __JNK_GAME_STORE__: {
-        getState: () => { character: Record<string, unknown> };
-        setState: (patch: { character: Record<string, unknown> }) => void;
+        getState: () => { character: Record<string, unknown>; message: string | null; rejection: string | null };
+        setState: (patch: {
+          character: Record<string, unknown>;
+          message?: string | null;
+          rejection?: string | null;
+        }) => void;
       };
     }).__JNK_GAME_STORE__;
     const character = store.getState().character;
