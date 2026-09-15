@@ -2,8 +2,15 @@
  * ============================================================================
  * Gemini API Client (Server-Side Only)
  * ============================================================================
- * Active Model: gemini-2.5-flash (AI Studio Free Tier, September 2026)
- * Fallback Model: gemini-2.0-flash
+ * Active Model: gemini-3.6-flash (verified live Sep 2026; the gemini-flash-latest
+ *              alias resolves to the newest flash, which free tier finds constantly
+ *              503/hanging under demand — a pinned 3.x flash is steadier)
+ * Fallback Model: gemini-flash-lite-latest (lightweight alias that tracks current-gen)
+ *
+ * Measured latency for a full Dhakaiya JSON-mode prompt on free tier: ~10-20s.
+ * REQUEST_TIMEOUT_MS is therefore set to 20s so real calls complete; the game
+ * renders the "ভাবছে…" thinking state meanwhile and drops to the fallback bank
+ * if a call hangs or Google returns 429/503/404.
  *
  * Current Free-Tier Quota & Limits (verified in AI Studio):
  *  - Requests Per Minute (RPM): 15 RPM
@@ -38,9 +45,9 @@ export interface GeminiClientResult {
   retryAfterMs?: number; // Milliseconds for RPM backoff
 }
 
-export const ACTIVE_GEMINI_MODEL = 'gemini-2.5-flash';
-export const FALLBACK_GEMINI_MODEL = 'gemini-2.0-flash';
-const REQUEST_TIMEOUT_MS = 4_000; // 4 seconds max before client falls back
+export const ACTIVE_GEMINI_MODEL = 'gemini-3.6-flash';
+export const FALLBACK_GEMINI_MODEL = 'gemini-flash-lite-latest';
+const REQUEST_TIMEOUT_MS = 20_000; // measured ~10-20s for a full prompt on free tier
 
 const SAFETY_SETTINGS = [
   { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },

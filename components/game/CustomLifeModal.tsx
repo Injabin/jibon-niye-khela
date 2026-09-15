@@ -7,8 +7,15 @@ import { Button } from '@/components/ui/Button';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
-import { MALE_NAMES, FEMALE_NAMES, SURNAMES } from '@/lib/engine/romance';
-import type { AvatarHair, AvatarOutfit, Gender, WealthTier } from '@/lib/engine/types';
+import {
+  MUSLIM_MALE_NAMES,
+  MUSLIM_FEMALE_NAMES,
+  MUSLIM_SURNAMES,
+  HINDU_MALE_NAMES,
+  HINDU_FEMALE_NAMES,
+  HINDU_SURNAMES,
+} from '@/lib/engine/romance';
+import type { AvatarHair, AvatarOutfit, Gender, Religion, WealthTier } from '@/lib/engine/types';
 import {
   CUSTOM_LIFE_HAIR_SWATCHES,
   CUSTOM_LIFE_OUTFIT_SWATCHES,
@@ -64,6 +71,7 @@ export function CustomLifeModal({
   const { ref: overlayRef, onKeyDown: trapKeyDown } = useModalOverlay(open, onClose);
 
   const [gender, setGender] = useState<Gender>('female');
+  const [religion, setReligion] = useState<Religion>('islam');
   const [name, setName] = useState('আনিকা');
   const [surname, setSurname] = useState('চৌধুরী');
   const [birthYear, setBirthYear] = useState(2000);
@@ -73,9 +81,13 @@ export function CustomLifeModal({
   const [outfit, setOutfit] = useState<AvatarOutfit>('sunshine');
 
   const randomizeName = () => {
-    const pool = gender === 'male' ? MALE_NAMES : FEMALE_NAMES;
+    const isHindu = religion === 'hinduism';
+    const malePool = isHindu ? HINDU_MALE_NAMES : MUSLIM_MALE_NAMES;
+    const femalePool = isHindu ? HINDU_FEMALE_NAMES : MUSLIM_FEMALE_NAMES;
+    const surnamePool = isHindu ? HINDU_SURNAMES : MUSLIM_SURNAMES;
+    const pool = gender === 'male' ? malePool : femalePool;
     const pickedName = pool[Math.floor(Math.random() * pool.length)];
-    const pickedSurname = SURNAMES[Math.floor(Math.random() * SURNAMES.length)];
+    const pickedSurname = surnamePool[Math.floor(Math.random() * surnamePool.length)];
     setName(pickedName);
     setSurname(pickedSurname);
   };
@@ -98,6 +110,7 @@ export function CustomLifeModal({
       name: name.trim() || 'জীবন',
       surname: surname.trim() || 'মিয়া',
       gender,
+      religion,
       birthYear,
       wealthTier,
       startingTraits: selectedTraits,
@@ -110,6 +123,11 @@ export function CustomLifeModal({
   const GENDER_LABELS: Record<Gender, string> = {
     female: 'মেয়ে',
     male: 'ছেলে',
+  };
+
+  const RELIGION_LABELS: Record<Religion, string> = {
+    islam: 'ইসলাম',
+    hinduism: 'হিন্দুধর্ম',
   };
 
   return (
@@ -186,6 +204,35 @@ export function CustomLifeModal({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Religion Picker */}
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-muted">
+                  ধর্ম
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['islam', 'hinduism'] as Religion[]).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => {
+                        if (r === religion) return;
+                        setReligion(r);
+                        randomizeName();
+                      }}
+                      data-testid={`custom-religion-${r}`}
+                      className={`rounded-xl px-3 py-2.5 text-xs font-medium border transition-all ${
+                        religion === r ? selected : unselected
+                      }`}
+                    >
+                      {RELIGION_LABELS[r]}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] text-text-muted">
+                  নাম, ধর্মীয় রীতি আর গল্পের ভাষা ধর্ম অনুযায়ী সাজানো হবে
+                </p>
               </div>
 
               {/* Name & Surname with Randomize Dice */}

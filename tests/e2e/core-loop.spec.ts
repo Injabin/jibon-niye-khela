@@ -33,13 +33,16 @@ test.describe('full loop smoke test (Gate 2)', () => {
 
     // The loop terminates only because the character died and the summary rendered.
     await expect(page.getByTestId('life-summary')).toBeVisible();
-    await expect(page.getByTestId('life-summary')).toContainText('Cause of death');
+    await expect(page.getByTestId('life-summary')).toContainText('মৃত্যুর কারণ');
     expect(eventSeen).toBe(true);
   });
 
   test('choosing an option on an event changes the displayed stats', async ({ page }) => {
     await page.goto('/');
     await startNewLife(page);
+
+    // Read the baseline at age 0 (no events yet, progressbars are mounted).
+    const before = await readDisplayedState(page);
 
     // Age up until an event with choices appears.
     for (let i = 0; i < 60; i++) {
@@ -50,7 +53,6 @@ test.describe('full loop smoke test (Gate 2)', () => {
     }
 
     await expect(page.getByTestId('event-card')).toBeVisible();
-    const before = await readDisplayedState(page);
 
     // Gate 5 content draws 0–3 events per year, so a year may hold several
     // cards. Resolve the rest after this first real pointer choice, then

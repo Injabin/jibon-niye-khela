@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { LazyVideo } from './LazyVideo';
+import { PlayCtaLink } from './PlayCtaLink';
 import {
   Play,
   Sliders,
@@ -85,14 +87,14 @@ export function LandingPage() {
             href="/"
             className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg p-1"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-600 group-hover:scale-105 transition-transform duration-200 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-700 group-hover:scale-105 transition-transform duration-200 shadow-[0_0_15px_rgba(244,63,94,0.2)]">
               <Heart className="size-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-black uppercase tracking-wider text-zinc-900 group-hover:text-rose-600 transition-colors">
+              <span className="text-sm font-black uppercase tracking-wider text-zinc-900 group-hover:text-rose-700 transition-colors">
                 Jibon Niye Khela
               </span>
-              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-500">
+              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-600">
                 ঢাকাইয়া লাইফ সিম
               </span>
             </div>
@@ -103,14 +105,14 @@ export function LandingPage() {
               <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
               ১০০% ফ্রি ব্রাউজারে
             </span>
-            <Link
+            <PlayCtaLink
               href="/play?start=1"
-              data-testid="header-play-btn"
+              testId="header-play-btn"
               className="inline-flex items-center gap-2 rounded-xl bg-danger hover:brightness-110 border-b-2 border-b-black/40 active:border-b-0 active:translate-y-0.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-on-danger shadow-md shadow-danger/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
             >
               <Play className="size-3.5 fill-current" />
               <span>এখনই খেলো</span>
-            </Link>
+            </PlayCtaLink>
           </div>
         </div>
       </header>
@@ -124,8 +126,8 @@ export function LandingPage() {
         >
           <div className="flex flex-col items-center text-center">
             {/* Top Pill Announcement */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-700 shadow-[0_0_20px_rgba(244,63,94,0.12)]">
-              <Flame className="size-3.5 text-rose-600" />
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-medium text-rose-800 shadow-[0_0_20px_rgba(244,63,94,0.12)]">
+              <Flame className="size-3.5 text-rose-700" />
               <span>চান্দি গরম করা ঢাকাইয়া লাইফ সিমুলেশন</span>
             </div>
 
@@ -135,7 +137,7 @@ export function LandingPage() {
               className="text-4xl font-extrabold tracking-tight text-zinc-900 sm:text-6xl lg:text-7xl max-w-4xl leading-[1.1]"
             >
               পয়দা হও। বাঁশ খাও। আবার মরো। <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-amber-500 to-rose-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-amber-600 to-rose-700">
                 Jibon Niye Khela
               </span>
             </h1>
@@ -147,22 +149,22 @@ export function LandingPage() {
 
             {/* Call to Actions */}
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
-              <Link
+              <PlayCtaLink
                 href="/play?start=1"
-                data-testid="new-game"
+                testId="new-game"
                 className="group relative flex w-full sm:w-auto items-center justify-center gap-3 rounded-2xl bg-danger hover:brightness-110 border-b-4 border-b-black/40 active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-on-danger shadow-xl shadow-danger/30 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
               >
                 <Play className="size-4 fill-current transition-transform group-hover:scale-110" />
                 <span>মামা, এখনই খেলো</span>
                 <ArrowRight className="size-4 opacity-70 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </PlayCtaLink>
 
               <Link
                 href="/play?custom=1"
                 data-testid="open-custom-life-btn"
                 className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white/70 hover:bg-white px-6 py-4 text-sm font-semibold tracking-wider text-zinc-700 hover:text-zinc-900 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
               >
-                <Sliders className="size-4 text-zinc-500" />
+                <Sliders className="size-4 text-zinc-600" />
                 <span>কাস্টম বাঁশ (লাইফ)</span>
               </Link>
             </div>
@@ -210,21 +212,21 @@ export function LandingPage() {
                       </div>
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-xs font-mono">
-                      <span className="text-rose-600 font-bold">স্বাস্থ্য ৫০%</span>
-                      <span className="text-sky-600 font-bold">দিল খুশ ৩০%</span>
-                      <span className="text-amber-600 font-bold">ঘিলু ১০%</span>
-                      <span className="text-yellow-600 font-bold">ফুটানি ২০%</span>
+                      <span className="text-rose-700 font-bold">স্বাস্থ্য ৫০%</span>
+                      <span className="text-sky-700 font-bold">দিল খুশ ৩০%</span>
+                      <span className="text-amber-700 font-bold">ঘিলু ১০%</span>
+                      <span className="text-yellow-800 font-bold">ফুটানি ২০%</span>
                     </div>
                   </div>
 
                   {/* Mock Center Event & Stats */}
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 my-auto items-center">
                     <div className="hidden md:block col-span-3 rounded-xl border border-zinc-200 bg-white p-4 text-left">
-                      <div className="text-[10px] uppercase font-mono text-zinc-500">স্ট্যাট</div>
+                      <div className="text-[10px] uppercase font-mono text-zinc-600">স্ট্যাট</div>
                       <div className="mt-3 space-y-2 text-xs">
-                        <div className="flex justify-between text-zinc-700"><span>মগজের ঘিলু</span><span className="text-amber-600 font-bold">10</span></div>
+                        <div className="flex justify-between text-zinc-700"><span>মগজের ঘিলু</span><span className="text-amber-700 font-bold">10</span></div>
                         <div className="w-full bg-zinc-200 h-1.5 rounded-full"><div className="bg-amber-500 h-1.5 rounded-full w-[10%]" /></div>
-                        <div className="flex justify-between text-zinc-700"><span>আলগা ভাব</span><span className="text-amber-600 font-bold">90</span></div>
+                        <div className="flex justify-between text-zinc-700"><span>আলগা ভাব</span><span className="text-amber-700 font-bold">90</span></div>
                         <div className="w-full bg-zinc-200 h-1.5 rounded-full"><div className="bg-amber-500 h-1.5 rounded-full w-[90%]" /></div>
                       </div>
                     </div>
@@ -248,11 +250,11 @@ export function LandingPage() {
                     </div>
 
                     <div className="hidden md:block col-span-3 rounded-xl border border-zinc-200 bg-white p-4 text-left">
-                      <div className="text-[10px] uppercase font-mono text-zinc-500">সংসার & গ্যাঞ্জাম</div>
+                      <div className="text-[10px] uppercase font-mono text-zinc-600">সংসার & গ্যাঞ্জাম</div>
                       <div className="mt-3 text-xs text-zinc-700 space-y-1.5">
                         <div>পেশা: <span className="text-zinc-900 font-semibold">ফেলুদা</span></div>
-                        <div>ওয়াইফি: <span className="text-rose-600 font-semibold">লাল বাত্তি</span></div>
-                        <div>অবস্থা: <span className="text-amber-600 font-semibold">ফকির</span></div>
+                        <div>ওয়াইফি: <span className="text-rose-700 font-semibold">লাল বাত্তি</span></div>
+                        <div>অবস্থা: <span className="text-amber-700 font-semibold">ফকির</span></div>
                       </div>
                     </div>
                   </div>
@@ -278,7 +280,7 @@ export function LandingPage() {
           <div className="text-center max-w-3xl mx-auto">
             <h2
               id="features-heading"
-              className="text-xs font-mono uppercase tracking-widest text-rose-600"
+              className="text-xs font-mono uppercase tracking-widest text-rose-700"
             >
               কেন এই গেম খেলবা?
             </h2>
@@ -295,18 +297,13 @@ export function LandingPage() {
             <div className="flex flex-col lg:flex-row items-center gap-8">
               {/* Captured Gameplay Video */}
               <div className="w-full lg:w-7/12 relative aspect-video rounded-xl overflow-hidden border border-zinc-300 bg-zinc-900">
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+                <LazyVideo
+                  src="/media/gameplay-demo.webm"
+                  type="video/webm"
                   poster="/media/gameplay-poster.png"
-                  aria-label="রিয়েল গেমপ্লে ফুটেজ দেখাচ্ছে ইভেন্ট রেজোলিউশন আর স্ট্যাট রিএক্টিভিটি"
-                  className="size-full object-cover"
-                  data-testid="gameplay-video"
-                >
-                  <source src="/media/gameplay-demo.webm" type="video/webm" />
-                </video>
+                  ariaLabel="রিয়েল গেমপ্লে ফুটেজ দেখাচ্ছে ইভেন্ট রেজোলিউশন আর স্ট্যাট রিএক্টিভিটি"
+                  testId="gameplay-video"
+                />
                 <div className="absolute top-3 left-3 rounded-md bg-black/70 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-emerald-400 border border-emerald-500/30 backdrop-blur-md">
                   ● রিয়েল ঢাকাইয়া গ্যাঞ্জাম ফুটেজ
                 </div>
@@ -322,7 +319,7 @@ export function LandingPage() {
                       className="rounded-xl border border-zinc-200 bg-white/80 p-4 sm:p-5 transition-colors hover:border-rose-500/40 hover:bg-white"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-600 shrink-0">
+                        <div className="flex size-9 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-700 shrink-0">
                           <Icon className="size-4" />
                         </div>
                         <h3 className="text-base font-bold text-zinc-900 tracking-tight">
@@ -359,7 +356,7 @@ export function LandingPage() {
           className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 border-t border-zinc-200/80"
         >
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 id="pillars-heading" className="text-xs font-mono uppercase tracking-widest text-zinc-500">
+            <h2 id="pillars-heading" className="text-xs font-mono uppercase tracking-widest text-zinc-600">
               সিস্টেম & মেকানিক্স
             </h2>
             <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
@@ -375,7 +372,7 @@ export function LandingPage() {
                   key={pillar.title}
                   className="rounded-2xl border border-zinc-200 bg-white/80 p-6 hover:border-rose-500/40 hover:bg-white transition-all"
                 >
-                  <div className="flex size-11 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-600 mb-4">
+                  <div className="flex size-11 items-center justify-center rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-700 mb-4">
                     <Icon className="size-5" />
                   </div>
                   <h3 className="text-base font-bold text-zinc-900 mb-2">{pillar.title}</h3>
@@ -396,14 +393,14 @@ export function LandingPage() {
               কোনো সাইন-আপ নাই, কোনো ট্যাকা লাগে না। খালি ক্লিক করো আর ব্রাউজারে ইনস্ট্যান্ট বাঁশ খাওয়া শুরু করো।
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
+              <PlayCtaLink
                 href="/play?start=1"
-                data-testid="bottom-play-cta"
+                testId="bottom-play-cta"
                 className="inline-flex items-center gap-2 rounded-2xl bg-danger hover:brightness-110 border-b-4 border-b-black/40 active:border-b-0 active:translate-y-1 px-8 py-4 text-sm font-bold uppercase tracking-widest text-on-danger shadow-lg shadow-danger/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
               >
                 <Play className="size-4 fill-current" />
                 <span>মাগনা জীবন শুরু কর</span>
-              </Link>
+              </PlayCtaLink>
             </div>
           </div>
         </section>
@@ -413,7 +410,7 @@ export function LandingPage() {
       <footer className="border-t border-zinc-200/80 bg-white/70 py-10 text-xs text-zinc-600">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Heart className="size-4 text-rose-600" />
+            <Heart className="size-4 text-rose-700" />
             <span className="font-semibold text-zinc-900">Jibon Niye Khela</span>
             <span>— খাঁটি ঢাকাইয়া ব্রাউজার লাইফ সিমুলেশন।</span>
           </div>

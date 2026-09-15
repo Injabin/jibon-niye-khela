@@ -86,8 +86,8 @@ test.describe('life summary (M5 #3)', () => {
 
     // Story: cause of death and the timeline with our years in order.
     const summary = page.getByTestId('life-summary');
-    await expect(summary).toContainText('lived for 130 years');
-    await expect(summary).toContainText('Cause of death');
+    await expect(summary).toContainText('মোট 130 বছর');
+    await expect(summary).toContainText('মৃত্যুর কারণ');
 
     const timeline = page.getByTestId('life-timeline');
     await expect(timeline).toContainText('declared it a throne');

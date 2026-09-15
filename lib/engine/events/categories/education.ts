@@ -12,13 +12,18 @@
 import type { RNG } from '@/lib/engine/rng';
 import { applyStatEffects } from '@/lib/engine/stats';
 import { seedClassmates } from '@/lib/engine/relationships';
-import type { Character, EducationSchool, EducationStage, Tone } from '@/lib/engine/types';
+import type { Character, EducationSchool, EducationStage, EducationUniversity, Tone } from '@/lib/engine/types';
 import {
   defaultSchoolForStage,
   findSchoolById,
   stageForAge,
   type SchoolDef,
 } from '@/content/education/schools';
+import {
+  findUniversityById,
+  type UniversityDef,
+  type UniversityMajor,
+} from '@/content/education/universities';
 
 export interface EducationOutcome {
   text: string;
@@ -50,7 +55,7 @@ export const SUBJECTS: Record<MajorField, SubjectMeta> = {
   arts: { label: 'সাহিত্য ও মানবিক', institute: 'জগন্নাথ বিশ্ববিদ্যালয়', minSmarts: 40 },
 };
 
-/** Subjects the player may currently take, given their smarts (bitlife gate). */
+/** Subjects the player may currently take, given their smarts (smarts gate). */
 export function eligibleSubjects(character: Character): MajorField[] {
   return (Object.keys(SUBJECTS) as MajorField[]).filter(
     (m) => character.stats.smarts >= SUBJECTS[m].minSmarts,
@@ -63,6 +68,10 @@ function subjectByMajor(major: MajorField): string {
 
 function toEducationSchool(def: SchoolDef): EducationSchool {
   return { id: def.id, name: def.name, stage: def.stage, prestige: def.prestige };
+}
+
+function toEducationUniversity(def: UniversityDef): EducationUniversity {
+  return { id: def.id, name: def.name, area: def.area, prestige: def.prestige };
 }
 
 export const SCHOOL_START_AGE = 6;
@@ -202,7 +211,7 @@ export function enterHigherEducation(
 }
 
 /**
- * BitLife-style school application (H). The player picks a school for the
+ * Catalog-style school application (H). The player picks a school for the
  * current schooling stage; selective schools need the smarts gate, private
  * schools need the tuition. Re-applying moves the child to the new school.
  */
@@ -264,10 +273,10 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
       e.graduated = true;
       e.enrolled = false;
       toggleStudentFlag(character, false);
-      return {
+return {
         text: e.stage === 'vocational'
           ? 'ঢাকা পলিটেকনিকের কারিগরি ডিপ্লোমা শেষ কইরা সার্টিফিকেট হাতে পাইলা! এহন তুমি পুরাই ওস্তাদ কারিগর!'
-          : `মাথায় সমাবর্তনের কালো ক্যাপ পইরা গ্র্যাজুয়েট (graduate) হইলা! মহল্লার পোলাপাইন কয়—"মামা তো এহন আস্ত শিক্ষিত জজ-ব্যারিস্টার!"`,
+          : `মাথায় সমাবর্তনের কালো ক্যাপ পইরা ${e.university?.name ?? 'ভার্সিটি'} থিকা গ্র্যাজুয়েট (graduate) হইলা! মহল্লার পোলাপাইন কয়—"মামা তো এহন আস্ত শিক্ষিত জজ-ব্যারিস্টার!"`,
         tone: 'good',
       };
     }
@@ -332,6 +341,74 @@ export function tickEducation(character: Character, rng: RNG): EducationOutcome 
   }
 
   return null;
+}
+
+/**
+ * Six-year-old-style university enrollment (Part E). The player picks a real
+ * Dhaka institute from the catalog; govt institutes are free behind a smarts
+ * gate, private ones charge tuition. Defaults the major from the subject pool
+ * restricted to the institute's offerings.
+ */
+export function enrollAtUniversity(
+  character: Character,
+  rng: RNG,
+  universityId: string,
+  major?: UniversityMajor,
+): EducationOutcome & { accepted: boolean } {
+  const uni = findUniversityById(universityId);
+  if (!uni) {
+    return { accepted: false, text: 'এই নামে কোনো ভার্সিটি ঢাকার ম্যাপে নাই মিয়া — সঠিক নাম খোঁজো!', tone: 'neutral' };
+  }
+
+  const e = character.education;
+
+  if (!character.alive) {
+    return { accepted: false, text: 'কফিনের ভেতর থাইকা ভার্সিটিতে যাওয়া হয় না মিয়া — তুমি তো উল্টো পানে গেছো!', tone: 'bad' };
+  }
+  if (e.enrolled) {
+    return { accepted: false, text: 'তুমি তো অলরেডি কোনো প্রতিষ্ঠানে পড়তাছো, ক্লাসে মন দেও!', tone: 'neutral' };
+  }
+  if (e.graduated) {
+    return { accepted: false, text: 'পড়াশোনার পাট তো চুকাইয়া ফালাইছো, এহন কামাই-রুজির ধান্দা করো!', tone: 'neutral' };
+  }
+  if (character.age < SCHOOL_END_AGE) {
+    return { accepted: false, text: 'স্কুল তো এখনও শ্যাষ হয় নাই! আগেই ভার্সিটির খোয়াব দেখস, হালায়!', tone: 'neutral' };
+  }
+  if (uni.minSmarts !== undefined && character.stats.smarts < uni.minSmarts) {
+    return {
+      accepted: false,
+      text: `${uni.name}-র ভর্তি-পরীক্ষা দিয়া ফেল করলা — "আগে বুদ্ধি বাড়াও, তারপর নামকরা ভার্সিটির ফাপড়!"`,
+      tone: 'neutral',
+    };
+  }
+
+  const allowed = (uni.majors ?? Object.keys(SUBJECTS)) as MajorField[];
+  const pickable = eligibleSubjects(character).filter((m) => allowed.includes(m));
+  const chosen: MajorField =
+    major && allowed.includes(major) && character.stats.smarts >= SUBJECTS[major].minSmarts
+      ? major
+      : pickable.length > 0
+        ? rng.pick(pickable)
+        : allowed[allowed.length - 1];
+
+  if (character.money < uni.tuition) {
+    return { accepted: false, text: `ভর্তি ফি ৳${uni.tuition} দেবার পয়সা পকেটে নাই! আগে ট্যাকা কামা, পরে পড়া!`, tone: 'neutral' };
+  }
+
+  character.money -= uni.tuition;
+  e.stage = 'undergraduate';
+  e.enrolled = true;
+  e.enrolledAge = character.age;
+  e.university = toEducationUniversity(uni);
+  setMajor(character, chosen);
+  toggleStudentFlag(character, true);
+  if (!hasFlag(character, 'education_university')) character.flags.push('education_university');
+  if (character.money < 0 && !hasFlag(character, 'has_debt')) character.flags.push('has_debt');
+
+  const prestigeLine = uni.prestige >= 2 ? ' নামকরা ভার্সিটি — পড়ালেখায় বেশি লাভ থাকবো!' : '';
+  const text = `${uni.name} (${uni.area})-তে ভর্তি হইলা — ${subjectByMajor(chosen)} পড়া শুরু!${prestigeLine}`;
+  character.history.push({ age: character.age, text, tone: 'good' });
+  return { accepted: true, text, tone: 'good' };
 }
 
 /** Studies harder to boost GPA and smarts at the cost of happiness. */

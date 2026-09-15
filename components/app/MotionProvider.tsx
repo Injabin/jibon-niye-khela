@@ -1,6 +1,5 @@
 'use client';
 
-import { MotionConfig } from 'framer-motion';
 import { useEffect, type ReactNode } from 'react';
 import { soundManager } from '@/lib/audio/SoundManager';
 import { useEffectiveReducedMotion } from '@/lib/hooks/useEffectiveReducedMotion';
@@ -37,7 +36,5 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     window.__JNK_AUDIO__ = { snapshot: () => soundManager.getDebugState() };
   }, [effectiveReduced]);
 
-  return (
-    <MotionConfig reducedMotion={effectiveReduced ? 'always' : 'never'}>{children}</MotionConfig>
-  );
+  return children;
 }

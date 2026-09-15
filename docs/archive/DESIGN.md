@@ -261,7 +261,7 @@ Concretely:
   `minAge`/`maxAge`, `requiredFlags`, `statEffects`, `choices[]`, `weight`,
   `tags`), so writers (or the agent) can add events without touching
   engine code.
-- Target launch content volume: **150ΓÇô250 unique events** spread across
+- Target launch content volume: **300ΓÇô500 unique events** spread across
   categories in ┬º5, weighted so childhood/teen years (highest replay
   frequency) have the deepest pool.
 - Tag events with a `tone` (`wholesome | dark-comedy | serious | absurd`)

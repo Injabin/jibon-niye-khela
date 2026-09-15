@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -19,22 +18,19 @@ import { ControlDeck } from './ControlDeck';
 import { HeirOffer } from './HeirOffer';
 import { LifeSummary } from './LifeSummary';
 import { ProfileSheet } from './ProfileSheet';
+import { RelationsSheet } from './RelationsSheet';
 import { SettingsPanel } from './SettingsPanel';
 import { StickyHeader } from './StickyHeader';
 import { CustomLifeModal } from './CustomLifeModal';
 import { PauseMenu } from './PauseMenu';
 import { ShortcutsModal } from './ShortcutsModal';
+import { BabyNamingModal } from './BabyNamingModal';
 
 import { LeftSidebar } from './dashboard/LeftSidebar';
 import { RightRail } from './dashboard/RightRail';
 import { TimelineStream } from './dashboard/TimelineStream';
 import { EventCard } from './dashboard/EventCard';
-import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, X } from 'lucide-react';
-
-const FamilyTreeView = dynamic(() => import('@/components/family/FamilyTreeView').then((m) => m.FamilyTreeView), {
-  ssr: false,
-  loading: () => null,
-});
+import { Sparkles, AlertCircle, Sliders, Settings, ThumbsDown, CircleCheck, X } from 'lucide-react';
 
 interface Snapshot {
   alive: boolean;
@@ -100,6 +96,7 @@ export function GameHub() {
   const importFromRaw = useGameStore((s) => s.importFromRaw);
   const resetGame = useGameStore((s) => s.resetGame);
   const clearRejection = useGameStore((s) => s.clearRejection);
+  const clearMessage = useGameStore((s) => s.clearMessage);
   const continueAsHeir = useGameStore((s) => s.continueAsHeir);
   const isPaused = useGameStore((s) => s.isPaused);
   const setPaused = useGameStore((s) => s.setPaused);
@@ -108,9 +105,9 @@ export function GameHub() {
   const [actionsOpen, setActionsOpen] = useState(false);
   const [actionsTab, setActionsTab] = useState<Tab>('school');
   const [profileOpen, setProfileOpen] = useState(false);
+  const [relsOpen, setRelsOpen] = useState(false);
   const [customLifeOpen, setCustomLifeOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [familyTreeOpen, setFamilyTreeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prevSnapshot = useRef<Snapshot | null>(null);
   const deathPlayed = useRef(false);
@@ -124,6 +121,15 @@ export function GameHub() {
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  const popupText = rejection ?? message;
+  const clearPopup = rejection ? clearRejection : clearMessage;
+
+  useEffect(() => {
+    if (!popupText) return;
+    const autoDismiss = window.setTimeout(clearPopup, 30_000);
+    return () => window.clearTimeout(autoDismiss);
+  }, [popupText, clearPopup]);
 
   function playCue(event: SfxEvent) {
     if (!soundManager.soundEnabled) return;
@@ -162,6 +168,9 @@ export function GameHub() {
     }
     if (next.arc !== prev.arc) {
       soundManager.startMusic(next.arc);
+      // The 18th-birthday arc crossover is the one audible life "jump":
+      // a short bundled sting layers over the crossfade into late-life music.
+      playCue('jump');
     }
 
     if (next.health < prev.health) playCue('stat_down');
@@ -256,9 +265,9 @@ export function GameHub() {
     settingsOpen ||
       actionsOpen ||
       profileOpen ||
+      relsOpen ||
       customLifeOpen ||
       shortcutsOpen ||
-      familyTreeOpen ||
       isPaused ||
       Boolean(currentEvent),
   );
@@ -316,6 +325,11 @@ export function GameHub() {
           setProfileOpen(false);
           return;
         }
+        if (relsOpen) {
+          e.preventDefault();
+          setRelsOpen(false);
+          return;
+        }
 
         if (isPaused) {
           e.preventDefault();
@@ -347,7 +361,8 @@ export function GameHub() {
           !settingsOpen &&
           !customLifeOpen &&
           !actionsOpen &&
-          !profileOpen
+          !profileOpen &&
+          !relsOpen
         ) {
           e.preventDefault();
           onAgeUp();
@@ -363,6 +378,7 @@ export function GameHub() {
     customLifeOpen,
     actionsOpen,
     profileOpen,
+    relsOpen,
     isPaused,
     character,
     canAgeUp,
@@ -399,46 +415,59 @@ export function GameHub() {
       </div>
 
       <AnimatePresence>
-        {rejection && (
+        {(rejection || message) && (
           <motion.div
-            className="pointer-events-none fixed inset-x-3 top-3 z-[70] flex justify-center sm:inset-x-auto sm:right-5 sm:top-5"
-            initial={{ opacity: 0, y: -16, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
           >
-            <div
-              className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border border-danger-border bg-surface p-4 text-sm font-medium text-text shadow-overlay backdrop-blur-xl"
-              role="alert"
-              aria-live="assertive"
-              data-testid="rejection-popup"
+            <div className="pointer-events-none absolute inset-0 bg-surface-overlay/60" aria-hidden="true" />
+            <motion.div
+              className={`pointer-events-auto relative flex w-full max-w-md items-start gap-3 rounded-2xl border bg-surface p-4 text-sm font-medium text-text shadow-overlay backdrop-blur-xl ${
+                rejection ? 'border-danger-border' : 'border-tone-good/40'
+              }`}
+              role={rejection ? 'alert' : 'status'}
+              aria-live={rejection ? 'assertive' : 'polite'}
+              data-testid={rejection ? 'rejection-popup' : 'success-popup'}
+              initial={{ opacity: 0, scale: 0.95, y: -12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: motionTokens.quick, ease: 'easeOut' }}
             >
-              <ThumbsDown className="mt-0.5 size-5 shrink-0 text-danger-text" aria-hidden="true" />
-              <p className="min-w-0 flex-1 leading-relaxed">{rejection}</p>
+              {rejection ? (
+                <ThumbsDown className="mt-0.5 size-5 shrink-0 text-danger-text" aria-hidden="true" />
+              ) : (
+                <CircleCheck className="mt-0.5 size-5 shrink-0 text-tone-text-good" aria-hidden="true" />
+              )}
+              <p className="min-w-0 flex-1 leading-relaxed">{rejection ?? message}</p>
               <button
                 type="button"
-                onClick={clearRejection}
-                data-testid="dismiss-rejection"
-                className="shrink-0 rounded-lg p-1 text-danger-text transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
-                aria-label="রিজেকশনের বার্তা বন্ধ করো"
+                onClick={rejection ? clearRejection : clearMessage}
+                data-testid={rejection ? 'dismiss-rejection' : 'dismiss-message'}
+                className="shrink-0 rounded-lg p-1 text-text-muted transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-text"
+                aria-label={rejection ? 'রিজেকশনের বার্তা বন্ধ করো' : 'সাফল্যের বার্তা বন্ধ করো'}
               >
                 <X className="size-4" aria-hidden="true" />
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Top bar on Mobile (< 768px) */}
+      {/* Top bar on Mobile (< 768px).
+          Mobile: a 100dvh flex column — the header stays on top and the
+          content area below it is the single scroll container, so scrolling
+          starts under the header. Body itself never scrolls on mobile. */}
       <div
         inert={anyOverlayOpen}
         aria-hidden={anyOverlayOpen || undefined}
         data-game-background="true"
+        className={isMobile ? 'flex h-[100dvh] flex-col overflow-hidden' : undefined}
       >
         {isMobile && character && (
-          <div className="relative z-20">
-            <StickyHeader character={character} compact />
-          </div>
+          <StickyHeader character={character} compact />
         )}
 
       {/* Main Layout:
@@ -446,7 +475,12 @@ export function GameHub() {
           - Tablet (768px–1279px): 2-Column split (LeftSidebar col-span-5 : Chronicle col-span-7)
           - Desktop (≥ 1280px): 3-Region layout (LeftSidebar col-span-3 : Chronicle col-span-6 : RightRail col-span-3)
       */}
-      <div className="relative z-10 mx-auto h-[100dvh] w-full max-w-[1700px] overflow-hidden px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:py-4 xl:px-8">
+      <div
+        tabIndex={isMobile ? 0 : undefined}
+        className={`relative z-10 mx-auto w-full max-w-[1700px] ${isMobile
+        ? 'flex-1 min-h-0 overflow-y-auto px-3 pb-3 focus:outline-none'
+        : 'h-[100dvh] overflow-hidden px-3 py-3 sm:px-4 sm:py-4 md:px-6 lg:py-4 xl:px-8'
+      }`}>
         <div
           className={`grid h-full min-h-0 items-stretch ${isMobile
             ? 'grid-cols-1'
@@ -464,7 +498,6 @@ export function GameHub() {
                 character={character}
                 onOpenProfile={() => setProfileOpen(true)}
                 onOpenActions={openActions}
-                onOpenFamilyTree={() => setFamilyTreeOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onOpenShortcuts={() => setShortcutsOpen(true)}
                 onExport={onExport}
@@ -474,23 +507,25 @@ export function GameHub() {
             </div>
           )}
 
-          {/* Center Column (Scrollable Event Timeline):
-              - Mobile: full width, pb-36
+          {/* Center Column (Flex layout):
+              - Static flex-shrink-0 header + a flex-1 overflow-y-auto scroll
+                pane below it. Header never overlaps content, and nothing
+                bleeds through (opaque bg + z-index).
+              - Mobile: full width, pb-36 (page-level scroll)
               - Tablet: 7 cols, dedicated internal scroll container
               - Desktop: 6 cols, dedicated internal scroll container
           */}
           <main
-            id="chronicle-scroll"
             className={`${isMobile
               ? 'pb-36'
               : isTablet
-                ? 'col-span-7 h-full overflow-y-auto pr-2'
-                : 'col-span-6 h-full overflow-y-auto pr-2'
+                ? 'col-span-7'
+                : 'col-span-6'
               } flex flex-col min-h-0 scrollbar-none`}
           >
-            {/* Life-stage Hub Row (gives the center column its own identity) */}
+            {/* Life-stage Hub Row (static flex-shrink-0 header) */}
             {character && character.alive && !isMobile && (
-              <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised/50 px-4 py-3">
+              <div className="z-10 mb-3 flex flex-shrink-0 items-center justify-between gap-3 rounded-2xl border border-border bg-surface-raised px-4 py-3 shadow-sm">
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                     জীবনের ধাপ
@@ -513,6 +548,14 @@ export function GameHub() {
               </div>
             )}
 
+            {/* Scrollable Timeline Pane (flex-1, scopes ALL scrolling here) */}
+            <div
+              id="chronicle-scroll"
+              className={`${isMobile
+                ? 'flex flex-col'
+                : 'flex-1 min-h-0 overflow-y-auto'
+                } flex flex-col scrollbar-none`}
+            >
             {/* Ambient Alerts / Feedback */}
             {message && (
               <div
@@ -630,14 +673,25 @@ export function GameHub() {
                   type="button"
                   onClick={onAgeUp}
                   disabled={!canAgeUp}
+                  aria-busy={isGeneratingEvent}
                   data-testid="age-up"
                   className="group relative inline-flex h-11 w-auto items-center justify-center gap-2 rounded-2xl bg-primary hover:brightness-110 border-b-4 border-b-primary-text active:border-b-0 active:translate-y-1 shadow-lg shadow-primary/25 px-5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
                 >
-                  <Sparkles className="size-4" aria-hidden="true" />
-                  <span>বয়স বাড়াও (+১ বছর)</span>
+                  {isGeneratingEvent ? (
+                    <>
+                      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                      <span>ভাবছে…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-4" aria-hidden="true" />
+                      <span>বয়স বাড়াও (+১ বছর)</span>
+                    </>
+                  )}
                 </button>
               </div>
             )}
+            </div>
           </main>
 
           {/* Right Column (Secondary Stats Rail): 3 cols on Desktop */}
@@ -645,7 +699,6 @@ export function GameHub() {
             <div className="relative z-40 col-span-3 sticky top-0 h-full min-h-0">
               <RightRail
                 character={character}
-                onOpenFamilyTree={() => setFamilyTreeOpen(true)}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onOpenShortcuts={() => setShortcutsOpen(true)}
                 onExport={onExport}
@@ -664,15 +717,17 @@ export function GameHub() {
           <ControlDeck
             hasCharacter={Boolean(character)}
             canAgeUp={canAgeUp}
+            isGeneratingEvent={isGeneratingEvent}
             onAgeUp={onAgeUp}
             onExport={onExport}
             onImportClick={() => fileInputRef.current?.click()}
             onOpenSettings={() => setSettingsOpen(true)}
             onOpenShortcuts={() => setShortcutsOpen(true)}
-            onReset={resetGame}
             onOpenActions={openActions}
-            onOpenFamilyTree={() => setFamilyTreeOpen(true)}
             onOpenProfile={() => setProfileOpen(true)}
+            onOpenRelations={() => setRelsOpen(true)}
+            onStartFreshLife={startFreshLife}
+            onOpenCustomLife={() => setCustomLifeOpen(true)}
           />
         )}
       </div>
@@ -728,6 +783,14 @@ export function GameHub() {
         />
       )}
 
+      {character && (
+        <RelationsSheet
+          open={relsOpen}
+          onClose={() => setRelsOpen(false)}
+          character={character}
+        />
+      )}
+
       <CustomLifeModal
         open={customLifeOpen}
         onClose={() => setCustomLifeOpen(false)}
@@ -735,7 +798,6 @@ export function GameHub() {
       />
       <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ActiveMenu key={actionsTab} open={actionsOpen} onClose={() => setActionsOpen(false)} initialTab={actionsTab} />
-      {familyTreeOpen && <FamilyTreeView open={familyTreeOpen} onClose={() => setFamilyTreeOpen(false)} />}
       <PauseMenu
         open={isPaused}
         onResume={() => setPaused(false)}
@@ -755,6 +817,7 @@ export function GameHub() {
         }}
       />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <BabyNamingModal />
       <MomentSting key={stingToken} kind={pendingSting} token={stingToken} />
     </div>
   );

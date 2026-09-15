@@ -762,15 +762,16 @@ export const CHILDHOOD_EVENTS: readonly LifeEventDef[] = [
       },
     ],
   },
-  {
+{
     id: 'child_eid_salami',
-    text: 'ঈদের দিনে মুরুব্বিরা তোরে কড়কড়া সালামি দিতাছে! তোর পকেট এহন ট্যাকার বস্তা!',
+    text: 'ঈদের দিনে মুরুব্বিরা তোরে কড়কড়া সালামি দিতাছে! তোর পকেট এহন ট্যাকার বস্তা!',
     minAge: 5,
     maxAge: 11,
     weight: 80,
     tone: 'good',
     category: 'childhood',
     tags: ['wealth'],
+    religion: 'islam',
     choices: [
       {
         id: 'salami_piggybank',

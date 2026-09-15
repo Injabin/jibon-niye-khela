@@ -34,6 +34,33 @@ async function assertNoHorizontalScroll(page: Page, contextName: string): Promis
 }
 
 test.describe('Gate 8 — Responsive Layout Overhaul', () => {
+  test('Mobile (360px): minimum supported width — 1-column layout, zero overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await page.goto('/');
+
+    // 1. Landing state
+    await expect(page.getByTestId('new-game')).toBeVisible();
+    await assertNoHorizontalScroll(page, '360px Landing');
+
+    // 2. Start game -> Active Hub
+    await page.getByTestId('new-game').click();
+    await expect(page.getByTestId('character-summary')).toBeVisible();
+    await expect(page.getByTestId('age-up')).toBeVisible();
+
+    // Mobile tier: ControlDeck mounted; LeftSidebar and RightRail are NOT
+    await expect(page.locator('footer')).toBeVisible();
+    expect(await page.locator('aside[aria-label="Character and controls"]').count()).toBe(0);
+    expect(await page.locator('aside[aria-label="Secondary stats and lineage"]').count()).toBe(0);
+
+    await assertNoHorizontalScroll(page, '360px Hub');
+
+    // 3. Modal audit at the minimum width
+    await auditModalsAtViewport(page, 360, 640, '360px');
+
+    // Capture required screenshot (Gate 6 — 360px to desktop).
+    await page.screenshot({ path: 'test-results/responsive/mobile-360px.png', fullPage: false });
+  });
+
   test('Mobile (375px): 1-column layout, sticky anchors, no sidebar/rail, zero overflow', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
@@ -182,15 +209,14 @@ test.describe('Gate 8 — Responsive Layout Overhaul', () => {
     await page.getByTestId('close-actions').click();
     await expect(page.getByTestId('active-menu')).toBeHidden();
 
-    // 2. Family Tree Modal (FamilyTreeView)
-    await page.getByTestId('open-family-tree').first().click();
-    await expect(page.getByTestId('family-tree')).toBeVisible();
-    await assertNoHorizontalScroll(page, `${label} FamilyTreeView`);
-    await page.getByTestId('family-tree-close').click();
-    await expect(page.getByTestId('family-tree')).toBeHidden();
-
-    // 3. Settings Panel (SettingsPanel)
-    await page.getByTestId('open-settings').first().click();
+    // 2. Settings Panel (SettingsPanel). On mobile the settings entry lives in
+    // the deck ⋯ menu; on tablet/desktop it is a direct sidebar button.
+    if (width < 768) {
+      await page.getByTestId('deck-more').click();
+      await page.getByTestId('deck-open-settings').click();
+    } else {
+      await page.getByTestId('open-settings').first().click();
+    }
     await expect(page.getByTestId('settings-panel')).toBeVisible();
     await assertNoHorizontalScroll(page, `${label} SettingsPanel`);
     await page.getByTestId('settings-backdrop').click({ position: { x: 10, y: 10 } });

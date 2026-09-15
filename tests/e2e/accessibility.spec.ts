@@ -60,36 +60,10 @@ test.describe('accessibility (M6 #1)', () => {
       .toBe('open-actions');
   });
 
-  test('family-tree nodes activate from the keyboard and the dialog closes on Escape', async ({ page }) => {
-    await page.goto('/');
-    await startNewLife(page);
-    await page.getByTestId('open-family-tree').click();
-    await expect(page.getByTestId('family-tree')).toBeVisible();
-
-    const selfNode = page.getByTestId('tree-node-self');
-    // Tab into the graph until the self node (or a member) receives focus.
-    for (let i = 0; i < 12 && !(await selfNode.evaluate((el) => el === document.activeElement)); i++) {
-      await page.keyboard.press('Tab');
-    }
-    await expect
-      .poll(() => page.evaluate(() => (document.activeElement as HTMLElement)?.getAttribute('data-testid')))
-      .toMatch(/^tree-node-/);
-
-    await page.keyboard.press('Enter');
-    await expect(page.getByTestId('tree-panel')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.getByTestId('family-tree')).toBeHidden();
-  });
-
   test('controls carry accessible names', async ({ page }) => {
     await page.goto('/');
     await startNewLife(page);
     await expect(page.getByTestId('age-up')).toBeVisible();
-    await page.getByTestId('open-family-tree').click();
-    await expect(page.getByRole('button', { name: 'জুম বাড়াও' })).toBeEnabled();
-    await expect(page.getByRole('button', { name: 'জুম কমানো' })).toBeEnabled();
-    await expect(page.getByRole('button', { name: 'দৃশ্য রিসেট' })).toBeEnabled();
-    await page.keyboard.press('Escape');
 
     await page.getByTestId('open-settings').click();
     await expect(page.getByRole('slider', { name: 'শব্দ-প্রভাবের ভলিউম' })).toBeEnabled();

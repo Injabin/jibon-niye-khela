@@ -111,7 +111,7 @@ test.describe('legacy / heir mode (M5 #4)', () => {
   test('a dead life offers its adult children and continues as the eldest heir', async ({ page }) => {
     await page.goto('/');
     await startNewLife(page);
-    const { ids, parentName } = await patchForDeath(page, 2, 0);
+    const { ids } = await patchForDeath(page, 2, 0);
 
     // Death screen presents the heir offer with both children, split estate.
     await expect(page.getByTestId('life-summary')).toBeVisible();
@@ -126,21 +126,19 @@ test.describe('legacy / heir mode (M5 #4)', () => {
     const heir = await readCharacter(page);
     expect(heir.age).toBe(22);
     expect(heir.surname).toBeTruthy();
-    // 60,000 split two ways; debt is never inherited.
+    // 60,000 split two ways; debt is never inherited. The heir carries the
+    // family faith, so exactly one religion flag is expected.
     expect(heir.money).toBe(30_000);
-    expect(heir.flags).toEqual([]);
+    expect(heir.flags.filter((f) => f === 'religion_muslim' || f === 'religion_hindu')).toHaveLength(1);
 
     // The heir is playable: stroll a year.
     await page.getByTestId('age-up').click();
     await expect.poll(async () => (await readCharacter(page)).age).toBe(23);
 
-    // Their family tree still carries the late parent and now a sibling.
-    await page.getByTestId('open-family-tree').click();
-    await expect(page.getByRole('button', { name: parentName }).first()).toBeVisible();
-    await expect(page.getByTestId('tree-node-sibling')).toBeVisible();
-    await expect(page.getByTestId('tree-node-self')).toBeVisible();
-    await page.getByTestId('family-tree-close').click();
-    await expect(page.getByTestId('family-tree')).not.toBeVisible();
+    // The family-tree UI is gone, and the legacy data layer keeps the heir
+    // connected to the late parent's lineage without a dedicated dialog.
+    await expect(page.getByTestId('open-family-tree')).not.toBeAttached();
+    await expect(page.getByTestId('age-up')).toBeVisible();
   });
 
   test('no heir offer when the children have not come of age', async ({ page }) => {

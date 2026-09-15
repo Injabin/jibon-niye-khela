@@ -107,6 +107,7 @@ export const SENIOR_FALLBACK_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'senior_golden_anniversary',
+    gender: 'male',
     text: 'বউয়ের লগে বিয়ার ৫০ বছর! বুড়ি তোর দিকে ইমোশনাল লুক দিয়া তাকায়া আছে!',
     minAge: 68,
     maxAge: 92,

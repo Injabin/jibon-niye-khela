@@ -157,14 +157,16 @@ test.describe('system core interactions (Gate 5)', () => {
     await prepareAdult(page);
 
     await openTabs(page, 'assets');
-    await page.getByTestId('buy-car').click();
+    await page.getByTestId('kind-car').click();
+    await page.getByTestId('buy-car_toyota_corolla').click();
 
     const afterBuy = await readCharacter(page);
-    expect(afterBuy.money).toBe(60_000 - 8_500);
+    expect(afterBuy.money).toBe(60_000 - 32_000);
     expect(afterBuy.flags).toContain('has_car');
     const car = afterBuy.assets.find((asset) => asset.kind === 'car');
     expect(car).toBeDefined();
-    expect(car!.value).toBe(8_500);
+    expect(car!.name).toBe('টয়োটা করোলা');
+    expect(car!.value).toBe(32_000);
 
     await closeActions(page);
     await page.getByTestId('age-up').click();
@@ -175,7 +177,7 @@ test.describe('system core interactions (Gate 5)', () => {
     const afterTick = await readCharacter(page);
     const depreciated = afterTick.assets.find((asset) => asset.id === car!.id);
     expect(depreciated).toBeDefined();
-    expect(depreciated!.value).toBeLessThan(8_500);
+    expect(depreciated!.value).toBeLessThan(32_000);
 
     // Sell now: proceeds return, and the ownership flag retires with the last car.
     const moneyBeforeSell = afterTick.money;

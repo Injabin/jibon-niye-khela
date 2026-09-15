@@ -37,16 +37,37 @@ test.describe('Gate UI-1 theme evidence', () => {
   test('360px: stickies pinned, auto-scroll, 4px radii, 48px taps', async ({ page }) => {
     await grow(page);
 
-    // Sticky header pins to the top of the viewport once the brand row
-    // (above the app shell) scrolls away…
-    await page.evaluate(() => window.scrollTo(0, 400));
+    // The chronicle scrolls inside its own region below the header — on mobile
+    // the window itself no longer scrolls…
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll('*')) {
+        if (getComputedStyle(el).overflowY === 'auto' && el.scrollHeight > el.clientHeight) {
+          el.scrollTop = Math.min(400, el.scrollHeight);
+          return;
+        }
+      }
+    });
     await expect
       .poll(async () => page.getByTestId('character-summary').evaluate((el) => el.getBoundingClientRect().top))
       .toBeLessThan(1);
 
-    // …and stays pinned after the chronicle scrolls to the bottom.
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    // …down to the bottom of the chronicle; the header stays pinned.
+    expect(await page.evaluate(() => {
+      for (const el of document.querySelectorAll('*')) {
+        if (getComputedStyle(el).overflowY === 'auto' && el.scrollHeight > el.clientHeight) {
+          return el.scrollTop;
+        }
+      }
+      return 0;
+    })).toBeGreaterThan(0);
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll('*')) {
+        if (getComputedStyle(el).overflowY === 'auto' && el.scrollHeight > el.clientHeight) {
+          el.scrollTop = el.scrollHeight;
+          return;
+        }
+      }
+    });
     await expect
       .poll(async () => page.getByTestId('character-summary').evaluate((el) => el.getBoundingClientRect().top))
       .toBeLessThan(1);

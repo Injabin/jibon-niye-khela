@@ -7,12 +7,14 @@ import { getJobBoard, careerTitle } from '@/lib/engine/events/categories/career'
 import type { JobDef } from '@/lib/engine/events/categories/career';
 import { CRIMES } from '@/lib/engine/events/categories/crime';
 import { getFinance, LOAN_KIND_LABELS, netWorth, QUICK_BANK_AMOUNT } from '@/lib/engine/finance';
+import { ASSET_CATALOG, ASSET_KIND_LABELS } from '@/lib/engine/events/catalog';
 import { peerRelationships, type PeerRelation } from '@/lib/engine/relationships';
 import { relLabel } from '@/lib/ui/relations';
 import { jobLabel } from '@/lib/ui/jobs';
 import { eligibleSubjects, SUBJECTS, type MajorField } from '@/lib/engine/events/categories/education';
 import { PRESTIGE_LABELS, schoolsForStage, stageForAge } from '@/content/education/schools';
 import type { SchoolDef } from '@/content/education/schools';
+import { UNIVERSITIES, UNIVERSITY_PRESTIGE_LABELS } from '@/content/education/universities';
 import { useGameStore } from '@/lib/store/gameStore';
 import { motion as motionTokens } from '@/lib/theme';
 import { useModalOverlay } from '@/lib/hooks/useModalOverlay';
@@ -26,7 +28,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'school', label: 'পড়াশোনা' },
   { id: 'career', label: 'চাকরি ও রুজি' },
   { id: 'romance', label: 'প্রেম-ভালোবাসা' },
-  { id: 'assets', label: 'সম্পদ ও ট্যাকা-পয়সা' },
+  { id: 'assets', label: 'ধন-সম্পদ' },
   { id: 'crime', label: 'ধান্ধাবাজি' },
   { id: 'health', label: 'স্বাস্থ্য ও জীবনযাপন' },
 ];
@@ -34,15 +36,6 @@ const TABS: { id: Tab; label: string }[] = [
 export type { Tab };
 
 const BUYABLE_KINDS: AssetKind[] = ['car', 'home', 'jewelry', 'collectible', 'stock', 'crypto'];
-
-const ASSET_KIND_LABELS: Record<AssetKind, string> = {
-  car: 'গাড়ি / বাইক',
-  home: 'বাড়ি / ফ্ল্যাট',
-  jewelry: 'সোনার গহনা',
-  collectible: 'শখের জিনিস',
-  stock: 'শেয়ার মার্কেট',
-  crypto: 'ডিজিটাল সম্পদ',
-};
 
 function coins(value: number): string {
   return value.toLocaleString();
@@ -73,6 +66,7 @@ export function ActiveMenu({
 
   const enrollHigherEducation = useGameStore((s) => s.enrollHigherEducation);
   const applyToSchool = useGameStore((s) => s.applyToSchool);
+  const applyToUniversity = useGameStore((s) => s.applyToUniversity);
   const studyHarder = useGameStore((s) => s.studyHarder);
   const hireTutor = useGameStore((s) => s.hireTutor);
   const dropOutOfSchool = useGameStore((s) => s.dropOutOfSchool);
@@ -104,7 +98,6 @@ export function ActiveMenu({
   const askOut = useGameStore((s) => s.askOut);
   const makeOfficial = useGameStore((s) => s.makeOfficial);
   const propose = useGameStore((s) => s.propose);
-  const cheat = useGameStore((s) => s.cheat);
   const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
   const datePartner = useGameStore((s) => s.datePartner);
   const giveGift = useGameStore((s) => s.giveGift);
@@ -156,7 +149,7 @@ export function ActiveMenu({
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 border-b border-border bg-surface px-4 py-2.5" role="tablist">
+            <div className="grid grid-cols-2 gap-1.5 border-b border-border bg-surface px-4 py-2.5 sm:grid-cols-3" role="tablist">
               {TABS.map((tabDef) => (
                 <button
                   key={tabDef.id}
@@ -165,7 +158,7 @@ export function ActiveMenu({
                   aria-selected={tab === tabDef.id}
                   data-testid={`actions-tab-${tabDef.id}`}
                   onClick={() => setTab(tabDef.id)}
-                  className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-all active:scale-[0.98] ${tab === tabDef.id
+                  className={`w-full justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all active:scale-[0.98] ${tab === tabDef.id
                       ? 'bg-primary text-on-primary'
                       : 'text-text-muted hover:bg-surface-raised hover:text-text'
                     }`}
@@ -207,6 +200,7 @@ export function ActiveMenu({
                 <SchoolTab
                   character={character}
                   onEnroll={enrollHigherEducation}
+                  onApplyUniversity={applyToUniversity}
                   onApplySchool={applyToSchool}
                   onStudyHarder={studyHarder}
                   onHireTutor={hireTutor}
@@ -233,7 +227,6 @@ export function ActiveMenu({
                   onAskOut={askOut}
                   onMakeOfficial={makeOfficial}
                   onPropose={propose}
-                  onCheat={cheat}
                   onBreakup={breakupOrDivorce}
                   onGetCandidates={getDatingCandidates}
                   onDate={datePartner}
@@ -301,7 +294,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 
 /**
- * BitLife-style peer cohort: classmates (study tab) and coworkers (job tab)
+ * Life-sim-style peer cohort: classmates (study tab) and coworkers (job tab)
  * shown under হাতেকলমে জীবনের ধান্ধা instead of the classic relationship rail.
  * Inline actions reuse the shared interactWithPerson engine sink.
  */
@@ -375,6 +368,7 @@ function SchoolTab({
   character,
   onEnroll,
   onApplySchool,
+  onApplyUniversity,
   onStudyHarder,
   onHireTutor,
   onDropOut,
@@ -384,6 +378,7 @@ function SchoolTab({
   character: Character;
   onEnroll: (path: 'undergraduate' | 'vocational', major?: MajorField) => boolean;
   onApplySchool: (schoolId: string) => boolean;
+  onApplyUniversity: (universityId: string, major?: MajorField) => boolean;
   onStudyHarder: () => boolean;
   onHireTutor: () => boolean;
   onDropOut: () => boolean;
@@ -516,13 +511,52 @@ function SchoolTab({
               );
             })}
           </div>
+          <p className="text-[11px] text-text-muted/70">
+            ভার্সিটি বাছাও — সরকারি ভার্সিটিগুলো ফ্রি, প্রাইভেটে ফি লাগে; নামকরা হতে হলে বুদ্ধির ঘাটতি মানা মুশকিল!
+          </p>
+          <div className="space-y-2">
+            {UNIVERSITIES.map((uni) => {
+              const blocked =
+                (selectedSubject && uni.majors && !uni.majors.includes(selectedSubject)) ||
+                (uni.minSmarts !== undefined && character.stats.smarts < uni.minSmarts) ||
+                character.money < uni.tuition;
+              const missingMajor = selectedSubject && uni.majors && !uni.majors.includes(selectedSubject);
+              return (
+                <div
+                  key={uni.id}
+                  className={`rounded-xl border p-3 ${blocked
+                      ? 'border-border/60 bg-surface/40 opacity-70'
+                      : 'border-border bg-surface-raised/50'}`}
+                  data-testid={`university-card-${uni.id}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-text">{uni.name}</p>
+                      <p className="text-xs text-text-muted">
+                        {uni.area} · {UNIVERSITY_PRESTIGE_LABELS[uni.prestige]}
+                        {uni.tuition > 0 ? ` · ফি ৳${uni.tuition}` : ' · ফ্রি'}
+                        {uni.minSmarts !== undefined ? ` · বুদ্ধি ${uni.minSmarts}+ লাগে` : ''}
+                        {uni.majors ? ` · ${uni.majors.map((m) => SUBJECTS[m].label.split(' ')[0]).join(', ')}` : ''}
+                      </p>
+                    </div>
+                    {missingMajor && (
+                      <p className="shrink-0 text-[11px] text-tone-text-bad">এই সাবজেক্ট এখানে নাই</p>
+                    )}
+                    {!missingMajor && (
+                      <Button
+                      disabled={blocked}
+                      onClick={() => onApplyUniversity(uni.id, selectedSubject ?? undefined)}
+                      data-testid={`apply-university-${uni.id}`}
+                    >
+                      ভর্তি হই
+                    </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => onEnroll('undergraduate', selectedSubject ?? undefined)}
-              data-testid="enroll-university"
-            >
-              ভার্সিটিতে ভর্তি হও (৳১,০০০){selectedSubject ? ` — ${SUBJECTS[selectedSubject].label}` : ''}
-            </Button>
             <Button variant="secondary" onClick={() => onEnroll('vocational')} data-testid="enroll-vocational">
               কারিগরি ট্রেডে ভর্তি হও (৳২৫০)
             </Button>
@@ -650,7 +684,7 @@ function AssetsTab({
   onBankrupt,
 }: {
   character: Character;
-  onBuy: (kind: AssetKind) => boolean;
+  onBuy: (kind: AssetKind, options?: { name?: string; price?: number }) => boolean;
   onSell: (assetId: string) => boolean;
   onDeposit: (amount: number) => boolean;
   onWithdraw: (amount: number) => boolean;
@@ -661,6 +695,8 @@ function AssetsTab({
   const finance = getFinance(character);
   const worth = netWorth(character);
   const insolvent = worth < 0;
+  const [listingKind, setListingKind] = useState<AssetKind | null>(null);
+  const list = listingKind ? ASSET_CATALOG[listingKind] : null;
   return (
     <div className="space-y-3">
       <div className="rounded-2xl border border-border bg-surface-raised/60 p-4">
@@ -727,13 +763,61 @@ function AssetsTab({
 
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-text-muted">কিনাকাটা</p>
-        <div className="flex flex-wrap gap-2">
-          {BUYABLE_KINDS.map((kind) => (
-            <Button key={kind} variant="secondary" onClick={() => onBuy(kind)} data-testid={`buy-${kind}`}>
-              {ASSET_KIND_LABELS[kind]}
-            </Button>
-          ))}
-        </div>
+        {!list ? (
+          <div className="grid grid-cols-2 gap-2">
+            {BUYABLE_KINDS.map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                onClick={() => setListingKind(kind)}
+                data-testid={`kind-${kind}`}
+                className="rounded-xl border border-border bg-surface-raised/60 px-3 py-2.5 text-left text-sm font-medium text-text hover:bg-surface-raised hover:border-primary/40 transition-all"
+              >
+                {ASSET_KIND_LABELS[kind]}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-text">{ASSET_KIND_LABELS[listingKind!]}</p>
+              <button
+                type="button"
+                onClick={() => setListingKind(null)}
+                data-testid="catalog-back"
+                className="text-xs font-semibold text-primary-text hover:underline"
+              >
+                ← বাজারে ফেরো
+              </button>
+            </div>
+            {list.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-raised/40 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-text">{item.name}</p>
+                  <p className="text-xs text-text-muted">
+                    দাম ৳{coins(item.price)}
+                    {character.money < item.price && (
+                      <span className="text-danger-text"> · পকেটে ট্যাকা কম!</span>
+                    )}
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    onBuy(item.kind, { name: item.name, price: item.price });
+                    setListingKind(null);
+                  }}
+                  data-testid={`buy-${item.id}`}
+                >
+                  কিনো
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div>
@@ -941,7 +1025,6 @@ function RomanceTab({
   onAskOut,
   onMakeOfficial,
   onPropose,
-  onCheat,
   onBreakup,
   onGetCandidates,
   onDate,
@@ -952,7 +1035,6 @@ function RomanceTab({
   onAskOut: (candidate: DatingCandidate) => boolean;
   onMakeOfficial: (relationshipId: string) => boolean;
   onPropose: (relationshipId: string) => boolean;
-  onCheat: (relationshipId: string) => boolean;
   onBreakup: (relationshipId: string) => boolean;
   onGetCandidates: () => DatingCandidate[];
   onDate: (relationshipId: string) => boolean;
@@ -1042,7 +1124,7 @@ function RomanceTab({
                         onAskOut({
                           id: partner.id,
                           name: partner.name,
-                          gender: 'female',
+                          gender: character.gender === 'male' ? 'female' : 'male',
                           age: partner.age,
                           archetype: partner.occupation || 'মহল্লার মানুষ',
                           isCelebrity: false,
@@ -1100,16 +1182,6 @@ function RomanceTab({
                     >
                       বাচ্চা নেওয়ার চেষ্টা
                     </Button>
-                  )}
-                  {(partner.relation === 'partner' || partner.relation === 'spouse') && (
-                    <button
-                      type="button"
-                      onClick={() => onCheat(partner.id)}
-                      data-testid={`cheat-${partner.id}`}
-                      className="rounded-xl border border-tone-bad/25 bg-tone-bad/10 hover:bg-tone-bad/20 px-3 py-1.5 text-xs font-semibold text-tone-text-bad transition-all duration-150 active:scale-[0.98]"
-                    >
-                      পরকীয়ার চক্কর
-                    </button>
                   )}
                   <button
                     type="button"

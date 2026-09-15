@@ -1,9 +1,67 @@
-import type { Character, StatEffects } from './types';
+import type { AssetKind, Character, StatEffects } from './types';
 
 export const STAT_MIN = 0;
 export const STAT_MAX = 100;
 export const MONEY_MIN = -10_000_000;
 export const MONEY_MAX = 10_000_000_000;
+
+/** Default acquisition price per asset kind, mirrored from assets.ts (events
+ *  carry no explicit price so the buy lands in the same price band). */
+const ASSET_DEFAULT_PRICE: Record<AssetKind, number> = {
+  car: 8_500,
+  home: 90_000,
+  jewelry: 1_200,
+  collectible: 600,
+  stock: 1_000,
+  crypto: 500,
+};
+
+/** Default Dhakaiya names per kind when an event buy carries no name. */
+const ASSET_DEFAULT_NAME: Record<AssetKind, string> = {
+  car: 'সেকেন্ডহ্যান্ড রানার মোটরবাইক',
+  home: 'নাজিরাবাজারের ২ রুমের ফ্ল্যাট',
+  jewelry: 'তাঁতিবাজারের খাঁটি সোনার চেইন',
+  collectible: 'পুরান ঢাকার ঐতিহ্যবাহী কাঁসার থালা',
+  stock: 'মতিঝিল স্টক এক্সচেঞ্জের ব্লু-চিপ শেয়ার',
+  crypto: 'উদ্বায়ী বিটকয়েন ও অল্টকয়েন',
+};
+
+function ownershipFlag(kind: AssetKind): string {
+  return kind === 'car' ? 'has_car' : kind === 'home' ? 'has_house' : 'has_investment';
+}
+
+/** Deterministic (no RNG) grant of a purchased asset from an event effect. */
+function grantAsset(character: Character, kind: AssetKind, value?: number, name?: string): void {
+  const price = Math.max(0, Math.round(value ?? ASSET_DEFAULT_PRICE[kind]));
+  character.assets.push({
+    id: `${character.id}-${kind}-${character.assets.length + 1}`,
+    kind,
+    name: name ?? ASSET_DEFAULT_NAME[kind],
+    purchasePrice: price,
+    value: price,
+    acquiredAge: character.age,
+  });
+  const flag = ownershipFlag(kind);
+  if (!character.flags.includes(flag)) character.flags.push(flag);
+}
+
+/** Dispose of one owned asset of the given kind and retire its ownership flag. */
+function divestAsset(character: Character, kind: AssetKind): void {
+  const index = character.assets.findIndex((a) => a.kind === kind);
+  if (index === -1) return;
+  character.assets.splice(index, 1);
+  if (kind === 'car' && !character.assets.some((a) => a.kind === 'car')) {
+    character.flags = character.flags.filter((f) => f !== 'has_car');
+  } else if (kind === 'home' && !character.assets.some((a) => a.kind === 'home')) {
+    character.flags = character.flags.filter((f) => f !== 'has_house');
+  } else if (
+    kind !== 'car' &&
+    kind !== 'home' &&
+    !character.assets.some((a) => a.kind !== 'car' && a.kind !== 'home')
+  ) {
+    character.flags = character.flags.filter((f) => f !== 'has_investment');
+  }
+}
 
 export function clamp(value: number, min = STAT_MIN, max = STAT_MAX): number {
   if (Number.isNaN(value)) return min;
@@ -45,6 +103,25 @@ export function applyStatEffects(character: Character, effects: StatEffects): vo
   if (effects.removeFlag) {
     character.flags = character.flags.filter((f) => f !== effects.removeFlag);
   }
+
+  if (effects.bond) {
+    for (const rel of character.relationships) {
+      if (rel.alive && rel.relation === effects.bond.role) {
+        rel.meter = roundToInt(clamp(rel.meter + effects.bond.amount));
+      }
+    }
+  }
+
+  if (effects.addAsset) {
+    grantAsset(character, effects.addAsset.kind, effects.addAsset.value, effects.addAsset.name);
+    // A leveraged buy flips the debt flag for the content pool.
+    if (character.money < 0 && !character.flags.includes('has_debt')) {
+      character.flags.push('has_debt');
+    }
+  }
+  if (effects.removeAsset) {
+    divestAsset(character, effects.removeAsset);
+  }
 }
 
 export function healthDecay(age: number): number {
@@ -65,7 +142,15 @@ export function looksDecay(age: number): number {
 
 export function applyYearlyDecay(character: Character): void {
   const { stats } = character;
-  stats.health = roundToInt(clamp(stats.health - healthDecay(character.age)));
+  // The body heals: a living healthy adult passively recovers a little each
+  // year, while mid/late-life decline gradually outweighs that recovery
+  // (healthDecay stays 0 until 50 per the yearly-decay gate). A character at
+  // health 0 is dead-in-waiting and must never be nudged back to 1.
+  const net =
+    stats.health > 0 && character.age <= 55
+      ? 1 - healthDecay(character.age)
+      : -healthDecay(character.age);
+  stats.health = roundToInt(clamp(stats.health + net));
   stats.happiness = roundToInt(clamp(stats.happiness + happinessDrift(stats.happiness)));
   stats.looks = roundToInt(clamp(stats.looks - looksDecay(character.age)));
 }

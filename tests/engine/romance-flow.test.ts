@@ -79,16 +79,37 @@ describe('romance-marriage-baby end-to-end flow (J)', () => {
     expect(rel.relation).toBe('spouse');
     expect(useGameStore.getState().character!.flags).toContain('is_married');
 
+    // Age up into the married year. A partner baby-proposal drama may fire here
+    // and its auto-accepted "yes" can already start a pregnancy — in that case
+    // the player's own haveBaby action would rightly refuse ("already expecting").
     useGameStore.getState().ageUp();
     resolveAll();
-    let baby = useGameStore.getState().haveBaby(relId);
+
+    let baby = false;
     for (let attempt = 0; !baby && attempt < 8; attempt++) {
+      rel = useGameStore.getState().character!.relationships.find((r) => r.id === relId)!;
+      if (rel.pregnantSinceAge !== undefined) {
+        baby = true;
+        break;
+      }
+      useGameStore.getState().haveBaby(relId);
+      rel = useGameStore.getState().character!.relationships.find((r) => r.id === relId)!;
+      if (rel.pregnantSinceAge !== undefined) {
+        baby = true;
+        break;
+      }
       useGameStore.getState().ageUp();
       resolveAll();
-      baby = useGameStore.getState().haveBaby(relId);
     }
     expect(baby).toBe(true);
+
+    // Pregnancy plays out next year: age up so the due birth surfaces as a
+    // naming moment, then name the newborn to actually welcome the child.
+    useGameStore.getState().ageUp();
     resolveAll();
+    const pending = useGameStore.getState().pendingBirths;
+    expect(pending.length).toBe(1);
+    useGameStore.getState().nameBaby(relId, 'আবরার');
     const hasChild = useGameStore.getState().character!.relationships.some((r) => r.relation === 'child');
     expect(hasChild).toBe(true);
   });
@@ -138,9 +159,75 @@ describe('romance-marriage-baby end-to-end flow (J)', () => {
 
     const baby = useGameStore.getState().haveBaby('spouse-1');
     expect(baby).toBe(true);
+    // Pregnancy resolves next year: age up, then name the newborn; the store's
+    // naming action must not duplicate the child relationship.
+    useGameStore.getState().ageUp();
     resolveAll();
+    useGameStore.getState().nameBaby('spouse-1', 'অয়ন');
     const childRels = useGameStore.getState().character!.relationships.filter((r) => r.relation === 'child');
     expect(childRels.length).toBe(1);
+  });
+
+  it('a pregnancy surfaces as one pending birth; naming it clears the marker', () => {
+    setupCharacter({ stats: { looks: 90, happiness: 90 }, money: 100_000, age: 26 });
+    useGameStore.setState((s) => {
+      const c = s.character!;
+      c.relationships.push({
+        id: 'spouse-1', relation: 'spouse', name: 'টেস্ট বউ', age: 24,
+        alive: true, meter: 80, metAge: 25, lastMetAge: 26, romanceStage: 'spouse',
+        occupation: 'গ্রাফিক্স ডিজাইনার', health: 90, happiness: 90,
+      });
+      c.flags.push('is_married', 'has_spouse');
+      return s;
+    });
+    useGameStore.getState().haveBaby('spouse-1');
+
+    useGameStore.getState().ageUp();
+    resolveAll();
+    let s = useGameStore.getState();
+    expect(s.pendingBirths.length).toBe(1);
+    expect(s.pendingBirths[0].partnerRelId).toBe('spouse-1');
+    const spouse = s.character!.relationships.find((r) => r.id === 'spouse-1')!;
+    expect(spouse.pregnantSinceAge).toBe(26);
+
+    useGameStore.getState().nameBaby('spouse-1', 'মাইশা');
+    s = useGameStore.getState();
+    expect(s.pendingBirths.length).toBe(0);
+    const namedSpouse = s.character!.relationships.find((r) => r.id === 'spouse-1')!;
+    expect(namedSpouse.pregnantSinceAge).toBeUndefined();
+    const children = s.character!.relationships.filter((r) => r.relation === 'child');
+    expect(children.length).toBe(1);
+    expect(children[0].name).toBe('মাইশা');
+  });
+
+  it('an unnamed pregnancy auto-names next year instead of deadlocking history', () => {
+    setupCharacter({ stats: { looks: 90, happiness: 90 }, money: 100_000, age: 26 });
+    useGameStore.setState((s) => {
+      const c = s.character!;
+      c.relationships.push({
+        id: 'spouse-1', relation: 'spouse', name: 'টেস্ট বউ', age: 24,
+        alive: true, meter: 80, metAge: 25, lastMetAge: 26, romanceStage: 'spouse',
+        occupation: 'গ্রাফিক্স ডিজাইনার', health: 90, happiness: 90,
+      });
+      c.flags.push('is_married', 'has_spouse');
+      return s;
+    });
+    useGameStore.getState().haveBaby('spouse-1');
+
+    // Due year: pregnancy surfaces as a naming moment, but the player ignores it.
+    useGameStore.getState().ageUp();
+    resolveAll();
+    expect(useGameStore.getState().pendingBirths.length).toBe(1);
+    expect(useGameStore.getState().character!.relationships.some((r) => r.relation === 'child')).toBe(false);
+
+    // Overdue year: the safety net auto-names so the lineage keeps flowing.
+    useGameStore.getState().ageUp();
+    resolveAll();
+    const s = useGameStore.getState();
+    expect(s.pendingBirths.length).toBe(0);
+    expect(s.character!.relationships.some((r) => r.relation === 'child')).toBe(true);
+    const spouse = s.character!.relationships.find((r) => r.id === 'spouse-1')!;
+    expect(spouse.pregnantSinceAge).toBeUndefined();
   });
 
   it('routing: rejected actions set rejection popup, accepted set message banner', () => {

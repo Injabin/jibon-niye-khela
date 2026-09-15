@@ -10,14 +10,14 @@ const baloo = Baloo_Da_2({
   variable: "--font-baloo",
   subsets: ["bengali", "latin"],
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["600", "700", "800"],
 });
 
 const hind = Hind_Siliguri({
   variable: "--font-hind",
   subsets: ["bengali", "latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -48,6 +48,7 @@ export default function RootLayout({
     <html
       lang="bn"
       className={`${baloo.variable} ${hind.variable} ${hind.className} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-text font-sans">
         <script

@@ -7,23 +7,17 @@ import { isPeerRelation } from '@/lib/engine/relationships';
 import { relLabel } from '@/lib/ui/relations';
 import { RelationshipModal } from '@/components/game/RelationshipModal';
 import { NpcChips } from '@/components/game/NpcChips';
-import { formatMoney } from '@/lib/ui/money';
 import {
   Sparkles,
   ShieldCheck,
   Award,
   Users,
   Heart,
-  Car,
-  Home,
-  Gem,
-  Coins,
   UserCheck,
   AlertTriangle,
   Flame,
   HeartHandshake,
   HeartCrack,
-  Network,
   Settings,
   Keyboard,
   Download,
@@ -34,7 +28,6 @@ import {
 
 interface RightRailProps {
   character: Character | null;
-  onOpenFamilyTree: () => void;
   onOpenSettings: () => void;
   onOpenShortcuts: () => void;
   onExport: () => void;
@@ -58,18 +51,8 @@ const RELATION_ICONS: Partial<Record<Relation, React.ComponentType<{ className?:
   grandparent: Users,
 };
 
-const ASSET_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  car: Car,
-  home: Home,
-  jewelry: Gem,
-  stock: Coins,
-  crypto: Coins,
-  collectible: Award,
-};
-
 export function RightRail({
   character,
-  onOpenFamilyTree,
   onOpenSettings,
   onOpenShortcuts,
   onExport,
@@ -233,11 +216,7 @@ export function RightRail({
 
         </div>
 
-        <div className="space-y-2 border-t border-border pt-3" data-testid="right-rail-options">
-          <button type="button" onClick={onOpenFamilyTree} data-testid="open-family-tree" className="game-action game-action-secondary w-full justify-between active:scale-[0.98]">
-            <span className="flex items-center gap-2"><Network className="size-4" />পরিবার ও আত্মীয়স্বজন</span>
-            <span className="text-text-muted">ফ্যামিলি ট্রি</span>
-          </button>
+<div className="space-y-2 border-t border-border pt-3" data-testid="right-rail-options">
           <div className="grid grid-cols-2 gap-2">
             {onStartFreshLife && (
               <button type="button" onClick={onStartFreshLife} data-testid="new-life-btn" className="game-action game-action-primary w-full active:scale-[0.98]">
@@ -256,39 +235,6 @@ export function RightRail({
             <button type="button" onClick={onReset} data-testid="right-reset" className="game-action game-action-danger col-span-2 w-full active:scale-[0.98]"><RotateCcw className="size-4" />রিসেট জীবন</button>
           </div>
         </div>
-
-        {/* 4. Assets Glance */}
-        {character.assets.length > 0 && (
-          <div className="flex flex-col gap-2 pt-3 border-t border-border">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                সেরা-সেরা সম্পদ
-              </span>
-              <span className="text-[10px] text-text-muted tabular-nums">
-                {character.assets.length} টা জিনিস
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              {character.assets.slice(0, 3).map((asset) => {
-                const AssetIcon = ASSET_ICONS[asset.kind] ?? Coins;
-                return (
-                  <div
-                    key={asset.id}
-                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <AssetIcon className="size-3 text-text-muted shrink-0" />
-                      <span className="truncate text-text capitalize">{asset.name || asset.kind}</span>
-                    </div>
-                    <span className="shrink-0 font-medium tabular-nums text-wealth-text">
-                      {formatMoney(asset.value)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </aside>
 
       {selectedRel &&

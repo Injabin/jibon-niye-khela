@@ -738,6 +738,7 @@ export const YOUNG_ADULT_FALLBACK_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'gf_bkash_salami',
+    gender: 'male',
     text: 'ওয়াইফির রাগ আর পকেটে বাতাস: ওয়াইফির (gf) মন মেজাজ পুরাই ফায়ার, সালামি চায়! কিন্তু তোর পকেট পুরাই গড়ের মাঠ!',
     minAge: 18,
     maxAge: 29,

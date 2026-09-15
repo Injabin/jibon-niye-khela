@@ -12,6 +12,7 @@ import {
   dateCandidateOrPartner,
   giveGiftToPartner,
   tryForBaby,
+  birthChildFromPregnancy,
   FICTIONAL_CELEBRITY_ARCHETYPES,
   type DatingCandidate,
 } from '@/lib/engine/romance';
@@ -251,7 +252,7 @@ describe('Sensitive Content Boundaries & Archetype Integrity (Gate 9 / DESIGN.md
     expect(character.money).toBe(2400); // 2800 - 400
   });
 
-  it('supports having a baby with spouse and adds child to family tree and relationships', () => {
+  it('supports having a baby with spouse: conception awaits the next year before birth', () => {
     const rng = new RNG(1);
     const { character } = createCharacter(42);
     character.age = 26;
@@ -271,19 +272,32 @@ describe('Sensitive Content Boundaries & Archetype Integrity (Gate 9 / DESIGN.md
     });
     character.flags.push('is_married');
 
+    // Conception only marks the pregnancy — no child yet
     const babyResult = tryForBaby(character, tree, 'spouse_fatima', rng);
     expect(babyResult.ok).toBe(true);
-    expect(character.flags).toContain('has_child');
+    expect(character.flags).not.toContain('has_child');
+    const spouse = character.relationships.find((r) => r.id === 'spouse_fatima');
+    expect(spouse!.pregnantSinceAge).toBe(26);
+    expect(character.money).toBe(1650); // 2000 - 350 pregnancy cost
+    expect(character.relationships.find((r) => r.relation === 'child')).toBeUndefined();
 
-    // Child in relationships
+    // A second try is refused while pregnancy is in progress
+    const secondTry = tryForBaby(character, tree, 'spouse_fatima', rng);
+    expect(secondTry.ok).toBe(false);
+
+    // Next year the baby is born via the naming action
+    character.age = 27;
+    const birth = birthChildFromPregnancy(character, tree, rng, {
+      gender: 'male',
+      name: 'আবরার',
+      partnerName: 'Fatima Begum',
+    });
+    expect(character.flags).toContain('has_child');
     const childRel = character.relationships.find((r) => r.relation === 'child');
     expect(childRel).toBeDefined();
     expect(childRel!.age).toBe(0);
-
-    // Child in family tree
-    const childTreeMember = tree.members.find((m) => m.role === 'child');
-    expect(childTreeMember).toBeDefined();
-    expect(childTreeMember!.age).toBe(0);
+    expect(birth.babyMember).toBeDefined();
+    expect(birth.babyMember!.age).toBe(0);
   });
 });
 

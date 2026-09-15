@@ -15,7 +15,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
         id: 'ya_uni_enrol',
         text: 'আতেল সাইজা ভার্সিটিতে ভর্তির ফাপড় নে!',
         effects: { addFlag: 'education_university' },
-        outcomeText: 'চান্স পাইছোস ঠিকই, কিন্তু ভার্সিটির ক্যান্টিনের ডাইল খায়া তোর এমুন ডাইরিয়া হইলো, তুই পুরাই হাগু-হিরো!',
+        outcomeText: 'চান্স পাইছোস ঠিকই, কিন্তু {{university}}র ক্যান্টিনের ডাইল খায়া তোর এমুন ডাইরিয়া হইলো, তুই পুরাই হাগু-হিরো!',
         tone: 'funny',
       },
       {
@@ -36,7 +36,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_uni_freshman',
-    text: 'ভার্সিটির পয়লা সপ্তাহ! পোলাপাইন সব ভাব নিতাছে, আর তুই হালায় কনফিউজড হইয়া বাথরুম খুঁজতাছোস!',
+    text: '{{university}}র পয়লা সপ্তাহ! পোলাপাইন সব ভাব নিতাছে, আর তুই হালায় কনফিউজড হইয়া বাথরুম খুঁজতাছোস!',
     minAge: 18,
     maxAge: 24,
     weight: 90,
@@ -52,18 +52,39 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
         outcomeText: 'প্রোগ্রামিং করতে গিয়া তোর চান্দির চুল সব পইড়া টাকলু হইয়া গেলি! মাইয়ারা তোরে দেইখা হাসে, তুই আজীবন সিঙ্গেল!',
         tone: 'bad',
       },
-      {
+{
         id: 'ya_fresh_pick_business',
-        text: 'কোট-টাই পইড়া বিজনেসের সাবজেক্ট নিয়া ফাপড় নে!',
+        text: 'কোট-টাই পইড়া বিজনেসের সাবজেক্ট নিয়া ফাপড় নে!',
         effects: { smarts: 4, money: 5, addFlag: 'major_business' },
-        outcomeText: 'প্রেজেন্টেশন দিতে গিয়া প্যান্টের চেইন খোলা আছিলো! পুরা ক্লাস তোর লাল আন্ডারওয়ার দেইখা হাসতে হাসতে কাইত!',
+        outcomeText: 'প্রেজেন্টেশন দিতে গিয়া প্যান্টের চেইন খোলা আছিলো! পুরা ক্লাস তোর লাল আন্ডারওয়ার দেখিয়া হাসতে হাসতে কাইত!',
         tone: 'funny',
+      },
+      {
+        id: 'ya_fresh_pick_medicine',
+        text: 'এমবিবিএসের স্বপ্ন দেখস—মেডিকেলের লাইন নিয়া ভর্তি হইয়া যা!',
+        effects: { smarts: 7, karma: 3, addFlag: 'major_medicine' },
+outcomeText: 'এনাটমির ক্লাসে মরা দেহ দেখিয়া তোর বমি আইসা যাওয়ার দশা! চান্দি ফরসা হইয়া বাতি, তয় ডাক্তার হইবার স্বপ্নডা থাইকা যায়!',
+        tone: 'good',
+      },
+      {
+        id: 'ya_fresh_pick_law',
+        text: 'মামলা-হাজতের গল্প শুইনা ল আইন নিয়া পড়ার সাহস করো!',
+        effects: { smarts: 6, fame: 2, addFlag: 'major_law' },
+        outcomeText: 'ল কলেজের পয়লা ক্লাসে তোর মগজডা কানুনের জালে জড়াইয়া গেলো! নোটপ্যাড সামনে পড়াইছে, তভ তুই নিশ্চুপ—ওইথেই ভবিষ্যতের উকিলের পথ!',
+        tone: 'good',
+      },
+      {
+        id: 'ya_fresh_pick_arts',
+        text: 'আর্টস আর বাংলা সাহিত্যের গল্পে ডুইবা পড়ো—ভাবুক হইয়া যাও!',
+        effects: { smarts: 5, looks: 2, addFlag: 'major_arts' },
+        outcomeText: 'কবিতার বই হাতে নিয়া তুই ক্যাম্পাসের "ভাবুক" লেবেল খাইলি! ভাত খায়া গল্প শেষ, মাথা ভরা রবীন্দ্রনাথ—ক্যারিয়ারের পথডা আঁকাবাঁকা তয় রঙিন!',
+        tone: 'good',
       },
     ],
   },
   {
     id: 'ya_uni_allnighter',
-    text: 'কালকা ৩টা অ্যাসাইনমেন্ট আর এক্সাম! আর তুই হালায় রাইত ১২টা পর্যন্ত ফেসবুকে মাইয়াগো ছবিতে কমেন্ট করছোস!',
+    text: 'কালকা {{university}}তে ৩টা অ্যাসাইনমেন্ট আর এক্সাম! আর তুই হালায় রাইত ১২টা পর্যন্ত ফেসবুকে মাইয়াগো ছবিতে কমেন্ট করছোস!',
     minAge: 18,
     maxAge: 25,
     weight: 70,
@@ -90,7 +111,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_grad_decision',
-    text: 'ভার্সিটি তো শেষ করলি! এহন সার্টিফিকেট দিয়া কি মুড়ি খাবি নাকি বিয়া করবি?',
+    text: '{{university}}র ডিগ্রি তো শেষ করলি! এহন সার্টিফিকেট দিয়া কি মুড়ি খাবি নাকি বিয়া করবি?',
     minAge: 21,
     maxAge: 25,
     weight: 80,
@@ -207,7 +228,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
       {
         id: 'ya_crypto_risky',
         text: 'কিডনি বেইচা সব ট্যাকা ক্রিপ্টোতে ঢাইলা দে!',
-        effects: { money: -50, happiness: -40, addFlag: 'has_investment' },
+        effects: { money: -50, happiness: -40, addAsset: { kind: 'crypto', value: 500 } },
         outcomeText: 'কয়েনের দাম জিরো! স্ক্যাম খাইয়া তুই এহন রাস্তায় বইসা ভিক্কা করতাছোস আর দোস্ত আমেরিকায় চিল করতাছে!',
         tone: 'bad',
       },
@@ -222,6 +243,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_dating_first',
+    gender: 'male',
     text: 'টিংটিং! ডেটিং অ্যাপে একখান মাইয়া তোরে রাইট সোয়াইপ মারছে! তোর লালা বাইর হইয়া গেছে!',
     minAge: 18,
     maxAge: 26,
@@ -300,6 +322,7 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_speed_dating',
+    gender: 'male',
     text: 'ধানমন্ডির এক ক্যাফেতে স্পিড ডেটিংয়ে গেছস। সামনে এক কড়া মাইয়া বসা!',
     minAge: 19,
     maxAge: 28,
@@ -326,6 +349,8 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_rooftop_candlelight',
+    gender: 'male',
+    requiredFlags: ['has_spouse'],
     text: 'ওয়াইফিরে নিয়া ছাদে ক্যান্ডেললাইট ডিনারের ফাপড় নিছোস! পুরাই রোমান্টিক মুড!',
     minAge: 20,
     maxAge: 29,
@@ -352,6 +377,8 @@ export const YOUNG_ADULT_EVENTS: readonly LifeEventDef[] = [
   },
   {
     id: 'ya_meeting_the_parents',
+    gender: 'male',
+    requiredFlags: ['has_spouse'],
     text: 'ওয়াইফি তোরে তার বাপের লগে দেখা করতে ডাকছে। শ্বশুর হালায় ডাইরেক্ট রিভলবার নিয়া খাড়ায়া আছে!',
     minAge: 21,
     maxAge: 29,

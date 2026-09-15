@@ -11,6 +11,11 @@ test.use({
 
 test.describe('Gate 11 Media Capture — Real Gameplay Footage', () => {
   test('capture real gameplay footage of event resolving and stat reacting', async ({ page }) => {
+    // Force the light theme for marketing captures — the landing page always
+    // renders light, so footage must match. (Dark is the default tail; this
+    // pins the media campaign to the bright, shareable look.)
+    await page.emulateMedia({ colorScheme: 'light' });
+
     // 1. Navigate to in-game view and auto-start
     await page.goto('/play?start=1');
     await expect(page.getByTestId('character-summary')).toBeVisible({ timeout: 15_000 });

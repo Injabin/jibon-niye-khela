@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import type { Relationship } from '@/lib/engine/types';
 import { relLabel } from '@/lib/ui/relations';
+import { isEstranged } from '@/lib/engine/relationships';
 import { useGameStore } from '@/lib/store/gameStore';
 import { Button } from '@/components/ui/Button';
 import { ModalOverlay } from '@/components/ui/ModalOverlay';
@@ -50,8 +51,8 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
   const giveGift = useGameStore((s) => s.giveGift);
   const propose = useGameStore((s) => s.propose);
   const haveBaby = useGameStore((s) => s.haveBaby);
-  const cheat = useGameStore((s) => s.cheat);
   const breakupOrDivorce = useGameStore((s) => s.breakupOrDivorce);
+  const makeOfficial = useGameStore((s) => s.makeOfficial);
 
   if (!relationship || !character) return null;
 
@@ -178,13 +179,24 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
               সংসার ও ভালোবাসার বিশেষ পদক্ষেপ
             </p>
             <div className="grid grid-cols-2 gap-2">
+              {liveRel.relation === 'dating' && (
+                <Button
+                  variant="primary"
+                  onClick={() => makeOfficial(liveRel.id)}
+                  data-testid={`make-official-modal-${liveRel.id}`}
+                  className="col-span-2 flex items-center justify-center gap-2 py-2 text-xs"
+                >
+                  <HeartHandshake className="size-3.5" />
+                  মনের মানুষ বানাও (অফিশিয়াল)
+                </Button>
+              )}
               <Button variant="secondary" onClick={() => datePartner(liveRel.id)} className="py-2 text-xs">
                 ডেট মারা (৳২০০)
               </Button>
               <Button variant="secondary" onClick={() => giveGift(liveRel.id)} className="py-2 text-xs">
                 তোহফা দেওয়া (৳৪০০)
               </Button>
-              {isPartner && !isSpouse && (
+              {liveRel.relation === 'partner' && (
                 <Button
                   variant="primary"
                   onClick={() => propose(liveRel.id, 'kazi_office')}
@@ -193,7 +205,7 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                   কাজী অফিসে প্রস্তাব (৳২,০০০)
                 </Button>
               )}
-              {isPartner && !isSpouse && (
+              {liveRel.relation === 'partner' && (
                 <Button
                   variant="primary"
                   onClick={() => propose(liveRel.id, 'community_center')}
@@ -212,13 +224,6 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                   বাচ্চা নেওয়ার চেষ্টা
                 </Button>
               )}
-              <button
-                type="button"
-                onClick={() => cheat(liveRel.id)}
-                className="rounded-xl border border-tone-bad/30 bg-tone-bad/10 py-2 text-xs font-semibold text-tone-text-bad transition-all hover:bg-tone-bad/20 active:scale-[0.98]"
-              >
-                পরকীয়ার চক্কর
-              </button>
               <button
                 type="button"
                 onClick={() => breakupOrDivorce(liveRel.id)}
@@ -368,6 +373,17 @@ export function RelationshipModal({ relationship, onClose }: RelationshipModalPr
                 <Gift className="size-3.5 text-tone-funny" />
                 <span>তোহফা দেওয়া (৳৩০০)</span>
               </Button>
+
+              {isEstranged(liveRel) && (
+                <Button
+                  variant="secondary"
+                  onClick={() => interactWithPerson(liveRel.id, 'make_peace')}
+                  className="col-span-2 flex items-center justify-center gap-2 py-2 text-xs text-tone-text-good"
+                >
+                  <HeartHandshake className="size-3.5 text-tone-good" />
+                  <span>মিলন-মীমাংসা (শান্তি করা)</span>
+                </Button>
+              )}
             </div>
           </div>
         )}

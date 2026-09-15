@@ -90,9 +90,9 @@ async function drainAll(page: Page, strategy: Strategy): Promise<void> {
 
 async function readLifeSummary(page: Page) {
   const text = (await page.getByTestId('life-summary').textContent()) ?? '';
-  const name = text.match(/(.+?) lived for /)?.[1]?.trim() ?? '';
-  const age = Number(text.match(/lived for (\d+) years/)?.[1] ?? -1);
-  const cause = text.match(/Cause of death: (.+)/)?.[1]?.trim() ?? '';
+  const name = text.match(/(.+?) মোট /)?.[1]?.trim() ?? '';
+  const age = Number(text.match(/মোট (\d+) বছর/)?.[1] ?? -1);
+  const cause = text.match(/মৃত্যুর কারণ: (.+)/)?.[1]?.trim() ?? '';
   const worth = text.match(/\$ [\d,.]+(\.\d+)?K?/)?.[0] ?? '';
   const ribbons = (await page.getByTestId('life-ribbons').textContent().catch(() => '')) ?? '';
   const timeline = (await page.getByTestId('life-timeline').textContent().catch(() => '')) ?? '';

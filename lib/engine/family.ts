@@ -255,13 +255,26 @@ export function layoutFamilyTree(tree: FamilyTree): Map<string, { x: number; y: 
  * A child is born into the household (M5 #4): a new `child` member, shown on
  * the tree's bottom row, linked to the character as its parent. Deterministic
  * from the supplied names/RNG so birth never desyncs the save.
+ *
+ * Pass `options` (J — baby naming) to use the pre-rolled gender / player-chosen
+ * name instead of drawing from the pools deterministically; the member id is
+ * still drawn from the RNG so a named birth stays reproducible.
  */
-export function birthChild(tree: FamilyTree, character: Character, rng: RNG): FamilyTree {
+export function birthChild(
+  tree: FamilyTree,
+  character: Character,
+  rng: RNG,
+  options?: { gender?: Gender; name?: string }
+): FamilyTree {
   const used = new Set(tree.members.map((m) => m.name));
-  const gender: Gender = rng.chance(0.5) ? 'male' : 'female';
+  const gender: Gender = options?.gender ?? (rng.chance(0.5) ? 'male' : 'female');
+  let name = options?.name?.trim();
+  if (!name) {
+    name = fullName(gender, character.surname, character.religion, rng, used);
+  }
   const child: FamilyMember = {
     id: generateId(rng),
-    name: fullName(gender, character.surname, character.religion, rng, used),
+    name,
     gender,
     role: 'child',
     age: 0,

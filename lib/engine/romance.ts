@@ -1,4 +1,13 @@
 export { FEMALE_NAMES, MALE_NAMES, SURNAMES } from '@/content/names';
+
+export {
+  MUSLIM_MALE_NAMES,
+  MUSLIM_FEMALE_NAMES,
+  MUSLIM_SURNAMES,
+  HINDU_MALE_NAMES,
+  HINDU_FEMALE_NAMES,
+  HINDU_SURNAMES,
+} from '@/content/names';
 import {
   MUSLIM_MALE_NAMES,
   MUSLIM_FEMALE_NAMES,
@@ -7,11 +16,11 @@ import {
   HINDU_FEMALE_NAMES,
   HINDU_SURNAMES,
 } from '@/content/names';
-import type { Character, Gender, Relationship, Religion, WeddingStyle } from './types';
+import type { Character, Gender, LifeEventDef, Relationship, Religion, WeddingStyle } from './types';
 import { birthChild, type FamilyTree, type FamilyMember } from './family';
 import { generateId } from './character';
 import { clamp } from './stats';
-import type { RNG } from './rng';
+import { RNG } from './rng';
 
 export interface DatingCandidate {
   id: string;
@@ -404,7 +413,7 @@ export function cheatBranch(
     if (rel.meter < 20) {
       rel.relation = 'ex';
       rel.romanceStage = 'ex';
-      character.flags = character.flags.filter((f) => f !== 'is_married');
+      character.flags = character.flags.filter((f) => f !== 'is_married' && f !== 'has_spouse');
       const breakupMsg = `${rel.name} তল্পিতল্পা গুটাইয়া মুখের ওপর চাবি মাইরা কইলো—"তোর মতো বেইমানের লগে এক ছাদের নিচে আমি আর এক সেকেন্ডও থাকুম না!" সম্পর্ক চিরতরে শেষ!`;
       character.history.push({ age: character.age, text: breakupMsg, tone: 'bad' });
     }
@@ -525,13 +534,18 @@ export function giveGiftToPartner(
   return { ok: true, text: msg };
 }
 
-/** Tries to have a baby with a committed partner or spouse. Deterministic through RNG and family tree. */
+/**
+ * Tries to conceive with a committed partner or spouse (J). A successful
+ * attempt only marks the pregnancy — the birth is due the following year and
+ * surfaces as a baby-naming moment, so the baby actually arrives in the next
+ * yearly advance instead of the same action. Deterministic through RNG.
+ */
 export function tryForBaby(
   character: Character,
   familyTree: FamilyTree | null,
   relationshipId: string,
   rng: RNG
-): { ok: boolean; text: string; babyMember?: FamilyMember } {
+): { ok: boolean; text: string } {
   if (character.age < 18) {
     return { ok: false, text: 'এহন বাচ্চা লইবার বয়স না — নিজেই তো দই-চিনি খাওয়ার পাত্র!' };
   }
@@ -545,6 +559,10 @@ export function tryForBaby(
     return { ok: false, text: 'বয়সের কাঁটা পাহাড় ডিঙাইছে — প্রাকৃতিক উপায়ে সন্তানের খবর এখন খালি গল্পের পাতায় পাওয়া যায়!' };
   }
 
+  if (rel.pregnantSinceAge !== undefined) {
+    return { ok: false, text: 'ঘরে সুখবর পাওয়া গেছে গিয়া — চিকিৎসক সাব কইলো "ধৈর্য ধরো, আর এহন দ্বিতীয়বার নয়!"' };
+  }
+
   // Fertility check based on health and randomness
   let fertility = 0.65;
   if (character.stats.health < 40) fertility -= 0.2;
@@ -553,27 +571,47 @@ export function tryForBaby(
   const success = rng.chance(fertility);
   if (!success) {
     character.stats.happiness = clamp(character.stats.happiness - 5);
-    const failMsg = `ডাক্তার সাব কইলো—"এহনও সুখবর নাই, দুশ্চিন্তা বাদ দিয়া পুষ্টিকর খাবার খান আর দোয়া করেন।"`;
+    const failMsg = `ডাক্তার সাব কইলো—"এহনও সুখবর নাই, দুশ্চিন্তা বাদ দিয়া পুষ্টিকর খাবার খান আর দোয়া করেন।"`;
     return { ok: false, text: failMsg };
   }
 
-  // Baby is born!
+  // Conception! The baby is due next year — this action only records it.
+  rel.pregnantSinceAge = character.age;
   character.stats.happiness = clamp(character.stats.happiness + 25);
   const EXPENSE = 350;
   character.money = Math.max(0, character.money - EXPENSE);
 
+  const blessing = character.religion === 'islam' ? 'আলহামদুলিল্লাহ!' : 'হরিবোল!';
+  const pregnancyMsg = `${blessing} তোমার আর ${rel.name}-এর ঘরে শুভসংবাদ! চিকিৎসক কইলেন—"এহন নয় মাসের প্যাঁচ, ছোট্ট একটা জিনিস আসতাছে!" মহল্লায় এহনও গুঞ্জন, খবরটা পাইয়া তুই খুশিতে বাকবাকুম!`;
+  character.history.push({ age: character.age, text: pregnancyMsg, tone: 'good' });
+
+  return { ok: true, text: pregnancyMsg };
+}
+
+/**
+ * Turns a recorded pregnancy into a living child (J). Rolls the family-tree
+ * member from the pre-rolled gender + a given/auto name, registers the child
+ * relationship, and sets `has_child`. Deterministic through the RNG.
+ */
+export function birthChildFromPregnancy(
+  character: Character,
+  familyTree: FamilyTree | null,
+  rng: RNG,
+  options: { gender: Gender; name?: string; partnerName?: string }
+): { text: string; babyMember?: FamilyMember } {
   let newMember: FamilyMember | undefined;
   if (familyTree) {
-    const updatedTree = birthChild(familyTree, character, rng);
+    const updatedTree = birthChild(familyTree, character, rng, { gender: options.gender, name: options.name });
     familyTree.members = updatedTree.members;
     familyTree.edges = updatedTree.edges;
     newMember = familyTree.members[familyTree.members.length - 1];
   }
 
-  const defaultBabyName = character.religion === 'hinduism'
-    ? (rng.chance(0.5) ? 'অয়ন' : 'প্রমা')
-    : (rng.chance(0.5) ? 'আবরার' : 'মাইশা');
-  const childName = newMember ? newMember.name : defaultBabyName;
+  const defaultBabyName =
+    character.religion === 'hinduism'
+      ? (options.gender === 'male' ? 'অয়ন' : 'প্রমা')
+      : (options.gender === 'male' ? 'আবরার' : 'মাইশা');
+  const childName = newMember ? newMember.name : options.name?.trim() || defaultBabyName;
   const childId = newMember ? newMember.id : generateId(rng);
 
   const childRel: Relationship = {
@@ -600,13 +638,13 @@ export function tryForBaby(
     character.flags.push('has_child');
   }
 
-  const birthBlessing = character.religion === 'islam' ? 'আলহামদুলিল্লাহ!' : 'হরিবোল!';
-  const birthMsg = `${birthBlessing} তোমার আর ${rel.name}-এর কোল আলো কইরা ফুটফুটে সন্তান "${childName}" দুনিয়ায় আইলো! মহল্লায় গরম গরম জিলাপি আর মিষ্টি বিলানো হইলো!`;
+  const blessing = character.religion === 'islam' ? 'আলহামদুলিল্লাহ!' : 'হরিবোল!';
+  const partnerName = options.partnerName ?? 'সন্তানের মা-বাবা';
+  const birthMsg = `${blessing} তোমার আর ${partnerName}-এর কোল আলো কইরা ফুটফুটে সন্তান "${childName}" দুনিয়ায় আইলো! মহল্লায় গরম গরম জিলাপি আর মিষ্টি বিলানো হইলো!`;
   character.history.push({ age: character.age, text: birthMsg, tone: 'good' });
 
-  return { ok: true, text: birthMsg, babyMember: newMember };
+  return { text: birthMsg, babyMember: newMember };
 }
-
 /** Calls or texts an ex-partner with authentic Dhakaiya outcomes. */
 export function callOrTextEx(
   character: Character,
@@ -746,4 +784,502 @@ export function insultEx(
   const msg = rng.pick(insults);
   character.history.push({ age: character.age, text: msg, tone: 'bad' });
   return { ok: true, text: msg };
+}
+
+// ---------------------------------------------------------------------------
+// Part F: romance drama — NPC infidelity and multi-romance detection.
+// Detection is deterministic through the shared RNG stream; when it fires, a
+// `drama`-tagged LifeEventDef is injected into the year and its choice is
+// routed through resolveRomanceDramaChoice instead of stat-only resolution.
+// ---------------------------------------------------------------------------
+
+export const MULTI_ROMANCE_YEARS = 3;
+export const MULTI_CAUGHT_ANNUAL_CHANCE = 0.3;
+
+/** Multi-caught choice (I): the explicitly chosen partner stays 35% of the time. */
+export const MULTI_CAUGHT_STAY_CHANCE = 0.35;
+
+/** Cost of an NPC-proposed kazi-office wedding (ring + ceremony ~ proposeMarriage). */
+export const MARRIAGE_COST = 2_050;
+
+/** Bonds a proposal partner must hold for the initiative to be plausible. */
+export const EXCLUSIVE_PROPOSAL_METER = 50;
+export const MARRIAGE_PROPOSAL_METER = 65;
+
+export type RomanceDrama =
+  | { kind: 'npc_affair'; relationshipIds: string[] }
+  | { kind: 'multi_caught'; relationshipIds: string[] };
+
+/** Committed romantic ties the player currently holds (alive only). */
+export function activeRomances(character: Character): Relationship[] {
+  return character.relationships.filter(
+    (r) => r.alive && (r.relation === 'dating' || r.relation === 'partner' || r.relation === 'spouse'),
+  );
+}
+
+/** Highest-bond living official partner; used to resolve partner-initiated wedding proposals. */
+function bestAlivePartner(character: Character): Relationship | undefined {
+  return character.relationships
+    .filter((r) => r.alive && r.relation === 'partner')
+    .sort((a, b) => b.meter - a.meter)[0];
+}
+
+/** Highest-bond living dating partner; used to resolve exclusivity proposals. */
+function bestAliveDating(character: Character): Relationship | undefined {
+  const rels = character.relationships.filter((r) => r.alive && r.relation === 'dating');
+  rels.sort((a, b) => b.meter - a.meter);
+  return rels.find((r) => r.meter >= EXCLUSIVE_PROPOSAL_METER) ?? rels[0];
+}
+
+/** Splits a partner/spouse into an ex, keeping marriage flags consistent. */
+function severRomance(character: Character, rel: Relationship): void {
+  const wasSpouse = rel.relation === 'spouse';
+  rel.relation = 'ex';
+  rel.romanceStage = 'ex';
+  rel.meter = clamp(rel.meter - 15);
+  if (wasSpouse) {
+    character.flags = character.flags.filter((f) => f !== 'is_married' && f !== 'has_spouse');
+    if (!character.flags.includes('divorced')) {
+      character.flags.push('divorced');
+    }
+  }
+}
+
+/**
+ * Annual romance-drama roll (Part F). Mutates `character` for juggling
+ * tracking (illicit.sinceAge) and for silent NPC affairs; returns a drama
+ * descriptor when a forced question event must be shown this year.
+ */
+export function rollRomanceDrama(character: Character, rng: RNG): RomanceDrama | null {
+  const partners = activeRomances(character);
+
+  // NPC infidelity: a long-neglected partner is far more likely to stray.
+  for (const rel of partners) {
+    const affairChance = rel.meter < 35 ? 0.06 : 0.02;
+    if (!rng.chance(affairChance)) continue;
+    rel.affairCount = (rel.affairCount ?? 0) + 1;
+    const discovered = rel.meter < 35 ? rng.chance(0.65) : rng.chance(0.5);
+    if (!discovered) {
+      // Kept secret: the relationship quietly sours, no drama this year.
+      rel.meter = clamp(rel.meter - 8);
+      continue;
+    }
+    return { kind: 'npc_affair', relationshipIds: [rel.id] };
+  }
+
+  // Multi-romance: juggling 2+ partners for 3 straight years risks exposure.
+  const multiplePartners = partners.length >= 2;
+  if (multiplePartners) {
+    if (!character.illicit) character.illicit = {};
+    if (character.illicit.sinceAge == null) character.illicit.sinceAge = character.age;
+    const yearsJuggling = character.age - character.illicit.sinceAge;
+    if (yearsJuggling >= MULTI_ROMANCE_YEARS && rng.chance(MULTI_CAUGHT_ANNUAL_CHANCE)) {
+      return { kind: 'multi_caught', relationshipIds: partners.map((p) => p.id) };
+    }
+  } else if (character.illicit) {
+    character.illicit.sinceAge = undefined;
+  }
+
+  return null;
+}
+
+/**
+ * Applies the chosen outcome of a `drama`-tagged event (Parts F/H/I).
+ * Mirrors resolveEventChoice (mutates + appends history) but performs
+ * relationship surgery the generic stat-only resolver cannot express.
+ * Returns a descriptor carrying side-effects the store must apply with its
+ * familyTree in hand (e.g. a newly added spouse), or null.
+ */
+export function resolveRomanceDramaChoice(
+  character: Character,
+  event: LifeEventDef,
+  choiceId: string,
+  rng?: RNG,
+  familyTree?: FamilyTree | null
+): { spouseId?: string; childBirthed?: boolean; pregnancyStarted?: boolean } | null {
+  const drama = event.drama;
+  if (!drama) return null;
+  const byId = (id: string): Relationship | undefined =>
+    character.relationships.find((r) => r.id === id);
+
+  if (drama.action === 'npc_affair') {
+    const rel = byId(drama.relationshipIds[0]);
+    if (!rel) return null;
+
+    if (choiceId === 'affair_forgive') {
+      rel.meter = clamp(rel.meter + 15);
+      character.stats.happiness = clamp(character.stats.happiness - 10);
+      character.reputation.karma = clamp(character.reputation.karma + 6);
+      character.history.push({
+        age: character.age,
+        text: `আহা, বুকের জ্বালা নামাইয়া ${rel.name}-রে ক্ষমা কইরা বুকে টানলা। তয় ভাঙা কাচ আবার জোড়া লাগে না—বিশ্বাসের ফাটলটা থাকলোই, আলতো হাতে টিকাইয়া রাখবার চেষ্টা শুরু করলা।`,
+        tone: 'neutral',
+      });
+    } else if (choiceId === 'affair_end') {
+      severRomance(character, rel);
+      character.stats.happiness = clamp(character.stats.happiness - 12);
+      character.reputation.karma = clamp(character.reputation.karma - 2);
+      character.history.push({
+        age: character.age,
+        text: `${rel.name} চোখের জল আটকাইয়া নিজের থলে-বিছানাপত্র গোছাইয়া বাড়ি ছাড়লো। বিশ্বাস ভাঙা ভালোবাসা আবার জোড়া লাগে না—সম্পর্কের দলিল চিরদিনের মতো ছিঁড়া গেলো।`,
+        tone: 'bad',
+      });
+    } else if (choiceId === 'affair_revenge') {
+      rel.meter = clamp(rel.meter - 25);
+      character.stats.happiness = clamp(character.stats.happiness - 15);
+      character.reputation.karma = clamp(character.reputation.karma - 18);
+      character.history.push({
+        age: character.age,
+        text: `এক চোখের বদলে দুই চোখ! তুমিও গোপনে অরেকজনের লগে ঘোরাঘুরি শুরু করলা—অন্তর্যামী রাগে পুরা সংসার অন্ধকার। প্রতিশোধ মিঠা, তয় বিষ্ঠার দাম বেশি!`,
+        tone: 'bad',
+      });
+    }
+    return null;
+  }
+
+  if (drama.action === 'multi_caught') {
+    const rels = drama.relationshipIds
+      .map(byId)
+      .filter((r): r is Relationship => Boolean(r));
+    if (rels.length === 0) return null;
+
+    const pickSide = (chosenId: string) => {
+      const chosen = rels.find((r) => r.id === chosenId);
+      if (!chosen) return;
+      const stays = rng ? rng.chance(MULTI_CAUGHT_STAY_CHANCE) : false;
+      const severedNames: string[] = [];
+      for (const r of rels) {
+        if (r.id === chosen.id) continue;
+        severedNames.push(r.name);
+        severRomance(character, r);
+      }
+      character.stats.happiness = clamp(character.stats.happiness - 12);
+      character.reputation.karma = clamp(character.reputation.karma - 5);
+      if (stays) {
+        chosen.meter = clamp(chosen.meter + 10);
+        character.reputation.karma = clamp(character.reputation.karma + 6);
+        character.history.push({
+          age: character.age,
+          text: `${chosen.name}-রে বাছাই করার পর ভাগ্যের দয়ায় পাশে পাইলা! বাকিগুলো (${severedNames.join(' ও ')}) কান্না-কাটাকাটি কইরা বের হইয়া গেলো। এবার হাতে একটা মানুষ, পরানে একটা ভালোবাসা—এইডাই অঙ্গীকার!`,
+          tone: 'neutral',
+        });
+      } else {
+        severedNames.push(chosen.name);
+        severRomance(character, chosen);
+        character.history.push({
+          age: character.age,
+          text: `${severedNames.join(' ও ')}—ধরা পড়ার পর বাছাই করেও কারো ভালোবাসা টাকা দিয়া কিনতে পারলা না। হেয়াই তোরে ছাইড়া গেলো, আর যারা থাইকা দিলো তারাও বের হইয়া গেলো। পুরা হৃদয় একদিনে খালি!`,
+          tone: 'bad',
+        });
+      }
+    };
+
+    if (choiceId === 'multi_stay_one') {
+      pickSide(rels[0].id);
+    } else if (choiceId === 'multi_stay_two') {
+      pickSide(rels[1]?.id ?? rels[0].id);
+    } else if (choiceId === 'multi_lie') {
+      character.reputation.karma = clamp(character.reputation.karma - 18);
+      character.stats.happiness = clamp(character.stats.happiness - 6);
+      const names = rels.map((r) => r.name);
+      for (const r of rels) severRomance(character, r);
+      character.history.push({
+        age: character.age,
+        text: `জীবনের মোস্ট এক্সপেনসিভ মিছাটা ধরা খাইয়া গেলো! ${names.join(' ও ')}—এক সাইতেই দুই পেয়ে পইড়া খইলো, বাসীর চরম অপমান আর খানাপিনার পয়সা-কড়ি সহ সব ভেস্তা গেলো। মিছা বলতে আবার কিচ্ছু নাই—সত্য কইবার সাহসও নাই!`,
+        tone: 'bad',
+      });
+    }
+    return null;
+  }
+
+  if (drama.action === 'classmate_interest' || drama.action === 'coworker_interest') {
+    resolvePeerInterestChoice(character, drama.relationshipIds[0], choiceId, drama.action);
+    return null;
+  }
+
+  if (drama.action === 'exclusive_proposal') {
+    const rel =
+      byId(drama.relationshipIds[0]) ??
+      bestAliveDating(character);
+    if (!rel) return null;
+    if (choiceId === 'ex_accept') {
+      rel.relation = 'partner';
+      rel.romanceStage = 'partner';
+      rel.meter = clamp(rel.meter + 15);
+      const boost = clamp((rng ?? new RNG(1)).rangeInt(8, 15) + 3);
+      character.stats.happiness = clamp(character.stats.happiness + boost);
+      if (!character.flags.includes('has_partner')) character.flags.push('has_partner');
+      character.history.push({
+        age: character.age,
+        text: `${rel.name} কৈলো—"এখন থেকে শুধু তুইই আর আমি!" হাতে হাত রাখলো, পাড়ার চায়ের দোকানেও দুইজনের গল্প শোনা হইলো। অফিসিয়ালি প্রেমিক-প্রেমিকা!`,
+        tone: 'good',
+      });
+    } else {
+      rel.meter = clamp(rel.meter - 8);
+      character.stats.happiness = clamp(character.stats.happiness - 4);
+      character.history.push({
+        age: character.age,
+        text: `"বেয়াদব!"—${rel.name} রাগে কৈলো আর সামনে না থাইকা চইলা গেলো। সম্পর্ক টিকে থাকলো, তয় পকেটে একটা খচখচানি রইলো।`,
+        tone: 'neutral',
+      });
+    }
+    return null;
+  }
+
+  if (drama.action === 'marriage_proposal') {
+    const rel = byId(drama.relationshipIds[0]) ?? bestAlivePartner(character);
+    if (!rel) return null;
+    if (choiceId === 'mr_accept') {
+      character.money = Math.max(0, character.money - MARRIAGE_COST);
+      rel.relation = 'spouse';
+      rel.romanceStage = 'spouse';
+      rel.meter = clamp(rel.meter + (rng ?? new RNG(1)).rangeInt(15, 25));
+      character.stats.happiness = clamp(character.stats.happiness + 25);
+      character.flags.push('is_married');
+      if (!character.flags.includes('has_spouse')) character.flags.push('has_spouse');
+      const spouseLabel = character.gender === 'male' ? 'বউ (স্ত্রী)' : 'বর (স্বামী)';
+      const rites =
+        character.religion === 'hinduism'
+          ? 'হলুদ, সিঁদুর আর মালা বদলের পর বিধিমতে সাত পাকে বেঁধে গেলো সংসার!'
+          : 'পরদিন কাজী অফিসে হাজির হইয়া আনুষ্ঠানিকভাবে নিকাহ সম্পন্ন হইলো!';
+      character.history.push({
+        age: character.age,
+        text: `হঠাৎ প্রস্তাব আসলো—আর তুমি হাসিমুখে রাজি! ${rites} ${rel.name} এখন তোমার ${spouseLabel}।`,
+        tone: 'good',
+      });
+      return { spouseId: rel.id };
+    }
+    // Declined: the would-be spouse is hurt, the bond takes a real hit.
+    rel.meter = clamp(rel.meter - 25);
+    character.stats.happiness = clamp(character.stats.happiness - 12);
+    character.history.push({
+      age: character.age,
+      text: `${rel.name} আধখোলা মুখে কৈলো—"তাহলে... ঠিক আছে।" কথাটার গভীরে বাসরঘরের স্বপ্ন ভাইঙ্গা গেলো, আর তোর লগে দূরত্ব যেন আরেকটু বইড়া গেলো।`,
+      tone: 'bad',
+    });
+    return null;
+  }
+
+  if (drama.action === 'single_askout') {
+    const rel = byId(drama.relationshipIds[0]);
+    if (!rel || rel.relation === 'dating' || rel.relation === 'partner' || rel.relation === 'spouse') return null;
+    if (choiceId === 'askout_yes') {
+      rel.relation = 'dating';
+      rel.romanceStage = 'dating';
+      rel.meter = clamp(rel.meter + 8);
+      character.stats.happiness = clamp(character.stats.happiness + 12);
+      character.history.push({
+        age: character.age,
+        text: `${rel.name} স্বপ্নভরা চোখে রাজি হইলো — এতদিনের চেনা-জানা বন্ধুত্ব এবার প্রেমের আখরে লিখা হইলো! সমাজ চাইতে পারে না, তয় মন তো শাসন মানে না।`,
+        tone: 'good',
+      });
+      return null;
+    }
+    rel.meter = clamp(rel.meter - 12);
+    character.stats.happiness = clamp(character.stats.happiness - 5);
+    character.history.push({
+      age: character.age,
+      text: `${rel.name} জোর কইরা হাসিলো — "আরে না না, রসিকতাই করছিলাম, ভাবিস না!" তয় ওই দিন থেকে আড্ডার মাঝে কেমন যেন এক ফ্যাকাসে পর্দা।`,
+      tone: 'neutral',
+    });
+    return null;
+  }
+
+  if (drama.action === 'partner_baby_proposal') {
+    const rel = byId(drama.relationshipIds[0]) ?? bestAlivePartner(character);
+    if (!rel) return null;
+    if (choiceId === 'baby_yes') {
+      const result = tryForBaby(character, familyTree ?? null, rel.id, rng ?? new RNG(1));
+      if (result.ok) return { pregnancyStarted: true };
+      character.history.push({ age: character.age, text: result.text, tone: 'neutral' });
+      return null;
+    }
+    rel.meter = clamp(rel.meter - 6);
+    character.stats.happiness = clamp(character.stats.happiness - 5);
+    character.history.push({
+      age: character.age,
+      text: `${rel.name} হালকা কইরা হাসিলো — "আজ্ঞে, বুঝলাম। মনে আসলেই ওই কথা হবে।" তয় খানি মুখ আবার ততখানি খোলসা হইলো না, বুকের কোণে যেন একটু দাগ পড়িলো।`,
+      tone: 'neutral',
+    });
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * PART H — NPC-initiated romantic interest from the existing peer pool.
+ *
+ * Romance has two origins now: the random dating pool (DatingCandidate) and
+ * these events, where an established classmate (aged 16–17) or an existing
+ * coworker (while currently employed) initiates. The NPC is never a stranger:
+ * eligibility requires a pre-existing bond of at least 50 (lower than the
+ * askOutPeer ≥ 60 bar, so established peers act on slightly weaker ties and
+ * every shot is plausible), and accepting converts that exact relationship —
+ * same id, name, and bond — into a dating romance that flows through the
+ * ordinary dating/partner/spouse pipeline.
+ */
+
+/** Annual per-eligible-NPC chance that one of them shoots their shot. */
+export const PEER_INTEREST_ANNUAL_CHANCE = 0.35;
+
+/** Romance never starts before this floor age (matches askOutPeer). */
+export const MIN_PEER_INTEREST_AGE = 16;
+
+/** Compulsory schooling wraps at this age; classmate interest stops there. */
+export const SCHOOL_ROMANCE_END_AGE = 17;
+
+export type PeerRomanceInterest = {
+  kind: 'classmate_interest' | 'coworker_interest';
+  npcId: string;
+};
+
+/** Classmates (or classmates a player befriended) during the teen school window. */
+function classmateInterestCandidates(character: Character): Relationship[] {
+  if (character.age < MIN_PEER_INTEREST_AGE || character.age > SCHOOL_ROMANCE_END_AGE) return [];
+  return character.relationships.filter(
+    (r) => r.alive && (r.relation === 'classmate' || r.relation === 'friend') && r.meter >= 50
+  );
+}
+
+/** Coworkers while the player actually holds a job. */
+function coworkerInterestCandidates(character: Character): Relationship[] {
+  if (!character.career || character.career.jobId == null) return [];
+  return character.relationships.filter(
+    (r) => r.alive && r.relation === 'coworker' && r.meter >= 50
+  );
+}
+
+/**
+ * Annual peer-interest roll (Part H). Each eligible NPC rolls a flat
+ * PEER_INTEREST_ANNUAL_CHANCE; when several are interested, only the one with
+ * the strongest pre-existing bond gets their shot (one interest event max per
+ * year). Purely a selection — no state is mutated here; acceptance/decline
+ * resolve later through resolvePeerInterestChoice.
+ */
+export function rollPeerRomanceInterest(character: Character, rng: RNG): PeerRomanceInterest | null {
+  const candidates = [...classmateInterestCandidates(character), ...coworkerInterestCandidates(character)];
+  if (candidates.length === 0) return null;
+
+  const interested = candidates.filter(() => rng.chance(PEER_INTEREST_ANNUAL_CHANCE));
+  if (interested.length === 0) return null;
+
+  const npc = interested.sort((a, b) => b.meter - a.meter)[0];
+  return { kind: npc.relation === 'coworker' ? 'coworker_interest' : 'classmate_interest', npcId: npc.id };
+}
+
+/** Applies the outcome of an NPC-initiated interest event (Part H). */
+export function resolvePeerInterestChoice(
+  character: Character,
+  npcId: string,
+  choiceId: string,
+  kind: 'classmate_interest' | 'coworker_interest'
+): void {
+  const rel = character.relationships.find((r) => r.id === npcId && r.alive);
+  if (!rel) return;
+  if (rel.relation === 'dating' || rel.relation === 'partner' || rel.relation === 'spouse') return;
+
+  if (rel.relation !== 'classmate' && rel.relation !== 'coworker' && rel.relation !== 'friend') return;
+
+  if (choiceId === 'peer_accept') {
+    rel.relation = 'dating';
+    rel.romanceStage = 'dating';
+    character.stats.happiness = clamp(character.stats.happiness + 12);
+    const text =
+      kind === 'classmate_interest'
+        ? `লজ্জা-শরম ভুলা ${rel.name} তোমার হাত ধরিলো — বেঞ্চের পাশে গড়া সোনালি প্রেম, যার সূচনা হয়েছিল ক্লাসের সেই প্রথম হাস্যভরা কটাক্ষে!`
+        : `অফিসের চা-বিরতি পেরিয়া ${rel.name}-র লগে চুপিচুপি প্রেমের কারবার! সহকর্মী হওয়া এখন প্রেমিক-প্রেমিকা, তয় অফিসের পাতায় কফির সিস্টেম আগেরই থাকলো।`;
+    character.history.push({ age: character.age, text, tone: 'good' });
+    return;
+  }
+
+  if (choiceId === 'peer_decline') {
+    rel.meter = clamp(rel.meter - 10);
+    character.stats.happiness = clamp(character.stats.happiness - 4);
+    const text =
+      kind === 'classmate_interest'
+        ? `${rel.name} চোখ অন্যদিকে ঘুরাইয়া কইলো—"আচ্ছা, ঠিক আছে।" কথাটা সেদিনের মতো থেমে গেলো, কিন্তু ক্লাসের সেই সহজ আড্ডাটা আর আগের মতো হইলো না।`
+        : `${rel.name} জোর কইরা হাসিলো—"আরে না না, ঠাট্টাই করছিলাম!" তয় চায়ের দাওয়াতটা আর কখনোই উঠিলো না, আর দুজনের মাঝে হালকা এক টানাপোড়েন স্থায়ী হইলো।`;
+    character.history.push({ age: character.age, text, tone: 'neutral' });
+  }
+}
+
+/**
+ * PART I — NPC-initiated events from the player's existing entourage.
+ *
+ * Two kinds: a single, unattached friend/classmate/coworker (never a stranger)
+ * finally asks the player out while the player is unattached, and a committed
+ * partner with a solid bond proposes trying for the first child. Both are pure
+ * selection here — no state is mutated — and resolve later through
+ * resolveRomanceDramaChoice so the exact existing NPC keeps its id, name, and
+ * bond, and a baby acquisition flows through the real tryForBaby chain.
+ */
+
+/** Solo players get a friendly face asking them out from this age on. */
+export const SINGLE_ASKOUT_MIN_AGE = 18;
+
+/** Bond a lone NPC must hold to work up the courage to ask. */
+export const SINGLE_ASKOUT_BOND = 50;
+
+/** The suitor must be within this many years of the player (no thrill romance). */
+export const SINGLE_ASKOUT_AGE_GAP = 12;
+
+/** Annual chance a single player gets one such askout. */
+export const SINGLE_ASKOUT_ANNUAL_CHANCE = 0.18;
+
+/** Annual chance a committed, childless couple faces a baby proposal. */
+export const BABY_PROPOSAL_ANNUAL_CHANCE = 0.12;
+
+/** Bond a partner must hold before the baby talk feels plausible. */
+export const BABY_PROPOSAL_METER = 60;
+
+export type PartnerInitiative =
+  | { kind: 'single_askout'; npcId: string }
+  | { kind: 'partner_baby_proposal'; partnerId: string };
+
+/** Lone, alive, same-era NPCs the player could plausibly date. */
+function singleAskoutCandidates(character: Character): Relationship[] {
+  if (character.age < SINGLE_ASKOUT_MIN_AGE) return [];
+  if (activeRomances(character).length > 0) return [];
+  return character.relationships.filter(
+    (r) =>
+      r.alive &&
+      (r.relation === 'friend' || r.relation === 'classmate' || r.relation === 'coworker') &&
+      r.meter >= SINGLE_ASKOUT_BOND &&
+      r.age >= SINGLE_ASKOUT_MIN_AGE &&
+      Math.abs(r.age - character.age) <= SINGLE_ASKOUT_AGE_GAP
+  );
+}
+
+/** Highest-bond committed, childless partner within fertile years. */
+function babyProposalPartner(character: Character): Relationship | undefined {
+  if (character.age < 18 || character.age > 55) return undefined;
+  if (character.flags.includes('has_child')) return undefined;
+  return character.relationships
+    .filter(
+      (r) =>
+        r.alive &&
+        (r.relation === 'partner' || r.relation === 'spouse') &&
+        r.meter >= BABY_PROPOSAL_METER &&
+        r.age <= 48
+    )
+    .sort((a, b) => b.meter - a.meter)[0];
+}
+
+/**
+ * Annual partner-initiative roll (Part I). A single player may be asked out by
+ * the highest-bond lone NPC; else a childless committed couple may face a baby
+ * proposal. Deterministic through rng; returns a descriptor or null.
+ */
+export function rollPartnerInitiative(character: Character, rng: RNG): PartnerInitiative | null {
+  const askout = singleAskoutCandidates(character);
+  if (askout.length > 0 && rng.chance(SINGLE_ASKOUT_ANNUAL_CHANCE)) {
+    const npc = askout.sort((a, b) => b.meter - a.meter)[0];
+    return { kind: 'single_askout', npcId: npc.id };
+  }
+  const partner = babyProposalPartner(character);
+  if (partner && rng.chance(BABY_PROPOSAL_ANNUAL_CHANCE)) {
+    return { kind: 'partner_baby_proposal', partnerId: partner.id };
+  }
+  return null;
 }

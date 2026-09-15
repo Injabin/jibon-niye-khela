@@ -23,11 +23,11 @@ import {
   prisonGym,
   prisonLibrary,
 } from '@/lib/engine/prison';
-import { applyToSchool, enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
+import { applyToSchool, enrollAtUniversity, enterHigherEducation, studyHarder, hireTutor, dropOutOfSchool, skipClass, joinDebateClub } from '@/lib/engine/events/categories/education';
 import type { MajorField } from '@/lib/engine/events/categories/education';
 import { visitDoctor } from '@/lib/engine/events/categories/health';
 import { RNG } from '@/lib/engine/rng';
-import type { AssetKind, AvatarAppearance, Character, CustomCharacterOptions, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
+import type { AssetKind, AvatarAppearance, Character, CustomCharacterOptions, Gender, LifeEventDef, LoanKind, MilestoneKind, Relation, RelationshipAction, Tone, WeddingStyle } from '@/lib/engine/types';
 import {
   generateDatingPool,
   askOutCandidate,
@@ -38,12 +38,22 @@ import {
   dateCandidateOrPartner,
   giveGiftToPartner,
   tryForBaby,
+  birthChildFromPregnancy,
   callOrTextEx,
   hookupWithEx,
   begGetBackTogether,
   insultEx,
+  rollRomanceDrama,
+  resolveRomanceDramaChoice,
+  rollPeerRomanceInterest,
+  rollPartnerInitiative,
   type DatingCandidate,
 } from '@/lib/engine/romance';
+import { buildPeerRomanceInterestEvent } from '@/content/events/peerRomance';
+import {
+  buildSingleAskoutEvent,
+  buildPartnerBabyProposalEvent,
+} from '@/content/events/partnerInitiatives';
 import {
   spendTimeWithPerson,
   chatWithPerson,
@@ -57,11 +67,15 @@ import {
   giveChildAllowance,
   befriendPeer,
   askOutPeer,
+  makePeaceWithPerson,
+  ESTRANGED_METER,
   type RelationshipActionResult,
 } from '@/lib/engine/relationships';
 import { achievementsStore } from '@/lib/store/achievementsStore';
 import { soundManager } from '@/lib/audio/SoundManager';
 import { fetchEventForYear } from '@/lib/ai/contentOrchestrator';
+import { buildFuneralEvent } from '@/content/events/funeral';
+import { buildRomanceDramaEvent } from '@/content/events/infidelity';
 import { getFallbackEvent } from '@/lib/ai/fallbackBank';
 import { defaultSaveState } from '@/lib/save/schema';
 import type { SaveState } from '@/lib/save/schema';
@@ -112,11 +126,76 @@ function syncRelationshipDeaths(character: Character, tree: FamilyTree | null): 
       rel.alive = false;
       character.history.push({
         age: character.age,
-        text: `${rel.name} মারা গেছে। দোয়া করিলাম অর আত্মার মাগফিরাতের জন্য!`,
+        text:
+          character.religion === 'hinduism'
+            ? `${rel.name} মারা গেছে। ওম শান্তি — অর আত্মার শান্তি কামনা করিলাম।`
+            : `${rel.name} মারা গেছে। দোয়া করিলাম অর আত্মার মাগফিরাতের জন্য!`,
         tone: 'bad',
       });
     }
   }
+}
+
+/**
+ * Part D: turns this year's family-tree deaths into religion-aware funeral
+ * events the player resolves first (with cost-tier choices). Deaths are owned
+ * solely by ageFamilyMembers — this only reads the diff, never re-rolls.
+ */
+function collectFuneralEvents(
+  oldTree: FamilyTree | null,
+  newTree: FamilyTree | null,
+  character: Character
+): LifeEventDef[] {
+  if (!oldTree || !newTree) return [];
+  const died = newTree.members.filter(
+    (m) => !m.alive && oldTree.members.some((o) => o.id === m.id && o.alive)
+  );
+  return died.map((m) =>
+    buildFuneralEvent({
+      name: m.name,
+      roleLabel: relationLabel(m),
+      religion: character.religion === 'islam' ? 'islam' : 'hinduism',
+    })
+  );
+}
+
+/**
+ * Part F: annual romance-drama roll. Detects NPC infidelity / multi-romance
+ * exposure deterministically through the year's RNG stream; silent affairs
+ * mutate the character directly, caught ones return a forced question event.
+ */
+function collectRomanceDramaEvents(character: Character, rng: RNG): LifeEventDef[] {
+  const drama = rollRomanceDrama(character, rng);
+  return drama ? [buildRomanceDramaEvent(character, drama)] : [];
+}
+
+/**
+ * PART H: annual NPC-initiated romantic interest roll. An established
+ * classmate (16–17) or coworker (while employed) with a pre-existing bond of
+ * ≥50 may shoot their shot — pure selection, acceptance/decline resolve later.
+ */
+function collectPeerRomanceInterestEvents(character: Character, rng: RNG): LifeEventDef[] {
+  const interest = rollPeerRomanceInterest(character, rng);
+  return interest ? [buildPeerRomanceInterestEvent(character, interest)] : [];
+}
+
+/**
+ * PART I: annual partner-initiative roll. A single player may be asked out by
+ * the highest-bond lone NPC, or a childless committed couple may face a baby
+ * proposal — pure selection, outcomes resolve through the drama resolver.
+ */
+function collectPartnerInitiativeEvents(character: Character, rng: RNG): LifeEventDef[] {
+  const initiative = rollPartnerInitiative(character, rng);
+  if (!initiative) return [];
+  return initiative.kind === 'single_askout'
+    ? [buildSingleAskoutEvent(character, initiative)]
+    : [buildPartnerBabyProposalEvent(character, initiative)];
+}
+
+interface PendingBirth {
+  partnerRelId: string;
+  partnerName: string;
+  babyGender: Gender;
 }
 
 export interface GameStoreState {
@@ -147,6 +226,8 @@ export interface GameStoreState {
   isPaused: boolean;
   /** Whether the hybrid engine is currently requesting a Gemini event. */
   isGeneratingEvent: boolean;
+  /** Babies due from the last age-up (transient — not persisted). */
+  pendingBirths: PendingBirth[];
 }
 
 export type FamilyInteractionType = 'spend_time' | 'chitchat' | 'compliment' | 'ask_money' | 'gift';
@@ -176,6 +257,8 @@ export interface GameStoreActions {
   enrollHigherEducation(path: 'undergraduate' | 'vocational', major?: MajorField): boolean;
   /** Active-menu education action (H): apply the child to a catalog school. */
   applyToSchool(schoolId: string): boolean;
+  /** Active-menu education action (E — Part E): enroll at a real Dhaka university. */
+  applyToUniversity(universityId: string, major?: MajorField): boolean;
   /** Active-menu career action (DESIGN.md §5.2): apply to an eligible job. */
   applyForJob(jobId: string): boolean;
   /** Quit the current job, returning to the unemployed state. */
@@ -260,7 +343,7 @@ export interface GameStoreActions {
   suckUpToBoss(): boolean;
   /** Active-menu career action: ask for a raise. */
   askForRaise(): boolean;
-  /** Interact with any living person in character.relationships using BitLife sub-actions. */
+  /** Interact with any living person in character.relationships using relationship sub-actions. */
   interactWithPerson(relationshipId: string, action: RelationshipAction): boolean;
   /** Reach out to an ex-partner via call or text. */
   callEx(relationshipId: string): boolean;
@@ -288,8 +371,12 @@ export interface GameStoreActions {
   togglePause(): void;
   /** Dismiss the current rejection popup after the player has read it. */
   clearRejection(): void;
+  /** Dismiss the current success message after the player has read it. */
+  clearMessage(): void;
   /** Update the presentation-only avatar layers and persist the save. */
   setAvatarAppearance(appearance: Partial<AvatarAppearance>): boolean;
+  /** Name a baby from a pending birth and add them as a child relationship. */
+  nameBaby(partnerRelId: string, name: string): void;
 }
 
 type GameStore = GameStoreState & GameStoreActions;
@@ -311,6 +398,7 @@ const initialState: GameStoreState = {
   familyTree: null,
   isPaused: false,
   isGeneratingEvent: false,
+  pendingBirths: [],
 };
 
 function toSaveState(s: GameStoreState, character: Character): SaveState {
@@ -505,6 +593,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = ageUp(character, rng);
 
+
+
       if (!result.character.alive) {
         achievementsStore.getState().recordLife(result.character);
       }
@@ -513,22 +603,68 @@ export const useGameStore = create<GameStore>()((set, get) => {
         s.familyTree && result.character.alive
           ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
-      if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
+      // Pregnancy resolution (J): detect due pregnancies after ageUp.
+      let nextPendingBirths = s.pendingBirths;
+      if (result.character.alive) {
+        const existingPending = [...s.pendingBirths];
+        const newPending: { partnerRelId: string; partnerName: string; babyGender: Gender }[] = [];
+        for (const rel of result.character.relationships) {
+          if (rel.pregnantSinceAge === undefined) continue;
+          if (rel.pregnantSinceAge >= result.character.age) continue;
+          const alreadyPending = existingPending.some((b) => b.partnerRelId === rel.id);
+          const yearsOverdue = result.character.age - rel.pregnantSinceAge;
+          if (alreadyPending && yearsOverdue <= 1) {
+            // Player is currently naming this baby — leave the entry alone.
+          } else if (yearsOverdue > 1) {
+            // Safety-net: the year slipped by without the player naming — auto-name.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            birthChildFromPregnancy(result.character, familyTree ?? null, rng, {
+              gender: babyGender,
+              partnerName: rel.name,
+            });
+            rel.pregnantSinceAge = undefined;
+          } else {
+            // Normal flow: baby is due this year — surface as a naming moment.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            newPending.push({ partnerRelId: rel.id, partnerName: rel.name, babyGender });
+          }
+        }
+        const merged = [
+          ...existingPending.filter((b) => result.character!.relationships.some(
+            (r) => r.id === b.partnerRelId && r.pregnantSinceAge !== undefined
+          )),
+          ...newPending,
+        ];
+        nextPendingBirths = merged;
+      }
+      const funeralEvents: LifeEventDef[] = [];
+      const dramaEvents: LifeEventDef[] = [];
+      const peerInterestEvents: LifeEventDef[] = [];
+      const partnerInitiativeEvents: LifeEventDef[] = [];
+      if (result.character.alive) {
+        funeralEvents.push(...collectFuneralEvents(s.familyTree, familyTree, result.character));
+        dramaEvents.push(...collectRomanceDramaEvents(result.character, rng));
+        peerInterestEvents.push(...collectPeerRomanceInterestEvents(result.character, rng));
+        partnerInitiativeEvents.push(...collectPartnerInitiativeEvents(result.character, rng));
+        syncRelationshipDeaths(result.character, familyTree);
+      }
 
       // Context-first pipeline (B): engine-drawn events outrank the fallback on
       // the sync path too. Engine events were already recorded in
       // recentEventHistory by drawYearlyEvents, so only the fallback branch
       // needs extra bookkeeping (handled by selectYearFallbacks).
-      let events: LifeEventDef[] = [];
+      const events: LifeEventDef[] = [...funeralEvents, ...dramaEvents, ...peerInterestEvents, ...partnerInitiativeEvents];
       if (result.character.alive) {
-        events =
-          result.firedEvents.length > 0
+        events.push(
+          ...(result.firedEvents.length > 0
             ? result.firedEvents
-            : selectYearFallbacks(result.character, s.seed + result.character.age);
+            : selectYearFallbacks(result.character, s.seed + result.character.age))
+        );
       }
 
       set({
         character: result.character,
+        pendingBirths: nextPendingBirths,
         rngState: rng.getState(),
         pendingEvents: events,
         currentEventIndex: 0,
@@ -554,6 +690,8 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const character = structuredClone(s.character);
       const result = ageUp(character, rng);
 
+
+
       if (!result.character.alive) {
         achievementsStore.getState().recordLife(result.character);
       }
@@ -562,12 +700,57 @@ export const useGameStore = create<GameStore>()((set, get) => {
         s.familyTree && result.character.alive
           ? ageFamilyMembers(s.familyTree, result.character.age, rng)
           : s.familyTree;
-      if (result.character.alive) syncRelationshipDeaths(result.character, familyTree);
+      // Pregnancy resolution (J): detect due pregnancies after ageUp.
+      let nextPendingBirths = s.pendingBirths;
+      if (result.character.alive) {
+        const existingPending = [...s.pendingBirths];
+        const newPending: { partnerRelId: string; partnerName: string; babyGender: Gender }[] = [];
+        for (const rel of result.character.relationships) {
+          if (rel.pregnantSinceAge === undefined) continue;
+          if (rel.pregnantSinceAge >= result.character.age) continue;
+          const alreadyPending = existingPending.some((b) => b.partnerRelId === rel.id);
+          const yearsOverdue = result.character.age - rel.pregnantSinceAge;
+          if (alreadyPending && yearsOverdue <= 1) {
+            // Player is currently naming this baby — leave the entry alone.
+          } else if (yearsOverdue > 1) {
+            // Safety-net: the year slipped by without the player naming — auto-name.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            birthChildFromPregnancy(result.character, familyTree ?? null, rng, {
+              gender: babyGender,
+              partnerName: rel.name,
+            });
+            rel.pregnantSinceAge = undefined;
+          } else {
+            // Normal flow: baby is due this year — surface as a naming moment.
+            const babyGender: Gender = rng.chance(0.5) ? 'male' : 'female';
+            newPending.push({ partnerRelId: rel.id, partnerName: rel.name, babyGender });
+          }
+        }
+        const merged = [
+          ...existingPending.filter((b) => result.character!.relationships.some(
+            (r) => r.id === b.partnerRelId && r.pregnantSinceAge !== undefined
+          )),
+          ...newPending,
+        ];
+        nextPendingBirths = merged;
+      }
+      const funeralEvents: LifeEventDef[] = [];
+      const dramaEvents: LifeEventDef[] = [];
+      const peerInterestEvents: LifeEventDef[] = [];
+      const partnerInitiativeEvents: LifeEventDef[] = [];
+      if (result.character.alive) {
+        funeralEvents.push(...collectFuneralEvents(s.familyTree, familyTree, result.character));
+        dramaEvents.push(...collectRomanceDramaEvents(result.character, rng));
+        peerInterestEvents.push(...collectPeerRomanceInterestEvents(result.character, rng));
+        partnerInitiativeEvents.push(...collectPartnerInitiativeEvents(result.character, rng));
+        syncRelationshipDeaths(result.character, familyTree);
+      }
 
       if (!result.character.alive) {
         set({
           character: result.character,
           rngState: rng.getState(),
+          pendingBirths: [],
           pendingEvents: [...result.firedEvents],
           currentEventIndex: 0,
           lastOutcomeTone: null,
@@ -585,13 +768,14 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       // 1. Context events first (B): engine-drawn events outrank Gemini for this
       //    year. No AI call, no spinner, and the events were already appended to
-      //    recentEventHistory by drawYearlyEvents.
-      if (result.firedEvents.length > 0) {
+      //    recentEventHistory by drawYearlyEvents. Funeral rites (Part D) lead.
+      if (result.firedEvents.length > 0 || funeralEvents.length > 0 || dramaEvents.length > 0 || peerInterestEvents.length > 0 || partnerInitiativeEvents.length > 0) {
         set({
           character: result.character,
           rngState: rng.getState(),
           familyTree,
-          pendingEvents: result.firedEvents,
+          pendingBirths: nextPendingBirths,
+          pendingEvents: [...funeralEvents, ...dramaEvents, ...peerInterestEvents, ...partnerInitiativeEvents, ...result.firedEvents],
           currentEventIndex: 0,
           lastOutcomeTone: null,
           pendingSting: null,
@@ -607,6 +791,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
       // 2. Advance age and stats synchronously so persistence is never stale
       set({
         character: result.character,
+        pendingBirths: nextPendingBirths,
         rngState: rng.getState(),
         familyTree,
         isGeneratingEvent: true,
@@ -640,7 +825,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       set({
         character: result.character,
-        pendingEvents: eventToFire ? [eventToFire] : [...result.firedEvents],
+        pendingBirths: nextPendingBirths,
+        pendingEvents: [
+          ...funeralEvents,
+          ...dramaEvents,
+          ...peerInterestEvents,
+          ...(eventToFire ? [eventToFire] : [...result.firedEvents]),
+        ],
         currentEventIndex: 0,
         lastOutcomeTone: null,
         pendingSting: null,
@@ -665,17 +856,53 @@ export const useGameStore = create<GameStore>()((set, get) => {
 
       const rng = makeRng(s.seed, s.rngState);
       const character = structuredClone(s.character);
-      resolveEventChoice(character, event, choiceId);
+      let dramaOutcome: { spouseId?: string; childBirthed?: boolean } | null = null;
+      if (event.drama) {
+        dramaOutcome = resolveRomanceDramaChoice(character, event, choiceId, rng, s.familyTree);
+      } else {
+        resolveEventChoice(character, event, choiceId);
+      }
       checkForDeath(character, rng);
 
       // A content event granted "has_child" (M5 #4): the new child joins the
       // household tree right here, so a birth is recorded even though events
-      // only carry a flag. Runs on the same RNG stream as the resolve.
+      // only carry a flag. Runs on the same RNG stream as the resolve. NOT
+      // re-run when the resolver itself already birthed the child (Part I).
       let familyTree = s.familyTree;
-      if (character.alive && familyTree) {
+      if (character.alive && familyTree && !dramaOutcome?.childBirthed) {
         const hadChildBefore = s.character.flags.includes('has_child');
         if (!hadChildBefore && character.flags.includes('has_child')) {
           familyTree = birthChild(familyTree, character, rng);
+        }
+      }
+
+      // An NPC-initiated wedding (I) converted a living partner into a spouse:
+      // that spouse joins the household lineage so funerals/heirs keep working.
+      if (character.alive && familyTree && dramaOutcome?.spouseId) {
+        const spouse = character.relationships.find((r) => r.id === dramaOutcome.spouseId);
+        if (
+          spouse &&
+          spouse.relation === 'spouse' &&
+          !familyTree.members.some((m) => m.id === spouse.id)
+        ) {
+          const spouseGender: Gender = character.gender === 'male' ? 'female' : 'male';
+          familyTree = {
+            ...familyTree,
+            members: [
+              ...familyTree.members,
+              {
+                id: spouse.id,
+                name: spouse.name,
+                gender: spouseGender,
+                role: 'spouse',
+                age: spouse.age,
+                alive: true,
+                bond: spouse.meter,
+                metAge: spouse.metAge,
+                lastSpentAge: -1,
+              },
+            ],
+          };
         }
       }
 
@@ -793,6 +1020,21 @@ export const useGameStore = create<GameStore>()((set, get) => {
           break;
         }
         case 'ask_money': {
+          if (member.bond <= ESTRANGED_METER) {
+            ok = false;
+            happyDelta = -4;
+            bondDelta = -2;
+            text = `${roleBangla} ${member.name} দরজার ফাঁক দিয়া চিপা চিপি কইলেন—"তোর লগে হেঁইলা কথা নাই! ধার-ঋণের খাতায় তোর নাম উঠাইবো না!" মাখন মারা তো দূর, মুখ দেখালেন না।`;
+            break;
+          }
+          const isParental = member.role === 'mother' || member.role === 'father' || member.role === 'grandparent';
+          if (isParental && character.age >= 22 && character.career.jobId == null) {
+            ok = false;
+            happyDelta = -4;
+            bondDelta = -4;
+            text = `${roleBangla} ${member.name} কঠিন মুখে কইলেন—"বছর-দুয়েক পরের বড় মানুষ, তয় রুজি-রুটির মাথা নাই! আগে কামে যাও, টাকার ধান্দা পরে দেখিবা!" (-৫ সুখ)`;
+            break;
+          }
           if (member.bond >= 40) {
             const amount = rng.pick([100, 200, 300, 500]);
             moneyDelta = amount;
@@ -867,6 +1109,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
     applyToSchool(schoolId) {
       return runIdleAction((character, rng) => {
         const out = applyToSchool(character, schoolId, rng);
+        return { ok: out.accepted, text: out.text };
+      });
+    },
+
+    applyToUniversity(universityId, major) {
+      return runIdleAction((character, rng) => {
+        const out = enrollAtUniversity(character, rng, universityId, major);
         return { ok: out.accepted, text: out.text };
       });
     },
@@ -1423,6 +1672,9 @@ export const useGameStore = create<GameStore>()((set, get) => {
         case 'ask_out_peer':
           result = askOutPeer(character, relationshipId, rng);
           break;
+        case 'make_peace':
+          result = makePeaceWithPerson(character, relationshipId, rng);
+          break;
         default:
           return false;
       }
@@ -1639,6 +1891,10 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({ rejection: null });
     },
 
+    clearMessage() {
+      set({ message: null });
+    },
+
     setAvatarAppearance(appearance) {
       const s = get();
       if (!s.character || !s.character.alive) return false;
@@ -1650,6 +1906,32 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({ character });
       persist();
       return true;
+    },
+
+    nameBaby(partnerRelId, name) {
+      const s = get();
+      if (!s.character || !s.character.alive || !s.pendingBirths.length) return;
+      const character = structuredClone(s.character);
+      const familyTree = structuredClone(s.familyTree);
+      const pendingBirths = [...s.pendingBirths];
+      const birth = pendingBirths.find((b) => b.partnerRelId === partnerRelId);
+      if (!birth) return;
+      // Remove this birth from the pending list
+      const remaining = pendingBirths.filter((b) => b.partnerRelId !== partnerRelId);
+      // Find the partner relationship for name reference
+      const partnerRel = character.relationships.find((r) => r.id === partnerRelId);
+      const partnerName = partnerRel?.name ?? birth.partnerName;
+      const rng = new RNG(s.rngState + character.age);
+      const result = birthChildFromPregnancy(character, familyTree, rng, {
+        gender: birth.babyGender,
+        name: name.trim(),
+        partnerName,
+      });
+      // Clear the pregnancy marker on the partner relationship
+      const partner = character.relationships.find((r) => r.id === partnerRelId);
+      if (partner) partner.pregnantSinceAge = undefined;
+      set({ character, familyTree, pendingBirths: remaining, message: result.text });
+      persist();
     },
 
     resetGame() {

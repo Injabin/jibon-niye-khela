@@ -64,12 +64,12 @@ async function readStateSummary(page: import('@playwright/test').Page) {
   const summaryText = await page.getByTestId('character-summary').textContent();
   const ageMatch = summaryText?.match(/(\d+)/);
   const money = (await page.getByTestId('money').textContent())?.trim() ?? '';
-  const health = await page.getByRole('progressbar', { name: 'Health' }).getAttribute('aria-valuenow');
+  const health = await page.getByRole('progressbar', { name: 'স্বাস্থ্য' }).getAttribute('aria-valuenow');
   const happiness = await page
-    .getByRole('progressbar', { name: 'Happiness' })
+    .getByRole('progressbar', { name: 'সুখ-খুশি' })
     .getAttribute('aria-valuenow');
-  const smarts = await page.getByRole('progressbar', { name: 'Smarts' }).getAttribute('aria-valuenow');
-  const looks = await page.getByRole('progressbar', { name: 'Looks' }).getAttribute('aria-valuenow');
+  const smarts = await page.getByRole('progressbar', { name: 'বুদ্ধি' }).getAttribute('aria-valuenow');
+  const looks = await page.getByRole('progressbar', { name: 'চেহারা' }).getAttribute('aria-valuenow');
 
   return {
     name,
